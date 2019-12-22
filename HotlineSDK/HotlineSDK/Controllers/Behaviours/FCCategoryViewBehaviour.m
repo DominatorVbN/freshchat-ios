@@ -44,7 +44,7 @@
 
 -(void) load{
     [self loadCategories];
-    [self fetchUpdates];
+    [FCFAQUtil fetchUpdates];
     [self localNotificationSubscription];
 }
 
@@ -78,24 +78,6 @@
             }
         }];
     }
-}
-
--(void)fetchUpdates{
-    FCSolutionUpdater *updater = [[FCSolutionUpdater alloc]init];
-    [[FCDataManager sharedInstance]areSolutionsEmpty:^(BOOL isEmpty) {
-        if(isEmpty){
-            [updater resetTime];
-        }
-        else {
-            //[updater useInterval:SOLUTIONS_FETCH_INTERVAL_ON_SCREEN_LAUNCH];
-            FCRefreshIntervals *remoteIntervals = [FCRemoteConfig sharedInstance].refreshIntervals;
-            [updater useInterval:remoteIntervals.faqFetchIntervalNormal];
-        }
-        ShowNetworkActivityIndicator();
-        [updater fetchWithCompletion:^(BOOL isFetchPerformed, NSError *error) {
-            HideNetworkActivityIndicator();
-        }];
-    }];
 }
 
 -(void)onSolutionsUpdatedInDB{

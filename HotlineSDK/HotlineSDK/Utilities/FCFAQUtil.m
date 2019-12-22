@@ -12,6 +12,11 @@
 #import "FCCategories.h"
 #import "FCDataManager.h"
 #import "FCContainerController.h"
+#import "FCSolutionUpdater.h"
+#import "FCRefreshIntervals.h"
+#import "FCRemoteConfig.h"
+#import "FCMacros.h"
+#import "FCUtilities.h"
 
 @implementation FCFAQUtil
 
@@ -121,6 +126,24 @@
 
 +(FAQOptions *) nonTagCopy:(FAQOptions *)options{
     return [self copyFaqOptions:options includeTags:false];
+}
+
++(void)fetchUpdates{
+    FCSolutionUpdater *updater = [[FCSolutionUpdater alloc]init];
+    [[FCDataManager sharedInstance]areSolutionsEmpty:^(BOOL isEmpty) {
+        if(isEmpty){
+            [updater resetTime];
+        }
+        else {
+            //[updater useInterval:SOLUTIONS_FETCH_INTERVAL_ON_SCREEN_LAUNCH];
+            FCRefreshIntervals *remoteIntervals = [FCRemoteConfig sharedInstance].refreshIntervals;
+            [updater useInterval:remoteIntervals.faqFetchIntervalNormal];
+        }
+        ShowNetworkActivityIndicator();
+        [updater fetchWithCompletion:^(BOOL isFetchPerformed, NSError *error) {
+            HideNetworkActivityIndicator();
+        }];
+    }];
 }
 
 @end

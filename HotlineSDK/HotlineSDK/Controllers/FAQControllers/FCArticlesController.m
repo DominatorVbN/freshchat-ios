@@ -100,6 +100,7 @@
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
+    [FCFAQUtil fetchUpdates];
     [self updateDataSource];
 }
 

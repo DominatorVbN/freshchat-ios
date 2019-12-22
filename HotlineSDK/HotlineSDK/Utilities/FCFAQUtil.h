@@ -24,6 +24,8 @@
 +(BOOL) hasContactUsTags:(FAQOptions *) options;
 +(BOOL) hasFilteredViewTitle:(FAQOptions *) options;
 +(FAQOptions *) nonTagCopy:(FAQOptions *)options;
++(void) fetchUpdates;
+
 @end
 
 #endif /* HLFAQUtil_h */
