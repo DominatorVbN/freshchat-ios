@@ -1,3 +1,8 @@
+
+Ver 3.3.0 
+__________________________
+Enhancement :
+- Performance improvements.
 Freshchat iOS SDK - Powered by Freshdesk
 
 Documentation   : https://support.freshchat.com
