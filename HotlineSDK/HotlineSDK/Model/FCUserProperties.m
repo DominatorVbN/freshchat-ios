@@ -23,8 +23,10 @@
     NSManagedObjectContext *context = [[FCDataManager sharedInstance]mainObjectContext];
     @try{
         property =  [FCUserProperties getCustomPropertyWithKey:key andUserProperty:isUserProperty withContext:context];
-        if (property && [value isEqualToString:property.value]) {
-            return property;
+        if (property){
+            if ([value isEqualToString:property.value] || (value == nil && property.value == nil)) {
+              return property;
+            }
         }else{
             property = [NSEntityDescription insertNewObjectForEntityForName:FRESHCHAT_USER_PROPERTIES_ENTITY inManagedObjectContext:context];
             property.key = key;
@@ -54,8 +56,11 @@
             property = matches.firstObject;
         }
         if (matches.count > 1) {
-            property = nil;
-            FDLog(@"Attention! Duplicates found in Properties table !");
+            //updated to fix 3.2.2 duplicate set user call
+            for (NSManagedObject* object in matches){
+                [context deleteObject:object];
+            }
+            return nil;
         }
     }
     @catch(NSException *exception) {
