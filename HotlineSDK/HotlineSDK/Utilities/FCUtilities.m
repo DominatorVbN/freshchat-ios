@@ -505,8 +505,6 @@ static NSInteger networkIndicator = 0;
         || ([FCUtilities containsString:content andTarget:@"&gt"])
         || ([FCUtilities containsString:content andTarget:@"&nbsp"])
         || ([FCUtilities containsString:content andTarget:@"<a href"])
-        || ([FCUtilities containsString:content andTarget:@"https://"])
-        || ([FCUtilities containsString:content andTarget:@"http://"])
         || ([FCUtilities containsString:content andTarget:@"<a>"])
         || ([FCUtilities containsString:content andTarget:@"<h1>"])
         || ([FCUtilities containsString:content andTarget:@"<h2>"])
