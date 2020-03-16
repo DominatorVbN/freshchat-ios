@@ -1,3 +1,8 @@
+
+Ver 3.3.2 
+__________________________
+Bug fix :
+- Fixed Text alignments in Messages.
 Freshchat iOS SDK - Powered by Freshdesk
 
 Documentation   : https://support.freshchat.com
