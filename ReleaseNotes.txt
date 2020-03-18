@@ -1,8 +1,14 @@
+
 Freshchat iOS SDK - Powered by Freshdesk
 
 Documentation   : https://support.freshchat.com
 Support Email   : support@freshchat.com
 Version         : 3.3.1
+
+Ver 3.3.2 
+__________________________
+Bug fix :
+- Fixed Text alignments in Messages.
 
 Ver 3.3.1 
 __________________________
@@ -13,11 +19,6 @@ Ver 3.3.0
 __________________________
 Enhancement :
 - Performance improvements.
-
-Ver 3.2.1 
-__________________________
-Bug Fix :
-- Fixed handling non-string type properties in user events
 
 Ver 3.2.2 
 __________________________
