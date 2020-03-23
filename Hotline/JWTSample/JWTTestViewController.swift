@@ -33,7 +33,7 @@ class JWTTestViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     override func viewDidLoad() {
         super.viewDidLoad()
         self.scrollView?.delegate = self
-        self.userId?.text = Freshchat.sharedInstance()?.getUserId()
+        self.userId?.text = Freshchat.sharedInstance().getUserId()
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         self.view.addGestureRecognizer(tapRecognizer)
         
@@ -92,7 +92,7 @@ class JWTTestViewController: UIViewController, UITextFieldDelegate, UITextViewDe
         payload.subject = "JWTRS256"
         var animDictionary: [String: EncodableValue] = [:]
         
-        animDictionary["freshchat_uuid"] = EncodableValue(value: Freshchat.sharedInstance()?.getUserId())
+        animDictionary["freshchat_uuid"] = EncodableValue(value: Freshchat.sharedInstance().getUserId())
         
         if let fName = self.firstName?.text, fName.count > 0 {
             animDictionary["first_name"] = EncodableValue(value: fName)
@@ -161,13 +161,13 @@ class JWTTestViewController: UIViewController, UITextFieldDelegate, UITextViewDe
     
     @IBAction func idenfifyUser (_ sender: UIButton) {
         if let jwtStr = self.jwtTokenValue?.text {
-            Freshchat.sharedInstance()?.setUserWithIdToken(jwtStr)
+            Freshchat.sharedInstance().setUserWithIdToken(jwtStr)
         }
     }
     
     @IBAction func restoreUser (_ sender: UIButton) {
         if let jwtStr = self.jwtTokenValue?.text {
-            Freshchat.sharedInstance()?.restoreUser(withIdToken: jwtStr)
+            Freshchat.sharedInstance().restoreUser(withIdToken: jwtStr)
         }
     }
     

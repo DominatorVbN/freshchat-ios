@@ -16,6 +16,7 @@
 #import "FCUserUtil.h"
 #import "FCUsers.h"
 #import "FCReachabilityManager.h"
+#import "FCStringUtil.h"
 
 @implementation FCJWTUtilities
 
@@ -182,16 +183,14 @@
 
 + (void) performPendingJWTTasks {
     if(![[FCReachabilityManager sharedInstance] isReachable]) return;
-    
-    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] &&
-       [FCJWTUtilities getPendingJWTToken]) {
-        [[Freshchat sharedInstance] setUserWithIdToken : [FCJWTUtilities getPendingJWTToken]];
+    NSString *pendingJWT = [FCJWTUtilities getPendingJWTToken];
+    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] && (![FCStringUtil isEmptyString:pendingJWT])) {
+        [[Freshchat sharedInstance] setUserWithIdToken : pendingJWT];
         return;
     }
-    
-    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] &&
-       [FCJWTUtilities getPendingRestoreJWTToken]) {
-        [[Freshchat sharedInstance] restoreUserWithIdToken:[FCJWTUtilities getPendingRestoreJWTToken]];
+    NSString *pendingRestoreJWT = [FCJWTUtilities getPendingRestoreJWTToken];
+    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] && (![FCStringUtil isEmptyString:pendingRestoreJWT])) {
+        [[Freshchat sharedInstance] restoreUserWithIdToken:pendingRestoreJWT];
         return;
     }
 }

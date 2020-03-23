@@ -548,7 +548,7 @@ static BOOL MAKE_API_WAIT = NO;
      }
 }
 
--(void)setUserProperties:(NSDictionary*)props{
+-(void)setUserProperties:(NSDictionary<NSString *, NSString*> *)props{
     if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
         ALog(@"Freshchat API : JWT is Enabled.");
         return;
@@ -886,8 +886,8 @@ static BOOL MAKE_API_WAIT = NO;
     }
 }
 
--(void)openFreshchatDeeplink:(NSString *)linkStr
-     viewController:(UIViewController *) viewController {
+-(void)openFreshchatDeeplink:(NSString *)linkStr viewController:(UIViewController *) viewController {
+    if (!viewController || [FCStringUtil isEmptyString:linkStr]) return;
     BOOL hasProcessed = [FCUtilities handleLink:[[NSURL alloc]initWithString:linkStr] faqOptions:nil navigationController:viewController handleFreshchatLinks:YES];
     if(!hasProcessed) {
         NSLog(@"Freshchat Error: Link not processed.");
