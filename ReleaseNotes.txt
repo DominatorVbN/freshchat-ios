@@ -1,4 +1,12 @@
 
+Ver 3.3.3 
+__________________________
+Enhancements :
+- Added Nullability check to API's.
+Bug fixes :
+- Rendering custom font in Article.
+- Statusbar being overlapped by inapp notification from iOS 13+ devices.
+
 Freshchat iOS SDK - Powered by Freshdesk
 
 Documentation   : https://support.freshchat.com
