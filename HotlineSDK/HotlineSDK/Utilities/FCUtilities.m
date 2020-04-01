@@ -34,6 +34,7 @@
 #import "FDThemeConstants.h"
 #import "FCEventsManager.h"
 #import "FCUserUtil.h"
+#import "FCAnimatedImage.h"
 
 #define EXTRA_SECURE_STRING @"73463f9d-70de-41f8-857a-58590bdd5903"
 #define ERROR_CODE_USER_DELETED 19
@@ -492,6 +493,24 @@ static NSInteger networkIndicator = 0;
         }
     }
     return true;
+}
+
++ (NSString *)contentTypeForImageData:(NSData *)data {
+    uint8_t c;
+    [data getBytes:&c length:1];
+
+    switch (c) {
+    case 0xFF:
+        return @"image/jpeg";
+    case 0x89:
+        return @"image/png";
+    case 0x47:
+        return @"image/gif";
+    case 0x49:
+    case 0x4D:
+        return @"image/tiff";
+    }
+    return nil;
 }
 
 +(BOOL) containsHTMLContent: (NSString *)content {

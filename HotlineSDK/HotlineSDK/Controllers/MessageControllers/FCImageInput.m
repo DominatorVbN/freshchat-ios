@@ -24,7 +24,7 @@
 
 @property (strong, nonatomic) UIView* sourceView;
 @property (strong, nonatomic) UIViewController* sourceViewController;
-@property (strong, nonatomic) UIImage* imagePicked;
+@property (strong, nonatomic) NSData* pickedImageData;
 @property (strong, nonatomic) UIPopoverController* popover;
 
 @property (nonatomic, strong) FCConversations *conversation;
@@ -36,7 +36,7 @@
 
 @implementation FCImageInput
 
-@synthesize sourceView,sourceViewController,imagePicked,popover;
+@synthesize sourceView,sourceViewController,pickedImageData,popover;
 
 - (instancetype)initWithConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel{
     self = [super init];
@@ -209,12 +209,37 @@
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
-    
     [picker dismissViewControllerAnimated:NO completion:nil];
-    UIImage* selectedImage = info[UIImagePickerControllerOriginalImage];
-    self.imageController = [[FCAttachmentImageController alloc]initWithImage:selectedImage];
+    NSURL * refUrl = [info objectForKey:UIImagePickerControllerReferenceURL];
+    if (refUrl) {
+        PHAsset * asset = [[PHAsset fetchAssetsWithALAssetURLs:@[refUrl] options:nil] lastObject];
+        if (asset) {
+            PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
+            options.synchronous = YES;
+            options.networkAccessAllowed = NO;
+            options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+            [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+                NSNumber * isError = [info objectForKey:PHImageErrorKey];
+                NSNumber * isCloud = [info objectForKey:PHImageResultIsInCloudKey];
+                if ([isError boolValue] || [isCloud boolValue] || ! imageData) {
+                    ALog("Image picking failed, please try later!");
+                } else {
+                    [self presentAttachmentControllerWithData:imageData];
+                }
+            }];
+        }
+    } else {
+        UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+        if (image) {
+            [self presentAttachmentControllerWithData:UIImageJPEGRepresentation(image,0.5)];
+        }
+    }
+}
+
+-(void)presentAttachmentControllerWithData:(NSData*) imageData {
+    self.imageController = [[FCAttachmentImageController alloc]initWithImageData:imageData];
     self.imageController.delegate = self;
-    self.imagePicked = selectedImage;
+    self.pickedImageData = imageData;
     UINavigationController *navcontroller = [[UINavigationController alloc] initWithRootViewController:self.imageController];
     [navcontroller setModalPresentationStyle:UIModalPresentationFullScreen];
     [self.sourceViewController presentViewController:navcontroller animated:YES completion:nil];
@@ -224,9 +249,9 @@
     [self.inputOptions dismissWithClickedButtonIndex:0 animated:YES];
 }
 
--(void)attachmentController:(FCAttachmentImageController *)controller didFinishSelectingImage:(UIImage *)image withCaption:(NSString *)caption {
+-(void)attachmentController:(FCAttachmentImageController *)controller didFinishImgWithCaption:(NSString *)caption {
     
-    [FCMessageHelper uploadMessageWithImage:self.imagePicked textFeed:caption onConversation:self.conversation andChannel:self.channel];
+    [FCMessageHelper uploadMessageWithImageData:self.pickedImageData textFeed:caption onConversation:self.conversation andChannel:self.channel];
 }
 
 @end

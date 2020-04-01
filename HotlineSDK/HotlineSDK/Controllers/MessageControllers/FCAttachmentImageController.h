@@ -15,13 +15,13 @@
 
 @required
 
--(void)attachmentController:(FCAttachmentImageController *)controller didFinishSelectingImage:(UIImage *)image withCaption:(NSString *)caption;
+-(void)attachmentController:(FCAttachmentImageController *)controller didFinishImgWithCaption:(NSString *)caption;
 
 @end
 
 @interface FCAttachmentImageController : UIViewController<FDInputToolbarViewDelegate, UITextViewDelegate>
 
--(instancetype)initWithImage:(UIImage *)image;
+-(instancetype)initWithImageData:(NSData *)imageData;
 
 @property (weak, nonatomic) id<FDAttachmentImageControllerDelegate> delegate;
 

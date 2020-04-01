@@ -12,7 +12,7 @@
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 
--(instancetype)initWithImage:(UIImage *)image;
+-(instancetype)initWithImageData:(NSData *)imageData;
 
 -(void)presentOnController:(UIViewController *)controller;
 

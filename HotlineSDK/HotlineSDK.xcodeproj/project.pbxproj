@@ -21,6 +21,10 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		021DA7CB23E1814F00CA7F02 /* FCAnimatedImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 021DA7C723E1814F00CA7F02 /* FCAnimatedImage.h */; };
+		021DA7CD23E1814F00CA7F02 /* FCAnimatedImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 021DA7C923E1814F00CA7F02 /* FCAnimatedImageView.h */; };
+		021DA7CE23E1814F00CA7F02 /* FCAnimatedImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 021DA7CA23E1814F00CA7F02 /* FCAnimatedImageView.m */; };
+		021DA7D423E1902E00CA7F02 /* FCAnimatedImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 021DA7D323E1902D00CA7F02 /* FCAnimatedImage.m */; };
 		024529482386E62C0018FC38 /* FCEventsConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 024529472386E62C0018FC38 /* FCEventsConstants.h */; };
 		02C480B62377E07700EDADB2 /* FCEventsManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C480B42377E07700EDADB2 /* FCEventsManager.h */; };
 		02C480B72377E07700EDADB2 /* FCEventsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B52377E07700EDADB2 /* FCEventsManager.m */; };
@@ -209,6 +213,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		021DA7C723E1814F00CA7F02 /* FCAnimatedImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FCAnimatedImage.h; sourceTree = "<group>"; };
+		021DA7C923E1814F00CA7F02 /* FCAnimatedImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FCAnimatedImageView.h; sourceTree = "<group>"; };
+		021DA7CA23E1814F00CA7F02 /* FCAnimatedImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCAnimatedImageView.m; sourceTree = "<group>"; };
+		021DA7D323E1902D00CA7F02 /* FCAnimatedImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCAnimatedImage.m; sourceTree = "<group>"; };
 		024529472386E62C0018FC38 /* FCEventsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsConstants.h; sourceTree = "<group>"; };
 		02C480B42377E07700EDADB2 /* FCEventsManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsManager.h; sourceTree = "<group>"; };
 		02C480B52377E07700EDADB2 /* FCEventsManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsManager.m; sourceTree = "<group>"; };
@@ -552,6 +560,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		021DA7C623E1811200CA7F02 /* FCGIFSupport */ = {
+			isa = PBXGroup;
+			children = (
+				021DA7C723E1814F00CA7F02 /* FCAnimatedImage.h */,
+				021DA7D323E1902D00CA7F02 /* FCAnimatedImage.m */,
+				021DA7C923E1814F00CA7F02 /* FCAnimatedImageView.h */,
+				021DA7CA23E1814F00CA7F02 /* FCAnimatedImageView.m */,
+			);
+			name = FCGIFSupport;
+			sourceTree = "<group>";
+		};
 		354F26C31D0AED2F00DCD158 /* UICKeyChainStore-2.1.2 */ = {
 			isa = PBXGroup;
 			children = (
@@ -1082,6 +1101,7 @@
 		CEFA05531EE82EE700DC74CF /* MessageFragments */ = {
 			isa = PBXGroup;
 			children = (
+				021DA7C623E1811200CA7F02 /* FCGIFSupport */,
 				CEFA05631EE82F7400DC74CF /* FCFileFragment.h */,
 				CEFA05641EE82F7400DC74CF /* FCFileFragment.m */,
 				CEFA05541EE82F2000DC74CF /* FCAudioFragment.h */,
@@ -1112,12 +1132,14 @@
 				EAB0790B216CB7D000B701C9 /* FCJWTUtilities.h in Headers */,
 				CEDCBC041FD55E700054CFCE /* FCFooterView.h in Headers */,
 				EA7B897D2187AAA300447052 /* FCUnsupportedFragmentErrorMsgs.h in Headers */,
+				021DA7CB23E1814F00CA7F02 /* FCAnimatedImage.h in Headers */,
 				EA035F1620D9515800165D00 /* FCAttributedText.h in Headers */,
 				C3D291A0230D79540034B27E /* FCReplyFlowLayout.h in Headers */,
 				02C480B62377E07700EDADB2 /* FCEventsManager.h in Headers */,
 				EA104804213F247700122843 /* FCUnsupportedFragment.h in Headers */,
 				EA80219A20D99CCD00412B5A /* FCCSatSettings.h in Headers */,
 				02C480BA2377E27200EDADB2 /* FCEventsConfig.h in Headers */,
+				021DA7CD23E1814F00CA7F02 /* FCAnimatedImageView.h in Headers */,
 				EA306AA521B7C96B005211E4 /* FCMessageMaskConfig.h in Headers */,
 				024529482386E62C0018FC38 /* FCEventsConstants.h in Headers */,
 				EA6EB25E21070D4400411D5F /* FCCSATUtil.h in Headers */,
@@ -1297,6 +1319,7 @@
 				35B2EF8E1D000E620014867F /* FreshchatConfig.m in Sources */,
 				CE8C7A7A1F6C216B00E77494 /* NSImage+WebCache.m in Sources */,
 				CE8C7A861F6C216B00E77494 /* UIImageView+WebCache.m in Sources */,
+				021DA7CE23E1814F00CA7F02 /* FCAnimatedImageView.m in Sources */,
 				02C480BB2377E27200EDADB2 /* FCEventsConfig.m in Sources */,
 				C3D2919D230D43F10034B27E /* FCReplyCollectionCell.m in Sources */,
 				354F26C61D0AED2F00DCD158 /* FCKeyChainStore.m in Sources */,
@@ -1311,6 +1334,7 @@
 				35B2EFB01D000E620014867F /* FCSecureStore.m in Sources */,
 				35D4E81A1D118E9000EFFE07 /* FCSearchViewController.m in Sources */,
 				35B2EFA91D000E620014867F /* FCAutolayoutHelper.m in Sources */,
+				021DA7D423E1902E00CA7F02 /* FCAnimatedImage.m in Sources */,
 				35B2EF871D000E620014867F /* FCContainerController.m in Sources */,
 				35B2EFC61D000E620014867F /* FCInputToolbarView.m in Sources */,
 				35B2EF991D000E620014867F /* FCMessageUtil.m in Sources */,

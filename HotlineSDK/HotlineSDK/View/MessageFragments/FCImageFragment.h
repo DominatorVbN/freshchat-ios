@@ -11,8 +11,9 @@
 #import "FCUserMessageCell.h"
 #import "FCMessageFragments.h"
 #import "FCTheme.h"
+#import "FCAnimatedImageView.h"
 
-@interface FCImageFragment : UIImageView
+@interface FCImageFragment : FCAnimatedImageView
     -(id) initWithFragment: (FragmentData *) fragment ofMessage:(FCMessageData*)message;
     @property (nonatomic, weak) id<HLMessageCellDelegate> delegate;
     @property CGRect imgFrame;

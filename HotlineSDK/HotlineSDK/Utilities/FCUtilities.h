@@ -108,6 +108,8 @@
 
 + (BOOL) isTodaySameAsDate : (NSDate *) date;
 
++ (NSString *)contentTypeForImageData:(NSData *)data;
+
 @end
 
 #endif

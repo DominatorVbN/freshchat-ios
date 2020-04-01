@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		021DA7D223E18F9700CA7F02 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 021DA7CF23E18F9700CA7F02 /* CoreServices.framework */; };
+		024529422385B8EF0018FC38 /* InEventsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024529412385B8EF0018FC38 /* InEventsController.swift */; };
+		024529462385B9170018FC38 /* InEventsController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 024529452385B9170018FC38 /* InEventsController.storyboard */; };
 		024F428223B3716300A265F2 /* Base64Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024F428123B3716300A265F2 /* Base64Utils.swift */; };
 		024F428423B3716F00A265F2 /* JWTAlgorithm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024F428323B3716F00A265F2 /* JWTAlgorithm.swift */; };
 		024F428723B3717B00A265F2 /* CompactJSONDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024F428523B3717B00A265F2 /* CompactJSONDecoder.swift */; };
@@ -31,8 +34,6 @@
 		024F42AD23B3795200A265F2 /* JWTTestViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 024F42AC23B3795200A265F2 /* JWTTestViewController.storyboard */; };
 		024F42B023B3801000A265F2 /* private.txt in Resources */ = {isa = PBXBuildFile; fileRef = 024F42AE23B3801000A265F2 /* private.txt */; };
 		024F42B123B3801000A265F2 /* public.txt in Resources */ = {isa = PBXBuildFile; fileRef = 024F42AF23B3801000A265F2 /* public.txt */; };
-		024529422385B8EF0018FC38 /* InEventsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024529412385B8EF0018FC38 /* InEventsController.swift */; };
-		024529462385B9170018FC38 /* InEventsController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 024529452385B9170018FC38 /* InEventsController.storyboard */; };
 		350D9E211CFDBD48004091C8 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350D9E1F1CFDBD48004091C8 /* Crashlytics.framework */; };
 		350D9E221CFDBD48004091C8 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350D9E201CFDBD48004091C8 /* Fabric.framework */; };
 		3513FF801CDCC3A3009A7034 /* FCLocalization.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 3513FF7F1CDCC3A3009A7034 /* FCLocalization.bundle */; };
@@ -108,6 +109,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		021DA7CF23E18F9700CA7F02 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		024529412385B8EF0018FC38 /* InEventsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InEventsController.swift; sourceTree = "<group>"; };
+		024529452385B9170018FC38 /* InEventsController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = InEventsController.storyboard; sourceTree = "<group>"; };
 		024F428123B3716300A265F2 /* Base64Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base64Utils.swift; sourceTree = "<group>"; };
 		024F428323B3716F00A265F2 /* JWTAlgorithm.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JWTAlgorithm.swift; sourceTree = "<group>"; };
 		024F428523B3717B00A265F2 /* CompactJSONDecoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompactJSONDecoder.swift; sourceTree = "<group>"; };
@@ -132,8 +136,6 @@
 		024F42AC23B3795200A265F2 /* JWTTestViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = JWTTestViewController.storyboard; sourceTree = "<group>"; };
 		024F42AE23B3801000A265F2 /* private.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = private.txt; sourceTree = "<group>"; };
 		024F42AF23B3801000A265F2 /* public.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = public.txt; sourceTree = "<group>"; };
-		024529412385B8EF0018FC38 /* InEventsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InEventsController.swift; sourceTree = "<group>"; };
-		024529452385B9170018FC38 /* InEventsController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = InEventsController.storyboard; sourceTree = "<group>"; };
 		350D9E1F1CFDBD48004091C8 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
 		350D9E201CFDBD48004091C8 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
 		3513FF7F1CDCC3A3009A7034 /* FCLocalization.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = FCLocalization.bundle; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 				CE6054681F87967500326E5A /* Security.framework in Frameworks */,
 				354D0D271C48D143004D2AA1 /* libFreshchatSDK.a in Frameworks */,
 				356F1C141B9DD23B002F1E2A /* CoreMedia.framework in Frameworks */,
+				021DA7D223E18F9700CA7F02 /* CoreServices.framework in Frameworks */,
 				356F1C121B9DD223002F1E2A /* AudioToolbox.framework in Frameworks */,
 				356F1A1F1B9DC4BB002F1E2A /* Foundation.framework in Frameworks */,
 				356F1A1D1B9DC4B6002F1E2A /* AVFoundation.framework in Frameworks */,
@@ -459,6 +462,7 @@
 		CE6054671F87967500326E5A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				021DA7CF23E18F9700CA7F02 /* CoreServices.framework */,
 				EA5F0B91231B11EE007BD6C4 /* WebKit.framework */,
 				CE6054691F8797EF00326E5A /* Photos.framework */,
 			);

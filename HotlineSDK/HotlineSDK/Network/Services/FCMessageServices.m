@@ -713,8 +713,9 @@ static FCNotificationHandler *handleUpdateNotification;
     NSString *token = [NSString stringWithFormat:HOTLINE_REQUEST_PARAMS,appKey];
     
     FCServiceRequest *request = [[FCServiceRequest alloc]initMultipartFormRequestWithBody:^(id<HLMultipartFormData> formData) {
-        [formData addFilePart:fragment.binaryData1 name:@"pic" fileName:@".jpg" mimeType:@"image/jpeg"];
-        [formData addTextPart:[NSString stringWithFormat:@"pic_%@.jpg",fragment.index] name:@"name"];
+        NSString *contentType = [FCUtilities contentTypeForImageData:fragment.binaryData1];
+        [formData addFilePart:fragment.binaryData1 name:@"pic" fileName:[NSString stringWithFormat:@".%@",contentType] mimeType:contentType];
+        [formData addTextPart:[NSString stringWithFormat:@"pic_%@.%@",fragment.index, contentType] name:@"name"];
     }];
     
     NSString *path = [NSString stringWithFormat:HOTLINE_API_UPLOAD_IMAGE, appID,userAlias];

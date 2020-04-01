@@ -1116,7 +1116,7 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
                     ALog(@"Freshchat Error : Please Validate the user first.");
                     return;
                 }
-                [FCMessageHelper uploadMessageWithImage:nil textFeed:messageObject.message onConversation:conversation andChannel:channel];
+                [FCMessageHelper uploadMessageWithImageData:nil textFeed:messageObject.message onConversation:conversation andChannel:channel];
             }
         }];
     }];
