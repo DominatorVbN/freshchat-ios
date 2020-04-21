@@ -78,13 +78,19 @@
 }
 
 +(FCConversations *)createConversationWithID:(NSString *)conversationID ForChannel:(FCChannels *)channel{
-    NSManagedObjectContext *context = [[FCDataManager sharedInstance]mainObjectContext];
-    FCConversations *newConversation = [NSEntityDescription insertNewObjectForEntityForName:FRESHCHAT_CONVERSATIONS_ENTITY inManagedObjectContext:context];
-
-    newConversation.conversationAlias = conversationID;
-
-    if (channel) {
-        newConversation.belongsToChannel = channel;
+    FCConversations *newConversation = nil;
+    @try {
+        NSManagedObjectContext *context = [[FCDataManager sharedInstance]mainObjectContext];
+        newConversation = [NSEntityDescription insertNewObjectForEntityForName:FRESHCHAT_CONVERSATIONS_ENTITY inManagedObjectContext:context];
+        
+        newConversation.conversationAlias = conversationID;
+        
+        if (channel) {
+            newConversation.belongsToChannel = channel;
+        }
+    } @catch (NSException *exception) {
+        NSString *exceptionDesc = [NSString stringWithFormat:@"COREDATA_EXCEPTION: %@", exception.description];
+        FDLog(@"Error in create conversation - table : %@ %@", FRESHCHAT_CONVERSATIONS_ENTITY, exceptionDesc);
     }
     
     return newConversation;

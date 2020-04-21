@@ -16,13 +16,16 @@
 #import "FCLocalNotification.h"
 #import "FCUtilities.h"
 #import "FCFooterView.h"
+#import "FCAnimatedImageView.h"
+#import "FCAnimatedImage.h"
 
 @interface FCAttachmentImageController (){
     int footerViewHeight;
 }
 
 @property (nonatomic, strong) UIImage *image;
-@property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, strong) NSData *imageData;
+@property (nonatomic, strong) FCAnimatedImageView *imageView;
 @property (nonatomic, strong) FCInputToolbarView *inputToolbar;
 @property (nonatomic) CGFloat keyboardHeight;
 @property (nonatomic) CGRect viewFrame;
@@ -30,10 +33,10 @@
 
 @implementation FCAttachmentImageController
 
--(instancetype)initWithImage:(UIImage *)image{
+-(instancetype)initWithImageData:(NSData *)imageData{
     self = [super init];
     if (self) {
-        self.image = image;
+        self.imageData = imageData;
     }
     return self;
 }
@@ -43,7 +46,13 @@
     [self setNavigationItem];
     self.navigationItem.title = HLLocalizedString(LOC_PIC_MSG_ATTACHMENT_TITLE_TEXT);
     self.view.backgroundColor = [UIColor whiteColor];
-    self.imageView = [[UIImageView alloc]initWithImage:self.image];
+    self.imageView =[[FCAnimatedImageView alloc]initWithImage:[UIImage imageWithData:self.imageData]];
+    
+    if ([[FCUtilities contentTypeForImageData:self.imageData] isEqualToString:@"image/gif"]){
+        FCAnimatedImage *animImage = [FCAnimatedImage animatedImageWithGIFData:self.imageData];
+        self.imageView.animatedImage = animImage;
+    }
+
     self.imageView.translatesAutoresizingMaskIntoConstraints = NO;
     self.imageView.contentMode = UIViewContentModeScaleAspectFit;
     self.keyboardHeight = 0;
@@ -184,7 +193,7 @@
         if (([toSend isEqualToString:@""]) || ([toSend isEqualToString:HLLocalizedString(LOC_MESSAGE_PLACEHOLDER_TEXT)])) {
             toSend = @"";
         }
-        [self.delegate attachmentController:self didFinishSelectingImage:self.image withCaption:toSend];
+        [self.delegate attachmentController:self didFinishImgWithCaption:toSend];
     }
 }
 

@@ -92,14 +92,14 @@ __weak static id <KonotorDelegate> _delegate;
     
 }
 
-+(void)uploadNewMsgWithImage:(UIImage *)image textFeed:(NSString *)caption onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
++(void)uploadNewMsgWithImageData:(NSData*)imageData textFeed:(NSString *)caption onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
     //Upload the image with caption first then upload the message
     NSMutableArray *fragmentsInfo = [[NSMutableArray alloc] init];
-    if(image){
-        NSData *imageData, *thumbnailData;
+    UIImage *image = [UIImage imageWithData:imageData];
+    if(imageData){
+        NSData *thumbnailData;
         float imageWidth,imageHeight,imageThumbHeight,imageThumbWidth;
         
-        imageData = UIImageJPEGRepresentation(image, 0.5);
         CGImageSourceRef src = CGImageSourceCreateWithData( (__bridge CFDataRef)(imageData), NULL);
         NSDictionary *osptions = [[NSDictionary alloc] initWithObjectsAndKeys:(id)kCFBooleanTrue, kCGImageSourceCreateThumbnailWithTransform, kCFBooleanTrue, kCGImageSourceCreateThumbnailFromImageAlways, [NSNumber numberWithDouble:300], kCGImageSourceThumbnailMaxPixelSize, nil];
 #if KONOTOR_IMG_COMPRESSION
@@ -133,16 +133,16 @@ __weak static id <KonotorDelegate> _delegate;
         
         CFRelease(src);
         CFRelease(thumbnail);
-        
+        NSString *contentType = [FCUtilities contentTypeForImageData:imageData];
         NSDictionary *thumbnailInfo = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                       @"image/png",@"contentType",
+                                       contentType,@"contentType",
                                        @"",@"content",
                                        [NSNumber numberWithFloat:imageThumbWidth],@"width",
                                        [NSNumber numberWithFloat:imageThumbHeight],@"height",
                                        nil];
         
         NSDictionary *imageFragmentInfo = [[NSDictionary alloc] initWithObjectsAndKeys:  @2, @"fragmentType",
-                                           @"image/png",@"contentType",
+                                           contentType,@"contentType",
                                            @"",@"content", //Populate with empty url
                                            [NSNumber numberWithFloat:imageWidth],@"width",
                                            [NSNumber numberWithFloat:imageHeight],@"height",
@@ -175,13 +175,13 @@ __weak static id <KonotorDelegate> _delegate;
     if(![FCUserUtil isUserRegistered]) {
         [FCUserUtil registerUser:nil];
     } else {
-        [self uploadMessage:message withImage:image inChannel:channel andConversation:conversation];
+        [self uploadMessage:message withImageData:imageData inChannel:channel andConversation:conversation];
     }
 }
 
-+ (void) uploadMessage :(FCMessages *) message withImage:(UIImage*)image inChannel:(FCChannels *) channel andConversation : (FCConversations *)conversation {
++ (void) uploadMessage :(FCMessages *) message withImageData:(NSData*)imageData inChannel:(FCChannels *) channel andConversation : (FCConversations *)conversation {
     [FCMessageHelper performSelector:@selector(UploadFinishedNotification:) withObject:message.messageAlias];
-    if(image){
+    if(imageData){
         [FCMessageServices uploadPictureMessage:message toConversation:conversation withCompletion:^{
             [FCMessageServices uploadNewMessage:message toConversation:conversation onChannel:channel];
             [[FCMessageHelper delegate] didStartUploadingNewMessage];
@@ -194,11 +194,11 @@ __weak static id <KonotorDelegate> _delegate;
 }
 
 
-+(void) uploadMessageWithImage:(UIImage *)image textFeed:(NSString *)textFeedback onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
++(void) uploadMessageWithImageData:(NSData *)imageData textFeed:(NSString *)textFeedback onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
     [FCUserUtil setUserMessageInitiated];
     NSArray *freshchatRegexArray = [FCUserDefaults getObjectForKey:FRESTCHAT_DEFAULTS_MESSAGE_MASK];
     textFeedback = freshchatRegexArray.count > 0 ? [FCUtilities applyRegexForInputText:textFeedback] : textFeedback;
-    [self uploadNewMsgWithImage:image textFeed:textFeedback onConversation:conversation andChannel:channel];
+    [self uploadNewMsgWithImageData:imageData textFeed:textFeedback onConversation:conversation andChannel:channel];
     
     NSMutableDictionary *eventsDict = [[NSMutableDictionary alloc] init];
     if(channel.channelAlias){

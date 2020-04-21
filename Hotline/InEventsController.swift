@@ -59,7 +59,7 @@ class InEventsController: UIViewController {
         
         let t = Int(self.eventTimes.text!) ?? 0
         for _ in 0..<t {
-            Freshchat.sharedInstance()?.trackEvent(eventName.text, withProperties: eventDict)
+            Freshchat.sharedInstance().trackEvent(eventName.text!, withProperties: eventDict)
         }
     }
     

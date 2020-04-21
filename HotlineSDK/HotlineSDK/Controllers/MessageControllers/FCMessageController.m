@@ -855,7 +855,7 @@ typedef struct {
         [self inputToolbar:toolbar textViewDidChange:toolbar.textView];
         return;
     }//Condition added later to avoid inconsistancy with failed/incorrect config or inactive account
-    [FCMessageHelper uploadMessageWithImage:nil textFeed:toSend onConversation:self.conversation andChannel:self.channel];
+    [FCMessageHelper uploadMessageWithImageData:nil textFeed:toSend onConversation:self.conversation andChannel:self.channel];
     [self checkPushNotificationState];
     [self inputToolbar:toolbar textViewDidChange:toolbar.textView];
     [self refreshView];
@@ -1360,7 +1360,7 @@ typedef struct {
 -(void)performActionOn:(FragmentData *)fragment {
     NSNumber *fragmentType = @([fragment.type intValue]);
     if ([fragmentType isEqualToValue:@2]) {
-        FCImagePreviewController *imageController = [[FCImagePreviewController alloc]initWithImage:[UIImage imageWithData:fragment.binaryData1]];
+        FCImagePreviewController *imageController = [[FCImagePreviewController alloc]initWithImageData:fragment.binaryData1];
         [imageController presentOnController:self];
     } else if ([fragmentType isEqualToValue:@5]) {
         NSURL *url = [fragment getOpenURL];
@@ -1682,7 +1682,7 @@ typedef struct {
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     [collectionView deselectItemAtIndexPath:indexPath animated:NO];
-    [FCMessageHelper uploadMessageWithImage:nil textFeed:self.replyTexts[indexPath.row] onConversation:self.conversation andChannel:self.channel];
+    [FCMessageHelper uploadMessageWithImageData:nil textFeed:self.replyTexts[indexPath.row] onConversation:self.conversation andChannel:self.channel];
     [self checkPushNotificationState];
     [self refreshView];
     [self.messagesPoller reset];

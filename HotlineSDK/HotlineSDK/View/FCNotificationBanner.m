@@ -18,7 +18,8 @@
 #import "FCAttributedText.h"
 
 #define systemSoundID 1315
-#define IPHONEX_STATUSBAR_HEIGHT 30
+#define NOTCH_DEVICE_ST_BAR_HT 30
+#define WITHOUT_NOTCH_DEVICE_ST_BAR_HT 10
 
 @interface FCNotificationBanner ()
 
@@ -145,16 +146,16 @@
     [self.contentEncloser addSubview:self.messageLabel];
     
     if([FCUtilities hasNotchDisplay]){
-        if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation))
-        {
+        if([self hasLandscapeOrientation]){
             self.iPhoneXStatusbarHeightConstraint = [FCAutolayoutHelper setHeight:0 forView:self.iPhoneXStatusbarView inView:self];
         }
-        else{
-            self.iPhoneXStatusbarHeightConstraint = [FCAutolayoutHelper setHeight:IPHONEX_STATUSBAR_HEIGHT forView:self.iPhoneXStatusbarView inView:self];
+        else {
+            self.iPhoneXStatusbarHeightConstraint = [FCAutolayoutHelper setHeight:NOTCH_DEVICE_ST_BAR_HT forView:self.iPhoneXStatusbarView inView:self];
         }
     }
     else{
-        self.iPhoneXStatusbarHeightConstraint = [FCAutolayoutHelper setHeight:0 forView:self.iPhoneXStatusbarView inView:self];
+        CGFloat topPadding = [UIApplication sharedApplication].isStatusBarHidden ? 0 : WITHOUT_NOTCH_DEVICE_ST_BAR_HT;
+        self.iPhoneXStatusbarHeightConstraint = [FCAutolayoutHelper setHeight:topPadding forView:self.iPhoneXStatusbarView inView:self];
     }
     
     NSDictionary *views = @{@"banner" : self, @"title" : self.titleLabel,
@@ -170,7 +171,6 @@
     
     [self.contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[title]|" options:0 metrics:nil  views:views]];
     [self.contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[message]|" options:0 metrics:nil  views:views]];
-    
     
     
     [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[imgView(50)]" options:0 metrics:nil views:views]];
@@ -197,14 +197,20 @@
     [self adjustViewsForOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
 }
 
+- (BOOL) hasLandscapeOrientation {
+    UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
+    return (orientation == UIInterfaceOrientationLandscapeRight || orientation == UIInterfaceOrientationLandscapeLeft);
+}
+
 - (void) adjustViewsForOrientation:(UIInterfaceOrientation) orientation {
     switch (orientation)
     {
         case UIInterfaceOrientationPortrait:
         case UIInterfaceOrientationPortraitUpsideDown:
         {
-            //load the portrait view
-            self.iPhoneXStatusbarHeightConstraint.constant = IPHONEX_STATUSBAR_HEIGHT;
+            if([FCUtilities hasNotchDisplay]) {
+                self.iPhoneXStatusbarHeightConstraint.constant = NOTCH_DEVICE_ST_BAR_HT;
+            }
         }
             break;
         case UIInterfaceOrientationLandscapeLeft:
@@ -243,7 +249,7 @@
     [[[[UIApplication sharedApplication] delegate] window] setWindowLevel:UIWindowLevelStatusBar+1];
     
     if([FCUtilities hasNotchDisplay]) {
-        self.iPhoneXStatusbarHeightConstraint.constant = UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation) ? 0 : IPHONEX_STATUSBAR_HEIGHT;
+        self.iPhoneXStatusbarHeightConstraint.constant = [self hasLandscapeOrientation] ? 0 : NOTCH_DEVICE_ST_BAR_HT;
         [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(orientationChanged:)    name:UIDeviceOrientationDidChangeNotification  object:nil];
     }
     
