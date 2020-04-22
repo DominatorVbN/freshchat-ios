@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
     @property (nullable, nonatomic, retain) FCChannels *belongsToChannel;
     @property (nullable, nonatomic, retain) FCConversations *belongsToConversation;
     @property (nullable, nonatomic, retain) NSNumber *messageType;
+    @property (nullable, nonatomic, retain) NSNumber *replyToMessage;
+    @property (nullable, nonatomic, retain) NSNumber *messageId;
 
     +(FCMessages *)getWelcomeMessageForChannel:(FCChannels *)channel;
     +(void) removeWelcomeMessage:(FCChannels *)channel;
@@ -51,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
     +(NSString *)generateMessageID;
     +(FCMessages *)createNewMessage:(NSDictionary *)message toChannelID:(NSNumber *)channelId;
     -(void) associateMessageToConversation: (FCConversations *)conversation;
-    +(FCMessages *)saveMessageInCoreData:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation;
+    +(FCMessages *)saveMessageInCoreData:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation inReplyTo:(nullable NSNumber *)messageID;
     +(void)uploadAllUnuploadedMessages;
     -(void) markAsRead;
     -(void) markAsUnread;
@@ -64,8 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
     +(long) daysSinceLastMessageInContext:(NSManagedObjectContext *)context;
     -(NSMutableDictionary *) convertMessageToDictionary;
     -(NSString *)getDetailDescriptionForMessage;
-
-
 
 @end
 

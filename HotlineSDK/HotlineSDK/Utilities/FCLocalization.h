@@ -129,6 +129,8 @@ static NSString *DEFAULT_LOCALIZATION_TABLE = @"FCLocalizable";
 
 #define LOC_BUSINESS_HOURS_OFFLINE @"business_hour_offline"
 
+#define LOC_DROPDOWN_SELECT @"dropdown_choose_select"
+
 @interface FCLocalization : NSObject
 
 +(NSString *)localize:(NSString *)key;

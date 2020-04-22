@@ -53,6 +53,7 @@
 #import "FCReplyCollectionCell.h"
 #import "FCReplyFlowLayout.h"
 #import "FCEventsManager.h"
+#import "FCTemplateFactory.h"
 
 typedef struct {
     BOOL isLoading;
@@ -66,7 +67,7 @@ typedef struct {
     @property (nonatomic, strong) NSNumber *channelID;
 @end
 
-@interface FCMessageController () <UITableViewDelegate, UITableViewDataSource, HLMessageCellDelegate, HLMessageCellDelegate, FDAudioInputDelegate, KonotorDelegate, HLLoadingViewBehaviourDelegate,UIAlertViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, FCReplyDelegate>
+@interface FCMessageController () <UITableViewDelegate, UITableViewDataSource, HLMessageCellDelegate, HLMessageCellDelegate, FDAudioInputDelegate, KonotorDelegate, HLLoadingViewBehaviourDelegate,UIAlertViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, FCReplyDelegate, FCTemplateDelegate>
 
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingView;
@@ -117,6 +118,7 @@ typedef struct {
 @property (nonatomic) BOOL isJWTAlertShown;
 @property (nonatomic) UICollectionView* collectionView;
 @property (nonnull, nonatomic, strong) NSMutableArray* replyTexts;
+@property (nonnull, nonatomic, strong) NSString* lastReplyMessageAlias;
 
 @end
 
@@ -149,6 +151,7 @@ typedef struct {
         self.messageCountPrevious = 0;
         self.messagesDisplayedCount=20;
         self.loadmoreCount=20;
+        self.lastReplyMessageAlias = @"";
         self.channelID = channelID;        
         self.channel = [FCChannels getWithID:channelID inContext:[FCDataManager sharedInstance].mainObjectContext];
         self.imageInput = [[FCImageInput alloc]initWithConversation:self.conversation onChannel:self.channel];
@@ -1254,7 +1257,7 @@ typedef struct {
     }
     [self.tableView reloadData];
     
-    [self checkForReplyFragments];
+    [self checkForReplyFragmentAfterCSATUpdate:false];
     
     [FCMessages markAllMessagesAsReadForChannel:self.channel];
     if(obj==nil)
@@ -1270,53 +1273,77 @@ typedef struct {
     [self processPendingCSAT];
 }
 
--(void) checkForReplyFragments {
-    [self.replyTexts removeAllObjects];
+-(void) checkForReplyFragmentAfterCSATUpdate:(BOOL) csatUpdated {
     FCCsat *csat = [self getCSATObject];
     BOOL showTextBox = NO;
+    BOOL hasReplyFragments = NO;
     //Check for CSAT Timeout state
-    if(!([FCCSATUtil isCSATExpiredForInitiatedTime:[csat.initiatedTime longValue]] && [self.conversation isCSATResponsePending])){
+    BOOL canShowFragment = (!csatUpdated && [self.conversation isCSATResponsePending]) ? [FCCSATUtil isCSATExpiredForInitiatedTime:[csat.initiatedTime longValue]] : true;
+    if(canShowFragment){
+        FCMessageData* messageData = ((FCMessageData *)[self.messages lastObject]);
         if(self.messages.count > 0) {
-            NSString *replyFragments = ((FCMessageData *)[self.messages lastObject]).replyFragments;
+            if([self.lastReplyMessageAlias isEqualToString:messageData.messageAlias]) {
+                return;
+            }
+            [self.replyTexts removeAllObjects];
+            [self.collectionView reloadData];
+            self.collectionViewDynamicConstraint.constant = 0;
+            NSString *replyFragments = messageData.replyFragments;
             if(replyFragments) {
-                NSData *jsonData = [replyFragments dataUsingEncoding:NSUTF8StringEncoding];
-                
-                NSArray *jsonArray = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:nil];
-                NSDictionary *jsonDict = jsonArray.firstObject;
-                if(jsonDict && ![jsonDict isKindOfClass:[NSNull class]] && jsonDict[@"fragmentType"] && [jsonDict[@"fragmentType"] integerValue] == FRESHCHAT_COLLECTION_FRAGMENT && jsonDict[@"fragments"]) {
-                    NSArray *fragmentArray = jsonDict[@"fragments"];
-                    for (NSDictionary *dictionary in fragmentArray) {
-                        if (dictionary[@"fragmentType"] && [dictionary[@"fragmentType"] integerValue] == FRESHCHAT_REPLY_FRAGMENT && dictionary[@"label"]) {
-                            NSString *label = trimString(dictionary[@"label"]);
-                            if (label.length > 0) {
-                                [self.replyTexts insertObject:label atIndex:[self.replyTexts count]];
+                hasReplyFragments = [FCMessageUtil hasReplyFragmentsIn:replyFragments];
+                if (!hasReplyFragments) {
+                    self.lastReplyMessageAlias = @"";
+                    [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+                    return;
+                }
+                self.lastReplyMessageAlias = messageData.messageAlias;
+                NSDictionary *jsonDict = [FCMessageUtil getReplyFragmentsIn:replyFragments].firstObject;
+                if(jsonDict && ![jsonDict isKindOfClass:[NSNull class]] && jsonDict[@"fragmentType"]) {
+                    NSInteger fragmentType = [jsonDict[@"fragmentType"] integerValue];
+                    if(fragmentType == FRESHCHAT_COLLECTION_FRAGMENT && jsonDict[@"fragments"]) {
+                        NSArray *fragmentArray = jsonDict[@"fragments"];
+                        for (NSDictionary *dictionary in fragmentArray) {
+                            if (dictionary[@"fragmentType"] && [dictionary[@"fragmentType"] integerValue] == FRESHCHAT_QUICK_REPLY_FRAGMENT && dictionary[@"label"]) {
+                                NSString *label = trimString(dictionary[@"label"]);
+                                if (label.length > 0) {
+                                    [self.replyTexts insertObject:label atIndex:[self.replyTexts count]];
+                                }
+                            }
+                            if (dictionary[@"fragmentType"] && [dictionary[@"fragmentType"] integerValue] == 1) {
+                                showTextBox = YES;
+                            }
+                            if ([self.replyTexts count] > 0) {
+                                hasReplyFragments = YES;
+                                self.collectionViewDynamicConstraint.constant = 5;
+                                if(showTextBox){
+                                    [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+                                } else{
+                                    [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+                                    self.bottomViewHeightConstraint.constant = 0.0;
+                                }
+                                [self.collectionView reloadData];
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self.collectionView layoutIfNeeded];
+                                });
                             }
                         }
-                        if (dictionary[@"fragmentType"] && [dictionary[@"fragmentType"] integerValue] == 1) {
-                            showTextBox = YES;
+                    } else if(fragmentType == FRESHCHAT_TEMPLATE_FRAGMENT) {
+                        NSNumber *messageId = messageData.messageId;
+                        if (messageId) {
+                            UIView<FCOutboundDelegate> *templateView = [FCTemplateFactory getTemplateDataSourceFrom:jsonDict andReplyTo:messageData.messageId withDelegate:self];
+                            if (templateView) {
+                                hasReplyFragments = YES;
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self updateBottomViewWith:templateView andHeight:50];
+                                    [templateView postOutboundEvent];
+                                });
+                            }
                         }
                     }
                 }
             }
         }
     }
-    
-    if([self.replyTexts count] == 0) {
-        self.collectionViewDynamicConstraint.constant = 0;
-    } else {
-        self.collectionViewDynamicConstraint.constant = 5;
-        if(showTextBox){
-            [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
-        } else{
-            [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-            self.bottomViewHeightConstraint.constant = 0.0;
-        }
-    }
-    
-    [self.collectionView reloadData];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.collectionView layoutIfNeeded];
-    });
 }
 
 -(NSArray *)fetchMessages{
@@ -1437,6 +1464,7 @@ typedef struct {
     FCCsat *csat = [self getCSATObject];
     //Check for CSAT Timeout state
     if([FCCSATUtil isCSATExpiredForInitiatedTime:[csat.initiatedTime longValue]] && [self.conversation isCSATResponsePending]){
+        self.lastReplyMessageAlias = @"";
         [FCCSATUtil deleteCSATAndUpdateConversation:csat];
         [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
         if(self.collectionViewDynamicConstraint.constant != 0) {
@@ -1446,6 +1474,7 @@ typedef struct {
     else{
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([self.conversation isCSATResponsePending] && !self.CSATView.isShowing && self.yesNoPrompt) { //Height check to avoid calling multiple times
+                self.lastReplyMessageAlias = @"";
                 if (self.bottomViewHeightConstraint.constant != YES_NO_PROMPT_HEIGHT){
                     NSMutableDictionary *eventsDict = [[NSMutableDictionary alloc] init];
                     if(self.channel.channelAlias){
@@ -1518,6 +1547,7 @@ typedef struct {
 }
 
 -(void)handleUserEvadedCSAT{
+    self.lastReplyMessageAlias = @"";
     HLCsatHolder *csatHolder = [[HLCsatHolder alloc]init];
     csatHolder.isIssueResolved = self.CSATView.isResolved;
     [self storeAndPostCSAT:csatHolder];
@@ -1533,7 +1563,7 @@ typedef struct {
                                                                withParams:eventsDict];
     [FCEventsHelper postNotificationForEvent:outEvent];
     [self.view endEditing:true];
-    [self checkForReplyFragments];
+    [self checkForReplyFragmentAfterCSATUpdate:true];
 }
 
 -(void)submittedCSAT:(HLCsatHolder *)csatHolder{
@@ -1556,7 +1586,7 @@ typedef struct {
     
     [self storeAndPostCSAT:csatHolder];
     [self.view endEditing:true];
-    [self checkForReplyFragments];
+    [self checkForReplyFragmentAfterCSATUpdate:true];
 }
 
 -(void)storeAndPostCSAT:(HLCsatHolder *)csatHolder{
@@ -1713,4 +1743,15 @@ typedef struct {
     });
 }
 
+- (void)dismissAndSendFragment:(NSArray *)fragments inReplyTo:(NSNumber *)messageID {
+    [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+    [FCMessageHelper uploadNewMessage:fragments onConversation:self.conversation onChannel:self.channel inReplyTo:messageID];
+}
+
+- (void)updateHeightConstraint:(int)height {
+    self.bottomViewHeightConstraint.constant = height;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        [self scrollTableViewToLastCell];
+    });
+}
 @end

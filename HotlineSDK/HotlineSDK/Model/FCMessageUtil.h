@@ -89,10 +89,11 @@ NS_ASSUME_NONNULL_BEGIN
 +(BOOL) setBinaryImage:(NSData *)imageData forMessageId:(NSString *)messageId;
 +(BOOL) setBinaryImageThumbnail:(NSData *)imageData forMessageId:(NSString *)messageId;
 -(BOOL) isMarketingMessage;
-+(NSArray *)getAllMesssageForChannel:(FCChannels *)channel;
 +(bool) hasUserMessageInContext:(NSManagedObjectContext *)context;
 +(long long) lastMessageTimeInContext:(NSManagedObjectContext *)context;
 +(long) daysSinceLastMessageInContext:(NSManagedObjectContext *)context;
++(BOOL)hasReplyFragmentsIn:(NSString*)data;
++(NSArray<NSDictionary *> *)getReplyFragmentsIn:(NSString*)data;
 
 @end
 

@@ -83,13 +83,13 @@ __weak static id <KonotorDelegate> _delegate;
     return [FCAudioPlayer currentPlaying:nil set:NO ];
 }
 
-+(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel{
-    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo onConversation:conversation];
++(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel inReplyTo:(NSNumber*)messageId{
+    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo onConversation:conversation inReplyTo:messageId];
     [channel addMessagesObject:message];
     [[FCDataManager sharedInstance]save];
     [FCMessageServices uploadNewMessage:message toConversation:conversation onChannel:channel];    
     [[FCMessageHelper delegate] didStartUploadingNewMessage];
-    
+    [self postOutBoundEventsForChannel:channel onConversation:conversation];
 }
 
 +(void)uploadNewMsgWithImageData:(NSData*)imageData textFeed:(NSString *)caption onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
@@ -162,7 +162,7 @@ __weak static id <KonotorDelegate> _delegate;
         [fragmentsInfo addObject:textFragmentInfo];
     }
     
-    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo onConversation:conversation];
+    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo onConversation:conversation inReplyTo:nil];
     [channel addMessagesObject:message];
     [[FCDataManager sharedInstance]save];
     
@@ -199,7 +199,10 @@ __weak static id <KonotorDelegate> _delegate;
     NSArray *freshchatRegexArray = [FCUserDefaults getObjectForKey:FRESTCHAT_DEFAULTS_MESSAGE_MASK];
     textFeedback = freshchatRegexArray.count > 0 ? [FCUtilities applyRegexForInputText:textFeedback] : textFeedback;
     [self uploadNewMsgWithImageData:imageData textFeed:textFeedback onConversation:conversation andChannel:channel];
-    
+    [self postOutBoundEventsForChannel:channel onConversation:conversation];
+}
+
++(void) postOutBoundEventsForChannel:(FCChannels *)channel onConversation:(FCConversations *)conversation {
     NSMutableDictionary *eventsDict = [[NSMutableDictionary alloc] init];
     if(channel.channelAlias){
         [eventsDict setObject:channel.channelAlias forKey:@(FCPropertyChannelID)];
