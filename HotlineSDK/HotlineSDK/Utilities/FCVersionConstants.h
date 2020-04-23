@@ -10,6 +10,6 @@
 #define FCVersionConstants_h
 
 #define FRESHCHAT_SDK_VERSION @"3.4.0"
-#define FRESHCHAT_SDK_BUILD_NUMBER @"340"
+#define FRESHCHAT_SDK_BUILD_NUMBER @"349"
 
 #endif /* FCVersionConstants_h */
