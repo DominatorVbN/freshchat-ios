@@ -57,7 +57,7 @@
         [self.selectionView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[selectionLabel]|" options:0 metrics:nil views:views]];
         [self.selectionView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-8-[selectionLabel]-5-[imageView]-8@500-|" options:0 metrics:nil views:views]];
         [FCAutolayoutHelper centerY:dropDownImageView onView:self.selectionView];
-        [self addSelectionView];
+        [self addSelectionViewForFirstTime:true];
         
         self.pickerView = [[UIPickerView alloc] init];
         self.pickerView.accessibilityIdentifier = @"FCDropDownPickerView";
@@ -126,7 +126,7 @@
 
 - (void)cancelButtonPressed {
     [[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    [self addSelectionView];
+    [self addSelectionViewForFirstTime:false];
 }
 
 - (void)addPickerView {
@@ -148,7 +148,7 @@
     [self orientationChange];
 }
 
--(void)addSelectionView {
+-(void)addSelectionViewForFirstTime:(BOOL)firstTime {
     [[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
     showingPicker = false;
     [self addSubview:self.selectionView];
@@ -160,7 +160,7 @@
     } else {
         [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0.5-[selectionView]-0.5-|" options:0 metrics:nil views:views]];
     }
-    [self.delegate updateHeightConstraint:50];
+    [self.delegate updateHeightConstraint:50 andShouldScrollTolast:firstTime];
 }
 
 - (void)postOutboundEvent {
@@ -172,9 +172,10 @@
 
 -(void)orientationChange {
     if (showingPicker) {
-        float viewHeight = ([[UIDevice currentDevice] orientation] == UIDeviceOrientationPortrait ? [self.theme getDropDownPickerViewPortraitHeight] : [self.theme getDropDownPickerViewLandScapeHeight]) + 44;
+        CGSize deviceSize = [[UIScreen mainScreen] bounds].size;
+        float viewHeight = (deviceSize.height > deviceSize.width ? [self.theme getDropDownPickerViewPortraitHeight] : [self.theme getDropDownPickerViewLandScapeHeight]) + 44;
         
-        [self.delegate updateHeightConstraint: viewHeight];
+        [self.delegate updateHeightConstraint: viewHeight andShouldScrollTolast:false];
     }
 }
 

@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol FCTemplateDelegate <NSObject>
 - (void) dismissAndSendFragment:(NSArray *)fragments inReplyTo:(NSNumber *)messageID;
-- (void) updateHeightConstraint:(int) height;
+- (void) updateHeightConstraint:(int) height andShouldScrollTolast:(BOOL) scrollToLast;
 @end
 
 @protocol FCOutboundDelegate <NSObject>

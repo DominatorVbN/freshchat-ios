@@ -765,7 +765,10 @@ typedef struct {
         if(self.messagesDisplayedCount > self.messageCount){
             self.messagesDisplayedCount = self.messageCount;
         }
-        [self performSelector:@selector(refreshView:) withObject:@(oldnumber) afterDelay:0];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+            [self refreshView:@(oldnumber) forFirstTime:true];
+        });
+        
         return cell;
     }
     return nil;
@@ -874,7 +877,7 @@ typedef struct {
                 [self rebuildMessages];
             }
             [self updateTitle];
-            [self refreshView];
+            [self refreshView:nil forFirstTime:true];
         }
     }];
 }
@@ -1243,10 +1246,10 @@ typedef struct {
 }
 
 - (void) refreshView {
-    [self refreshView:nil];
+    [self refreshView:nil forFirstTime:false];
 }
 
-- (void) refreshView:(id)obj{
+- (void) refreshView:(id)obj forFirstTime:(BOOL)firstTime{
     self.messageCountPrevious=(int)self.messages.count;
     self.messages = [self fetchMessages];
     self.messageCount=(int)[self.messages count];
@@ -1260,10 +1263,12 @@ typedef struct {
     [self checkForReplyFragmentAfterCSATUpdate:false];
     
     [FCMessages markAllMessagesAsReadForChannel:self.channel];
-    if(obj==nil)
-        [self scrollTableViewToLastCell];
-    else{
-        [self scrollTableViewToCell:((NSNumber*)obj).intValue];
+    if (self.messageCountPrevious < self.messageCount || firstTime) {
+        if(obj==nil)
+            [self scrollTableViewToLastCell];
+        else{
+            [self scrollTableViewToCell:((NSNumber*)obj).intValue];
+        }
     }
     if(self.initalLoading) {
         [self.loadingView stopAnimating];
@@ -1746,12 +1751,15 @@ typedef struct {
 - (void)dismissAndSendFragment:(NSArray *)fragments inReplyTo:(NSNumber *)messageID {
     [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
     [FCMessageHelper uploadNewMessage:fragments onConversation:self.conversation onChannel:self.channel inReplyTo:messageID];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            [self scrollTableViewToLastCell];
+    });
 }
 
-- (void)updateHeightConstraint:(int)height {
+- (void)updateHeightConstraint:(int)height andShouldScrollTolast:(BOOL) scrollToLast {
     self.bottomViewHeightConstraint.constant = height;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    if (scrollToLast) {
         [self scrollTableViewToLastCell];
-    });
+    }
 }
 @end
