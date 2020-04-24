@@ -9,7 +9,7 @@
 
 #include "FCMessageFragments.h"
 #include "FCFragmentData.h"
-#include "FCConstants.h"
+
 
 @implementation FCMessageFragments
 
@@ -57,7 +57,7 @@
             NSMutableArray *fragmentDictArr = [[NSMutableArray alloc] init];
             for(int i=0;i<fragmentsArr.count;i++) {
                 FCMessageFragments *fragment = fragmentsArr[i];
-                [fragmentDictArr insertObject:[fragment toDictionary] atIndex:0];
+                [fragmentDictArr insertObject:[fragment dictionaryValue] atIndex:0];
             }
             return fragmentDictArr;
         }
@@ -178,7 +178,7 @@
         return nil;
     }
 
-    - (NSDictionary *)toDictionary {
+    - (NSDictionary *)dictionaryValue {
         NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
         dict[@"content"] = [self content];
         dict[@"contentType"] = [self contentType];
@@ -197,6 +197,35 @@
 
 
 @implementation FragmentData
+
+-(id)initWith:(NSDictionary *)fragmentDictionary {
+    self = [super init];
+    if (self && fragmentDictionary) {
+        self.content = [fragmentDictionary objectForKey:@"content"];
+        self.contentType = [fragmentDictionary objectForKey:@"contentType"];
+        self.type = [NSString stringWithFormat:@"%@",fragmentDictionary[@"fragmentType"]];
+        self.index = [fragmentDictionary objectForKey:@"position"];
+        self.status = [[NSNumber alloc]initWithInt:ToBeUploaded];
+        
+        NSMutableDictionary *fragmentInfo = [fragmentDictionary mutableCopy];
+        
+        [fragmentInfo removeObjectsForKeys:@[@"content",
+                                             @"contentType",
+                                             @"position",
+                                             @"fragmentType"]];
+        
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:fragmentInfo
+                                                           options:NSJSONWritingPrettyPrinted
+                                                             error:nil];
+        NSString *jsonString = @"";
+        if (jsonData) {
+            jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+            
+        }
+        self.extraJSON = jsonString;
+    }
+    return self;
+}
 
 -(void)storeImageDataOfMessage:(FCMessageData *)message withCompletion:(void (^)())completion {
     if(![self.content isEqualToString:@""]) {
@@ -259,23 +288,30 @@
     return url;
 }
 
-- (BOOL)isQuickReplyFragment {
-    NSData *extraJSONData = [self.extraJSON dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *err;
-    NSDictionary *extraJSONDict = [NSJSONSerialization JSONObjectWithData:extraJSONData
-                                                                  options:0
-                                                                    error:&err];
-    if(!err && extraJSONDict[@"fragments"]) {
-        NSArray *fragments = extraJSONDict[@"fragments"];
-        for(int i=0; i< fragments.count; i++) {
-            NSDictionary *fragmentDictionary = fragments[i];
-            if(fragmentDictionary[@"fragmentType"] && [fragmentDictionary[@"fragmentType"] intValue] == FRESHCHAT_REPLY_FRAGMENT) {
-                return true;
-            }
+- (NSDictionary *)dictionaryValue {
+    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc]init];
+    if (![self.extraJSON isEqualToString:@""]) {
+        NSData *data = [self.extraJSON dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *error;
+        NSMutableDictionary *extraJSON = [NSJSONSerialization JSONObjectWithData:data
+                                                                         options:0
+                                                                           error:&error];
+        if (extraJSON) {
+            [dictionary addEntriesFromDictionary:extraJSON];
         }
     }
+    [self setValueInDictionary:dictionary forObjectKey:@"content" andDictionaryKey:@"content"];
+    [self setValueInDictionary:dictionary forObjectKey:@"contentType" andDictionaryKey:@"contentType"];
+    [self setValueInDictionary:dictionary forObjectKey:@"type" andDictionaryKey:@"fragmentType"];
+    [self setValueInDictionary:dictionary forObjectKey:@"index" andDictionaryKey:@"position"];
     
-    return false;
+    return dictionary;
+}
+
+-(void)setValueInDictionary:(NSMutableDictionary *)dictionary forObjectKey:(NSString*)objectKey andDictionaryKey:(NSString *)dictionaryKey{
+    if (objectKey && [self valueForKey:objectKey]) {
+        [dictionary setObject:[self valueForKey:objectKey] forKey:dictionaryKey];
+    }
 }
 
 @end

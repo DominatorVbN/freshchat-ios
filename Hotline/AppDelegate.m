@@ -12,7 +12,7 @@
 #import <Crashlytics/Crashlytics.h>
 #import "InAppBrowser.h"
 #import "Hotline_Demo-Swift.h"
-
+#import <UserNotifications/UserNotifications.h>
 
 @interface AppDelegate ()
 
@@ -210,12 +210,15 @@
 }
 
 -(void)registerAppForNotifications {
-    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
-        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
-        [[UIApplication sharedApplication] registerForRemoteNotifications];
+    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"10.0")) {
+        UNUserNotificationCenter *notifcenter = [UNUserNotificationCenter currentNotificationCenter];
+        [notifcenter requestAuthorizationWithOptions:(UNAuthorizationOptionBadge | UNAuthorizationOptionAlert |UNAuthorizationOptionSound) completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            NSLog(@"Succes %d", granted);
+        }];
     }else{
-        [[UIApplication sharedApplication] registerForRemoteNotificationTypes: (UIRemoteNotificationTypeNewsstandContentAvailability| UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
     }
+    [[UIApplication sharedApplication] registerForRemoteNotifications];
 }
 
 - (void)application:(UIApplication *)app didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)devToken {

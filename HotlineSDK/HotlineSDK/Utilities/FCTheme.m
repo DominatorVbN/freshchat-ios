@@ -1134,4 +1134,34 @@
     return value > 0.0 ? value : 35.0;
 }
 
+#pragma mark Quick Reply
+
+-(UIColor *)getDropDownBarBorderColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.DropDownBarStyle.borderColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getDropDownBarFont{
+    return [self getFontValueWithKey:@"ConversationDetail.DropDownBarStyle.textStyle" andDefaultSize:FD_FONT_SIZE_MEDIUM];
+}
+
+-(UIFont *)getDropDownPickerOptionFont{
+    return [self getFontValueWithKey:@"ConversationDetail.DropDownPickerStyle.optionTextStyle" andDefaultSize:FD_FONT_SIZE_MEDIUM];
+}
+
+-(float)getDropDownPickerOptionHeight{
+    CGFloat value = [[self fetchThemeValueForKey:@"ConversationDetail.DropDownPickerStyle.rowHeight"] floatValue];
+    return value > 0.0 ? value : 44.0;
+}
+
+-(float)getDropDownPickerViewPortraitHeight{
+    CGFloat value = [[self fetchThemeValueForKey:@"ConversationDetail.DropDownPickerStyle.viewPortraitHeight"] floatValue];
+    return value > 0.0 ? value : 220.0;
+}
+
+-(float)getDropDownPickerViewLandScapeHeight{
+    CGFloat value = [[self fetchThemeValueForKey:@"ConversationDetail.DropDownPickerStyle.viewLandScapeHeight"] floatValue];
+    return value > 0.0 ? value : 220.0;
+}
+
 @end

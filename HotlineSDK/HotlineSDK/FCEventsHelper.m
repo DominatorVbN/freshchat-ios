@@ -47,7 +47,8 @@
              @(FCPropertyRating)            : @"FCPropertyRating",
              @(FCPropertyResolutionStatus)  : @"FCPropertyResolutionStatus",
              @(FCPropertyComment)           : @"FCPropertyComment",
-             @(FCPropertyURL)               : @"FCPropertyURL"
+             @(FCPropertyURL)               : @"FCPropertyURL",
+             @(FCPropertyOption)            : @"FCPropertyOption"
              };
 }
 

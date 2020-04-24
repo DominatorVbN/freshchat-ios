@@ -56,7 +56,9 @@
              @(FCEventScreenView)          : @"FCEventScreenView",
              @(FCEventMessageReceive)      : @"FCEventMessageReceive",
              @(FCEventNotificationReceive) : @"FCEventNotificationReceive",
-             @(FCEventIdTokenStatusChange) : @"FCEventIdTokenStatusChange"
+             @(FCEventIdTokenStatusChange) : @"FCEventIdTokenStatusChange",
+             @(FCEventDropDownSelect)      : @"FCEventDropDownSelect",
+             @(FCEventDropDownReceive)     : @"FCEventDropDownReceive"
              };
 }
 

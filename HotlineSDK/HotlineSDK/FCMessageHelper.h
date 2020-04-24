@@ -52,8 +52,8 @@
 +(void)uploadImage:(UIImage *)image onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel;
 +(void)uploadImage:(UIImage *)image withCaption:(NSString *)caption onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel;
 
-+(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel;
-+(void)uploadNewMsgWithImageData:(NSData *)imageData textFeed:(NSString *)caption onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel;
++(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel inReplyTo:(NSNumber*)messageID;
++(void)uploadNewMsgWithImageData:(NSData *)image textFeed:(NSString *)caption onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel;
 +(void) uploadVoiceRecordingWithMessageID: (NSString *)MessageID toConversationID: (NSString *)ConversationID onChannel:(FCChannels*)channel;
 
 //TODO: The following are indirectly called by KonotorDelegate and need to be removed.

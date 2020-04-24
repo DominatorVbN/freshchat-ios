@@ -20,6 +20,7 @@
 #import "FCFileFragment.h"
 #import "FCDateUtil.h"
 #import "FCUnsupportedFragment.h"
+#import "FCConstants.h"
 
 @implementation FCUserMessageCell
 
@@ -120,7 +121,7 @@
     
     for(int i=0; i<currentMessage.fragments.count; i++) {
         FragmentData *fragment = currentMessage.fragments[i];
-        if ([fragment.type isEqualToString:@"1"]) {
+        if ([fragment.type isEqualToString:@"1"] || [fragment.type isEqualToString: [@(FRESHCHAT_QUICK_REPLY_FRAGMENT) stringValue]]) {
             //HTML
             FCHtmlFragment *htmlFragment = [[FCHtmlFragment alloc]initFragment:fragment withFont:[[FCTheme sharedInstance] userMessageFont] andType:2];
             htmlFragment.mcDelegate = self.delegate;
@@ -143,7 +144,7 @@
             fileFragment.delegate = self.delegate;
             [fragmensViewArr addObject:[@"button_" stringByAppendingFormat:@"%d",i]];
             //NSLog(@"Button");
-        } else if(![fragment isQuickReplyFragment]) {
+        } else {
             //For Unknown fragment
             FCUnsupportedFragment *unknownFragment = [[FCUnsupportedFragment alloc] initWithFragment:fragment];
             [views setObject:unknownFragment forKey:[@"button_" stringByAppendingFormat:@"%d",i]];

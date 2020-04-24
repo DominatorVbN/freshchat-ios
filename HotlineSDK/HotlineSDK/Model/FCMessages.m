@@ -10,6 +10,8 @@
 #import "FCLocalization.h"
 #import "FCRemoteConfig.h"
 #import "FCJWTAuthValidator.h"
+#import "FCTemplateFactory.h"
+#include "FCConstants.h"
 
 @implementation FCMessages
 
@@ -28,6 +30,9 @@
     @dynamic uploadStatus;
     @dynamic isDownloading;
     @dynamic messageType;
+    @dynamic replyToMessage;
+    @dynamic messageId;
+    @dynamic replyFragments;
 
     static BOOL messageExistsDirty = YES;
     static BOOL messageTimeDirty = YES;
@@ -50,7 +55,7 @@
     return messageID;
 }
 
-+(FCMessages *)saveMessageInCoreData:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation{
++(FCMessages *)saveMessageInCoreData:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation inReplyTo:(NSNumber *)messageID{
     FCDataManager *datamanager = [FCDataManager sharedInstance];
     NSManagedObjectContext *context = [datamanager mainObjectContext];
     FCMessages *message = [NSEntityDescription insertNewObjectForEntityForName:FRESHCHAT_MESSAGES_ENTITY inManagedObjectContext:context];
@@ -62,6 +67,8 @@
     message.belongsToConversation = conversation;
     message.isWelcomeMessage = NO;
     message.isMarkedForUpload = YES;
+    [message setMessageId:@0];
+    [message setReplyToMessage:messageID];
     for(int i=0;i<fragmentsInfo.count;i++) {
         NSDictionary *fragmentInfo = fragmentsInfo[i];
         [FCMessageFragments createUploadFragment:fragmentInfo toMessage:message];
@@ -217,6 +224,7 @@
     [newMessage setCreatedMillis:[message valueForKey:@"createdMillis"]];
     [newMessage setMarketingId:[message valueForKey:@"marketingId"]];
     [newMessage setMessageUserAlias:[message valueForKey:@"messageUserAlias"]];
+    [newMessage setMessageId:[message valueForKey:@"messageId"]];
     NSString *jsonString = @"";
     if ([message valueForKey:@"replyFragments"]) {
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[message valueForKey:@"replyFragments"]
@@ -248,6 +256,7 @@
     message.messageUserAlias = self.messageUserAlias;
     message.replyFragments = self.replyFragments;
     message.fragments = [FCMessageFragments getAllFragments:self];
+    message.messageId = [self messageId];
     return message;
 }
 
@@ -382,11 +391,14 @@
         if([fragment.type isEqualToString:@"2"]) {
             hasImage = YES;
         } else if([fragment.type isEqualToString:@"1"]) {
-            if (textLabel.length > 0) {
-                textLabel = [NSString stringWithFormat:@"%@ %@", textLabel, fragment.content];
-            } else {
-                textLabel = [NSString stringWithFormat:@"%@", fragment.content];
+            textLabel = [self appendString:fragment.content toString: textLabel];
+        } else if ([fragment.type isEqualToString: [@(FRESHCHAT_QUICK_REPLY_FRAGMENT) stringValue]]) {
+            NSDictionary *dictionaryValue = fragment.dictionaryValue;
+            NSString *label = dictionaryValue[@"label"];
+            if(!label || trimString(label).length == 0) {
+                label = dictionaryValue[@"customReplyText"] != nil ? dictionaryValue[@"customReplyText"] : @"";
             }
+            textLabel = [self appendString:trimString(label) toString: textLabel];
         } else if ([fragment.type isEqualToString:@"5"]) {
             NSData *extraJSONData = [fragment.extraJSON dataUsingEncoding:NSUTF8StringEncoding];
             NSDictionary *extraJSONDict = [NSJSONSerialization JSONObjectWithData:extraJSONData options:0 error:nil];
@@ -397,27 +409,28 @@
             
             if (label) {
                 if (textLabel.length > 0) {
-                    textLabel = [NSString stringWithFormat:@"%@ 🔘 %@", textLabel, label];
-                } else {
-                    textLabel = [NSString stringWithFormat:@"🔘 %@", label];
+                    textLabel = [self appendString:[NSString stringWithFormat:@"🔘 %@", label] toString: textLabel];
                 }
             }
         }
-        if([fragment isQuickReplyFragment]) {
-            hasQuickReplyFragment = YES;
-        }
     }
+    
     if(hasImage) {
         description = [NSString stringWithFormat:@"%@📷", description];
     }
     
-    if(textLabel.length > 0) {
-        if (description.length > 0) {
-            description = [NSString stringWithFormat:@"%@ %@", description, textLabel];
-        } else {
-            description = [NSString stringWithFormat:@"%@", textLabel];
+    if([FCMessageUtil hasReplyFragmentsIn:self.replyFragments]) {
+        hasQuickReplyFragment = YES;
+        NSArray<NSDictionary *>* fragments = [FCMessageUtil getReplyFragmentsIn:self.replyFragments];
+        if (fragments && fragments.count > 0) {
+           TemplateFragmentData *fragmentData = [FCTemplateFactory getFragmentFrom:fragments.firstObject];
+            if ([fragmentData.templateType isEqualToString:FRESHHCAT_TEMPLATE_DROPDOWN]) {
+                description = [NSString stringWithFormat:@"🔽%@", description];
+            }
         }
     }
+    
+    description = [self appendString:textLabel toString:description];
     
     if(description.length == 0 && !hasQuickReplyFragment) {
         description = @"❗️";
@@ -425,7 +438,16 @@
     return [description substringToIndex: MIN(300, [description length])];
 }
 
-
+-(NSString *)appendString:(NSString *) appendString toString:(NSString *) sourceString {
+    if (sourceString && appendString && appendString.length > 0) {
+        if (sourceString.length > 0) {
+            sourceString = [NSString stringWithFormat:@"%@ %@", sourceString, appendString];
+        } else {
+            sourceString = [NSString stringWithFormat:@"%@", appendString];
+        }
+    }
+    return sourceString;
+}
 
 @end
 

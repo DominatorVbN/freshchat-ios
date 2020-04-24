@@ -30,6 +30,25 @@
 		02C480B72377E07700EDADB2 /* FCEventsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B52377E07700EDADB2 /* FCEventsManager.m */; };
 		02C480BA2377E27200EDADB2 /* FCEventsConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C480B82377E27200EDADB2 /* FCEventsConfig.h */; };
 		02C480BB2377E27200EDADB2 /* FCEventsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B92377E27200EDADB2 /* FCEventsConfig.m */; };
+		32346524242B2721000F4CEB /* FCTemplateSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDD9242A1C5D00B1B71F /* FCTemplateSection.h */; };
+		32346525242B2725000F4CEB /* FCTemplateSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */; };
+		32857E0F24225FA300E841F4 /* FCTemplateFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 32857E0D24225FA300E841F4 /* FCTemplateFactory.h */; };
+		32857E1024225FA300E841F4 /* FCTemplateFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 32857E0E24225FA300E841F4 /* FCTemplateFactory.m */; };
+		328ABDBD2429D04600B1B71F /* FreshchatSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDBC2429D04600B1B71F /* FreshchatSDKTest.m */; };
+		328ABDBF2429D04600B1B71F /* libFreshchatSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 35591AB11B9ED58100BC0B60 /* libFreshchatSDK.a */; };
+		328ABDC62429D15C00B1B71F /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDC52429D15C00B1B71F /* OCMock.framework */; };
+		328ABDC82429D1CE00B1B71F /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDC72429D1CE00B1B71F /* WebKit.framework */; };
+		328ABDCA2429D1EE00B1B71F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDC92429D1EE00B1B71F /* AVFoundation.framework */; };
+		328ABDCC2429D1FC00B1B71F /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDCB2429D1FC00B1B71F /* CoreData.framework */; };
+		328ABDCE2429D21600B1B71F /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDCD2429D21600B1B71F /* Photos.framework */; };
+		328ABDD02429D23100B1B71F /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDCF2429D23100B1B71F /* AudioToolbox.framework */; };
+		328ABDD62429D29F00B1B71F /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDD52429D29F00B1B71F /* SystemConfiguration.framework */; };
+		328ABDD82429D2B800B1B71F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDD72429D2B800B1B71F /* CoreMedia.framework */; };
+		328ABDE0242A3DA200B1B71F /* FCDropDownViewModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDDE242A3DA200B1B71F /* FCDropDownViewModel.h */; };
+		328ABDE1242A3DA200B1B71F /* FCDropDownViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDF242A3DA200B1B71F /* FCDropDownViewModel.m */; };
+		32DF18F7244741FD00B2AE58 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32DF18F6244741FD00B2AE58 /* CoreServices.framework */; };
+		32E406EF24321F49003C31CA /* FCTemplateDropDownView.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E406ED24321F49003C31CA /* FCTemplateDropDownView.h */; };
+		32E406F024321F49003C31CA /* FCTemplateDropDownView.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E406EE24321F49003C31CA /* FCTemplateDropDownView.m */; };
 		354F26C61D0AED2F00DCD158 /* FCKeyChainStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 354F26C51D0AED2F00DCD158 /* FCKeyChainStore.m */; };
 		356727E01D216842007ECF89 /* FCLocalNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = 356727DF1D216842007ECF89 /* FCLocalNotification.m */; };
 		35B2EF871D000E620014867F /* FCContainerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B2EECE1D000E620014867F /* FCContainerController.m */; };
@@ -198,6 +217,16 @@
 		EAD751E520EF9B44003DE477 /* FCLocaleConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = EAD751E420EF9B44003DE477 /* FCLocaleConstants.h */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		328ABDC02429D04600B1B71F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 843DD24B178594180053E19E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 35591A9B1B9ED58100BC0B60;
+			remoteInfo = FreshchatSDK;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		35591AAC1B9ED58100BC0B60 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -222,6 +251,29 @@
 		02C480B52377E07700EDADB2 /* FCEventsManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsManager.m; sourceTree = "<group>"; };
 		02C480B82377E27200EDADB2 /* FCEventsConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsConfig.h; sourceTree = "<group>"; };
 		02C480B92377E27200EDADB2 /* FCEventsConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsConfig.m; sourceTree = "<group>"; };
+		32857E0D24225FA300E841F4 /* FCTemplateFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCTemplateFactory.h; sourceTree = "<group>"; };
+		32857E0E24225FA300E841F4 /* FCTemplateFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCTemplateFactory.m; sourceTree = "<group>"; };
+		328ABDBA2429D04600B1B71F /* FreshchatSDKTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreshchatSDKTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		328ABDBC2429D04600B1B71F /* FreshchatSDKTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FreshchatSDKTest.m; sourceTree = "<group>"; };
+		328ABDBE2429D04600B1B71F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		328ABDC52429D15C00B1B71F /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OCMock.framework; sourceTree = "<group>"; };
+		328ABDC72429D1CE00B1B71F /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDC92429D1EE00B1B71F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDCB2429D1FC00B1B71F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/CoreData.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDCD2429D21600B1B71F /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/Photos.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDCF2429D23100B1B71F /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDD12429D27800B1B71F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDD32429D29100B1B71F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDD52429D29F00B1B71F /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDD72429D2B800B1B71F /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/CoreMedia.framework; sourceTree = DEVELOPER_DIR; };
+		328ABDD9242A1C5D00B1B71F /* FCTemplateSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCTemplateSection.h; sourceTree = "<group>"; };
+		328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCTemplateSection.m; sourceTree = "<group>"; };
+		328ABDDE242A3DA200B1B71F /* FCDropDownViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCDropDownViewModel.h; sourceTree = "<group>"; };
+		328ABDDF242A3DA200B1B71F /* FCDropDownViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCDropDownViewModel.m; sourceTree = "<group>"; };
+		32DF18F6244741FD00B2AE58 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
+		32E406ED24321F49003C31CA /* FCTemplateDropDownView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCTemplateDropDownView.h; sourceTree = "<group>"; };
+		32E406EE24321F49003C31CA /* FCTemplateDropDownView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCTemplateDropDownView.m; sourceTree = "<group>"; };
+		32E406FB2434C68B003C31CA /* FreshchatModel 6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "FreshchatModel 6.xcdatamodel"; sourceTree = "<group>"; };
 		354F26C41D0AED2F00DCD158 /* FCKeyChainStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FCKeyChainStore.h; sourceTree = "<group>"; };
 		354F26C51D0AED2F00DCD158 /* FCKeyChainStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCKeyChainStore.m; sourceTree = "<group>"; };
 		35591AB11B9ED58100BC0B60 /* libFreshchatSDK.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFreshchatSDK.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -543,6 +595,23 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		328ABDB72429D04600B1B71F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				32DF18F7244741FD00B2AE58 /* CoreServices.framework in Frameworks */,
+				328ABDD82429D2B800B1B71F /* CoreMedia.framework in Frameworks */,
+				328ABDD62429D29F00B1B71F /* SystemConfiguration.framework in Frameworks */,
+				328ABDD02429D23100B1B71F /* AudioToolbox.framework in Frameworks */,
+				328ABDCE2429D21600B1B71F /* Photos.framework in Frameworks */,
+				328ABDCC2429D1FC00B1B71F /* CoreData.framework in Frameworks */,
+				328ABDCA2429D1EE00B1B71F /* AVFoundation.framework in Frameworks */,
+				328ABDC82429D1CE00B1B71F /* WebKit.framework in Frameworks */,
+				328ABDC62429D15C00B1B71F /* OCMock.framework in Frameworks */,
+				328ABDBF2429D04600B1B71F /* libFreshchatSDK.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		35591AA91B9ED58100BC0B60 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -569,6 +638,45 @@
 				021DA7CA23E1814F00CA7F02 /* FCAnimatedImageView.m */,
 			);
 			name = FCGIFSupport;
+			sourceTree = "<group>";
+		};
+		32857E0C24225F5000E841F4 /* TemplateModels */ = {
+			isa = PBXGroup;
+			children = (
+				32857E0D24225FA300E841F4 /* FCTemplateFactory.h */,
+				32857E0E24225FA300E841F4 /* FCTemplateFactory.m */,
+				328ABDD9242A1C5D00B1B71F /* FCTemplateSection.h */,
+				328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */,
+			);
+			path = TemplateModels;
+			sourceTree = "<group>";
+		};
+		328ABDBB2429D04600B1B71F /* FreshchatSDKTest */ = {
+			isa = PBXGroup;
+			children = (
+				328ABDC52429D15C00B1B71F /* OCMock.framework */,
+				328ABDBC2429D04600B1B71F /* FreshchatSDKTest.m */,
+				328ABDBE2429D04600B1B71F /* Info.plist */,
+			);
+			path = FreshchatSDKTest;
+			sourceTree = "<group>";
+		};
+		328ABDDD242A3D7400B1B71F /* TemplateViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				328ABDDE242A3DA200B1B71F /* FCDropDownViewModel.h */,
+				328ABDDF242A3DA200B1B71F /* FCDropDownViewModel.m */,
+			);
+			path = TemplateViewModel;
+			sourceTree = "<group>";
+		};
+		32E406EC24321F0B003C31CA /* Template */ = {
+			isa = PBXGroup;
+			children = (
+				32E406ED24321F49003C31CA /* FCTemplateDropDownView.h */,
+				32E406EE24321F49003C31CA /* FCTemplateDropDownView.m */,
+			);
+			path = Template;
 			sourceTree = "<group>";
 		};
 		354F26C31D0AED2F00DCD158 /* UICKeyChainStore-2.1.2 */ = {
@@ -620,6 +728,8 @@
 		35B2EEBB1D000E620014867F /* HotlineSDK */ = {
 			isa = PBXGroup;
 			children = (
+				328ABDDD242A3D7400B1B71F /* TemplateViewModel */,
+				32857E0C24225F5000E841F4 /* TemplateModels */,
 				950A3F83216740BE0000754E /* JWTProxy */,
 				35B2EED91D000E620014867F /* FreshchatSDK.h */,
 				35B2EEDA1D000E620014867F /* FreshchatSDK.m */,
@@ -853,6 +963,7 @@
 		35B2EF501D000E620014867F /* View */ = {
 			isa = PBXGroup;
 			children = (
+				32E406EC24321F0B003C31CA /* Template */,
 				C3D29199230D43B50034B27E /* ReplyCell */,
 				CEFA05531EE82EE700DC74CF /* MessageFragments */,
 				35B2EF511D000E620014867F /* FCArticleListCell.h */,
@@ -1002,6 +1113,7 @@
 				35591B721B9EDCCE00BC0B60 /* HotlineModels */,
 				35591B791B9EDD0700BC0B60 /* Vendor */,
 				358DD4CC1BB011A200B36E4E /* HotlineDB */,
+				328ABDBB2429D04600B1B71F /* FreshchatSDKTest */,
 				843DD255178594180053E19E /* Products */,
 				CEEDD0FF1F6BFC5A006CCF66 /* Frameworks */,
 			);
@@ -1012,6 +1124,7 @@
 			children = (
 				35591AB11B9ED58100BC0B60 /* libFreshchatSDK.a */,
 				358DD4EE1BB01A2100B36E4E /* FreshchatModels.bundle */,
+				328ABDBA2429D04600B1B71F /* FreshchatSDKTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1093,6 +1206,16 @@
 		CEEDD0FF1F6BFC5A006CCF66 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				32DF18F6244741FD00B2AE58 /* CoreServices.framework */,
+				328ABDD72429D2B800B1B71F /* CoreMedia.framework */,
+				328ABDD52429D29F00B1B71F /* SystemConfiguration.framework */,
+				328ABDD32429D29100B1B71F /* Foundation.framework */,
+				328ABDD12429D27800B1B71F /* Security.framework */,
+				328ABDCF2429D23100B1B71F /* AudioToolbox.framework */,
+				328ABDCD2429D21600B1B71F /* Photos.framework */,
+				328ABDCB2429D1FC00B1B71F /* CoreData.framework */,
+				328ABDC92429D1EE00B1B71F /* AVFoundation.framework */,
+				328ABDC72429D1CE00B1B71F /* WebKit.framework */,
 				CEEDD1001F6BFC5A006CCF66 /* ImageIO.framework */,
 			);
 			name = Frameworks;
@@ -1131,7 +1254,9 @@
 				C3D2919C230D43F10034B27E /* FCReplyCollectionCell.h in Headers */,
 				EAB0790B216CB7D000B701C9 /* FCJWTUtilities.h in Headers */,
 				CEDCBC041FD55E700054CFCE /* FCFooterView.h in Headers */,
+				32857E0F24225FA300E841F4 /* FCTemplateFactory.h in Headers */,
 				EA7B897D2187AAA300447052 /* FCUnsupportedFragmentErrorMsgs.h in Headers */,
+				328ABDE0242A3DA200B1B71F /* FCDropDownViewModel.h in Headers */,
 				021DA7CB23E1814F00CA7F02 /* FCAnimatedImage.h in Headers */,
 				EA035F1620D9515800165D00 /* FCAttributedText.h in Headers */,
 				C3D291A0230D79540034B27E /* FCReplyFlowLayout.h in Headers */,
@@ -1144,14 +1269,34 @@
 				024529482386E62C0018FC38 /* FCEventsConstants.h in Headers */,
 				EA6EB25E21070D4400411D5F /* FCCSATUtil.h in Headers */,
 				EAD751E520EF9B44003DE477 /* FCLocaleConstants.h in Headers */,
+				32E406EF24321F49003C31CA /* FCTemplateDropDownView.h in Headers */,
 				EAB07907216B696B00B701C9 /* FCUserAuthConfig.h in Headers */,
 				95EBEDF721A7FF390087F6D4 /* FCChannelUtil.h in Headers */,
+				32346524242B2721000F4CEB /* FCTemplateSection.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		328ABDB92429D04600B1B71F /* FreshchatSDKTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 328ABDC22429D04600B1B71F /* Build configuration list for PBXNativeTarget "FreshchatSDKTest" */;
+			buildPhases = (
+				328ABDB62429D04600B1B71F /* Sources */,
+				328ABDB72429D04600B1B71F /* Frameworks */,
+				328ABDB82429D04600B1B71F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				328ABDC12429D04600B1B71F /* PBXTargetDependency */,
+			);
+			name = FreshchatSDKTest;
+			productName = FreshchatSDKTest;
+			productReference = 328ABDBA2429D04600B1B71F /* FreshchatSDKTest.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		35591A9B1B9ED58100BC0B60 /* FreshchatSDK */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 35591AAE1B9ED58100BC0B60 /* Build configuration list for PBXNativeTarget "FreshchatSDK" */;
@@ -1196,6 +1341,11 @@
 				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = Freshdesk;
 				TargetAttributes = {
+					328ABDB92429D04600B1B71F = {
+						CreatedOnToolsVersion = 11.3.1;
+						DevelopmentTeam = PKUQ4ZWJH3;
+						ProvisioningStyle = Automatic;
+					};
 					358DD4ED1BB01A2100B36E4E = {
 						CreatedOnToolsVersion = 6.4;
 					};
@@ -1221,11 +1371,19 @@
 				35591A9B1B9ED58100BC0B60 /* FreshchatSDK */,
 				358DD4ED1BB01A2100B36E4E /* FreshchatModels */,
 				35E56EDF1C7CC6420089CEFB /* Documentation */,
+				328ABDB92429D04600B1B71F /* FreshchatSDKTest */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		328ABDB82429D04600B1B71F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		358DD4EC1BB01A2100B36E4E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1252,6 +1410,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		328ABDB62429D04600B1B71F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				328ABDBD2429D04600B1B71F /* FreshchatSDKTest.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		35591A9C1B9ED58100BC0B60 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1292,6 +1458,7 @@
 				CE8C7A671F6C216B00E77494 /* FDImageCacheConfig.m in Sources */,
 				CE8C7A6B1F6C216B00E77494 /* FDWebImageDecoder.m in Sources */,
 				35D4E8171D118E9000EFFE07 /* FCArticlesController.m in Sources */,
+				32E406F024321F49003C31CA /* FCTemplateDropDownView.m in Sources */,
 				35B2EFAD1D000E620014867F /* FCMemLogger.m in Sources */,
 				CE340D2C1F3077610095A50E /* FCAttributedText.m in Sources */,
 				CE64FEE71F3C37A000291669 /* FCParticipants.m in Sources */,
@@ -1309,6 +1476,7 @@
 				CE642C201F308C1D00264CA0 /* FCUserMessageCell.m in Sources */,
 				35D4E81C1D118E9000EFFE07 /* FCImagePreviewController.m in Sources */,
 				35B2EFA51D000E620014867F /* FCCoreServices.m in Sources */,
+				32857E1024225FA300E841F4 /* FCTemplateFactory.m in Sources */,
 				CE8C7A821F6C216B00E77494 /* UIImage+WebP.m in Sources */,
 				35B2EFA81D000E620014867F /* FCServiceRequest.m in Sources */,
 				35B2EFAC1D000E620014867F /* FCIndexManager.m in Sources */,
@@ -1396,6 +1564,7 @@
 				35B2EF981D000E620014867F /* FCDataManager.m in Sources */,
 				CEFA055B1EE82F2000DC74CF /* FCHtmlFragment.m in Sources */,
 				EA306AA621B7C96B005211E4 /* FCMessageMaskConfig.m in Sources */,
+				32346525242B2725000F4CEB /* FCTemplateSection.m in Sources */,
 				951A3CD421996DF90096E816 /* FCJWTViewController.m in Sources */,
 				EACA6D1A22F03CA8000F1AC9 /* FCEventsHelper.m in Sources */,
 				CEA6AC3A1DD94C6D00B60002 /* FCGrowingTextView.m in Sources */,
@@ -1403,6 +1572,7 @@
 				3C0651041E38C8A100F8B190 /* FCMessagePoller.m in Sources */,
 				35B2EF9D1D000E620014867F /* FCChannelUpdater.m in Sources */,
 				35B2EF8D1D000E620014867F /* FreshchatSDK.m in Sources */,
+				328ABDE1242A3DA200B1B71F /* FCDropDownViewModel.m in Sources */,
 				EA104805213F247700122843 /* FCUnsupportedFragment.m in Sources */,
 				35D4E81E1D118E9000EFFE07 /* FCChannelViewController.m in Sources */,
 				CE3EFB531EDFEEE000470AB1 /* FCMessages.m in Sources */,
@@ -1423,6 +1593,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		328ABDC12429D04600B1B71F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 35591A9B1B9ED58100BC0B60 /* FreshchatSDK */;
+			targetProxy = 328ABDC02429D04600B1B71F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		35591B731B9EDCCE00BC0B60 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
@@ -1435,6 +1613,89 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		328ABDC32429D04600B1B71F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = PKUQ4ZWJH3;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/FreshchatSDKTest",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = FreshchatSDKTest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(PROJECT_DIR)/FreshchatSDKTest";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.freshdesk.example.hotlineios.FreshchatSDKTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		328ABDC42429D04600B1B71F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = PKUQ4ZWJH3;
+				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/FreshchatSDKTest",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = FreshchatSDKTest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(PROJECT_DIR)/FreshchatSDKTest";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.freshdesk.example.hotlineios.FreshchatSDKTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		35591AAF1B9ED58100BC0B60 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1642,6 +1903,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		328ABDC22429D04600B1B71F /* Build configuration list for PBXNativeTarget "FreshchatSDKTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				328ABDC32429D04600B1B71F /* Debug */,
+				328ABDC42429D04600B1B71F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		35591AAE1B9ED58100BC0B60 /* Build configuration list for PBXNativeTarget "FreshchatSDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1684,6 +1954,7 @@
 		CE95B5781F6D6E5D006EC8AA /* FreshchatModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				32E406FB2434C68B003C31CA /* FreshchatModel 6.xcdatamodel */,
 				C3D29198230D210E0034B27E /* FreshchatModel 5.xcdatamodel */,
 				EA16778F22F037EC00E3C46E /* FreshchatModel 4.xcdatamodel */,
 				EAB37784221AE5AC00F2094F /* FreshchatModel 3.xcdatamodel */,
@@ -1691,7 +1962,7 @@
 				CE1739791F6D725E00950F30 /* FreshchatModel 1.xcdatamodel */,
 				CE95B5791F6D6E5D006EC8AA /* FreshchatModel.xcdatamodel */,
 			);
-			currentVersion = C3D29198230D210E0034B27E /* FreshchatModel 5.xcdatamodel */;
+			currentVersion = 32E406FB2434C68B003C31CA /* FreshchatModel 6.xcdatamodel */;
 			path = FreshchatModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

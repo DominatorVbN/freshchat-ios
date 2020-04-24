@@ -38,6 +38,7 @@
 #define IMAGE_CONVERSATION_BACKGROUND @"ConversationDetail.MessageListStyle.background"
 #define IMAGE_SEARCH_BAR_SEARCH_ICON @"SearchBar.SearchBarStyle.searchIcon"
 #define IMAGE_SEARCH_BAR_CLEAR_ICON @"SearchBar.SearchBarStyle.clearIcon"
+#define IMAGE_DROPDOWN_ICON @"ConversationDetail.DropDownIcon"
 
 @interface FCTheme : NSObject
 
@@ -284,4 +285,11 @@
 -(float)getQuickReplyMessageCornerRadius;
 -(float)getQuickReplyHeightPercentage;
 
+// Drop Down
+-(UIColor *)getDropDownBarBorderColor;
+-(UIFont *)getDropDownBarFont;
+-(UIFont *)getDropDownPickerOptionFont;
+-(float)getDropDownPickerOptionHeight;
+-(float)getDropDownPickerViewPortraitHeight;
+-(float)getDropDownPickerViewLandScapeHeight;
 @end

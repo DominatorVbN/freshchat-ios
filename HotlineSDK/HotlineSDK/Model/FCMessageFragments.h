@@ -37,7 +37,7 @@ enum FragmentStatus {
     +(void)createFragments:(NSArray *) dictArr toMessage:(FCMessages *) message;
     +(FCMessageFragments *) createUploadFragment: (NSDictionary *)fragmentInfo toMessage:(FCMessages *) message;
     +(FCMessageFragments *) getImageFragment: (FCMessages *)messsage;
-    - (NSDictionary *)toDictionary;
+    - (NSDictionary *)dictionaryValue;
     -(void)updateWithInfo:(NSDictionary *)info;
 @end
 
@@ -50,10 +50,11 @@ enum FragmentStatus {
     @property (nullable, nonatomic, retain) NSNumber *status;
     @property (nonatomic,retain) NSData *binaryData1;
     @property (nonatomic,retain) NSData *binaryData2;
-
+    
+    -(id)initWith:(NSDictionary *)fragmentDictionary;
     -(void)storeImageDataOfMessage:(FCMessageData *)message withCompletion:(void (^)())completion;
     - (NSURL *) getOpenURL;
-    - (BOOL)isQuickReplyFragment;
+    - (NSDictionary *)dictionaryValue;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -547,6 +547,7 @@ static FCNotificationHandler *handleUpdateNotification;
                 
                 pMessage.uploadStatus = @(MESSAGE_UPLOADED);
                 pMessage.messageAlias = messageInfo[@"alias"];
+                pMessage.messageId = messageInfo[@"id"];
                 pMessage.createdMillis = messageInfo[@"createdMillis"];
                 [channel addMessagesObject:pMessage];
                 [[FCDataManager sharedInstance]save];
@@ -601,6 +602,9 @@ static FCNotificationHandler *handleUpdateNotification;
     data1[@"conversationId"] = conversation.conversationAlias;
     data1[@"channelId"] = channel.channelID;
     data1[@"source"] = @2;
+    if (pMessage.replyToMessage) {
+        data1[@"replyTo"] = @{@"originalMessageId": pMessage.replyToMessage};
+    }
     
     FCServiceRequest *request = [[FCServiceRequest alloc]initWithMethod:HTTP_METHOD_POST];
     NSData *userData = [NSJSONSerialization dataWithJSONObject:data1 options:NSJSONWritingPrettyPrinted error:nil];
@@ -640,6 +644,7 @@ static FCNotificationHandler *handleUpdateNotification;
                 
                 pMessage.uploadStatus = @(MESSAGE_UPLOADED);
                 pMessage.messageAlias = messageInfo[@"alias"];
+                pMessage.messageId = messageInfo[@"id"];
                 pMessage.createdMillis = messageInfo[@"createdMillis"];
                 pMessage.isMarkedForUpload = NO;
                 [[FCDataManager sharedInstance]save];

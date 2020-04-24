@@ -10,7 +10,7 @@
 
 @interface FCMessageData : NSObject
 
-@property (nullable, nonatomic, retain) NSString * messageId;
+@property (nullable, nonatomic, retain) NSNumber * messageId;
 @property (nullable, nonatomic, retain) NSNumber *channelId;
 @property (nullable, nonatomic, retain) NSString *conversationId;
 @property (nullable, nonatomic, retain) NSString *createdMillis;

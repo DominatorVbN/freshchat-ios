@@ -17,6 +17,7 @@
 #import "FCMessageServices.h"
 #import "FCLocalNotification.h"
 #import "FCCoreServices.h"
+#import "FCConstants.h"
 
 #define KONOTOR_IMG_COMPRESSION YES
 
@@ -364,69 +365,11 @@ static BOOL messageTimeDirty = YES;
     return newMessage;
 }
 
--(KonotorMessageData *) ReturnMessageDataFromManagedObject{
-    KonotorMessageData *message = [[KonotorMessageData alloc]init];
-    message.articleID = self.articleID;
-    message.messageType = [self messageType];
-    message.messageUserId = [self messageUserId];
-    message.messageId =[self messageAlias];
-    message.durationInSecs = [self durationInSecs];
-    message.read = [self read];
-    message.uploadStatus = [self uploadStatus];
-    message.createdMillis = [self createdMillis];
-    message.text = [self text];
-    message.messageRead = [self messageRead];
-    message.actionURL = [self actionURL];
-    message.actionLabel = [self actionLabel];
-    message.isMarketingMessage = [self isMarketingMessage];
-    message.marketingId = self.marketingId;
-    message.isWelcomeMessage = self.isWelcomeMessage;
-    
-    if([message.messageType isEqualToNumber:[NSNumber numberWithInt:2]]){
-        FCMessageBinaries *pMessageBinary = (FCMessageBinaries*)[self valueForKeyPath:@"hasMessageBinary"];
-        message.audioData = [pMessageBinary binaryAudio];
-    }
-    
-    if(([message.messageType isEqualToNumber:[NSNumber numberWithInt:KonotorMessageTypePicture]])||([message.messageType isEqualToNumber:[NSNumber numberWithInt:KonotorMessageTypePictureV2]])){
-        message.picHeight = [self picHeight];
-        message.picWidth = [self picWidth];
-        message.picThumbHeight = [self picThumbHeight];
-        message.picThumbWidth = [self picThumbWidth];
-        
-        if([self picUrl])  message.picUrl = [self picUrl];
-        
-        if([self picThumbUrl]) message.picThumbUrl = [self picThumbUrl];
-        
-        if([self picCaption])message.picCaption = [self picCaption];
-        
-        FCMessageBinaries *pMessageBinary = (FCMessageBinaries*)[self valueForKeyPath:@"hasMessageBinary"];
-        if(pMessageBinary){
-            message.picData = [pMessageBinary binaryImage];
-            message.picThumbData = [pMessageBinary binaryThumbnail];
-        }
-
-    }
-    return message;
-}
-
-
 - (BOOL) isMarketingMessage{
     if(([[self marketingId] intValue]<=0)||(![self marketingId]))
         return NO;
     else
         return YES;
-}
-
-+(NSArray *)getAllMesssageForChannel:(FCChannels *)channel{
-    NSMutableArray *messages = [[NSMutableArray alloc]init];
-    NSArray *matches = channel.messages.allObjects;
-    for (int i=0; i<matches.count; i++) {
-        KonotorMessageData *message = [matches[i] ReturnMessageDataFromManagedObject];
-        if (message) {
-            [messages addObject:message];
-        }        
-    }
-    return messages;
 }
 
 +(FCMessageUtil *)getWelcomeMessageForChannel:(FCChannels *)channel{
@@ -484,6 +427,37 @@ static BOOL messageTimeDirty = YES;
 +(long) daysSinceLastMessageInContext:(NSManagedObjectContext *)context{
     long long lastMessageTime = [FCMessageUtil lastMessageTimeInContext:context];
     return ([[NSDate date] timeIntervalSince1970] - (lastMessageTime/1000))/86400;
+}
+
+
++(BOOL)hasReplyFragmentsIn:(NSString*)data {
+    NSArray<NSDictionary *>* fragments = [self getReplyFragmentsIn:data];
+    if (fragments) {
+        NSSet<NSNumber *> *validFragments = [[NSSet alloc] initWithArray:@[@(FRESHCHAT_TEMPLATE_FRAGMENT), @(FRESHCHAT_COLLECTION_FRAGMENT)]];
+        for(int i=0; i< fragments.count; i++) {
+            NSDictionary *fragmentDictionary = fragments[i];
+            NSNumber *fragmentType = fragmentDictionary[@"fragmentType"];
+            if(fragmentType && [validFragments containsObject:fragmentType]) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
++(NSArray<NSDictionary *> *)getReplyFragmentsIn:(NSString*)data {
+    if (data) {
+        NSData *extraJSONData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *error;
+        NSArray<NSDictionary *> *fragments = [NSJSONSerialization JSONObjectWithData:extraJSONData
+                                                                             options:0
+                                                                               error:&error];
+        if (!error) {
+            return fragments;
+        }
+    }
+    return nil;
 }
 
 @end
