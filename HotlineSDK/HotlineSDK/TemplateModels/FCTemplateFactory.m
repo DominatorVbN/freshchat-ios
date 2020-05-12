@@ -24,7 +24,7 @@
         dropDownView.dropDownViewModel = dropDownModel;
         dropDownView.delegate = templateDelegate;
         return dropDownView;
-    }
+    } 
     return nil;
 }
 

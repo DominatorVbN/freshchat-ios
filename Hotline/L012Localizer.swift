@@ -22,6 +22,7 @@ class L102Localizer: NSObject {
         MethodSwizzleGivenClassName(cls: UITextField.self, originalSelector: #selector(UITextField.layoutSubviews), overrideSelector: #selector(UITextField.cstmlayoutSubviews))
         MethodSwizzleGivenClassName(cls: UILabel.self, originalSelector: #selector(UILabel.layoutSubviews), overrideSelector: #selector(UILabel.cstmlayoutSubviews))
         MethodSwizzleGivenClassName(cls: UITextView.self, originalSelector: #selector(UITextField.layoutSubviews), overrideSelector: #selector(UITextField.cstmlayoutSubviews))
+        MethodSwizzleGivenClassName(cls: UIButton.self, originalSelector: #selector(UIButton.layoutSubviews), overrideSelector: #selector(UIButton.cstmlayoutSubviews))
     }
 }
 
@@ -67,6 +68,22 @@ extension UITextView {
                 self.textAlignment = .right
             } else {
                 self.textAlignment = .left
+            }
+        }
+    }
+}
+
+extension UIButton {
+    @objc public func cstmlayoutSubviews() {
+        self.cstmlayoutSubviews()
+        if self.contentHorizontalAlignment == .center {
+            return
+        }
+        if self.tag <= 0 {
+            if UIApplication.isRTL()  {
+                self.contentHorizontalAlignment = .right
+            } else {
+                self.contentHorizontalAlignment = .left
             }
         }
     }

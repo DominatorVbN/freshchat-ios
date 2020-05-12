@@ -20,6 +20,7 @@
 #import "FCFileFragment.h"
 #import "FCDateUtil.h"
 #import "FCUnsupportedFragment.h"
+#import "FCCarouselCard.h"
 #import "FCConstants.h"
 
 @implementation FCUserMessageCell
@@ -118,7 +119,7 @@
     [self.contentView addSubview:contentEncloser];
     
     
-    
+    [self.chatBubbleImageView setHidden:NO];
     for(int i=0; i<currentMessage.fragments.count; i++) {
         FragmentData *fragment = currentMessage.fragments[i];
         if ([fragment.type isEqualToString:@"1"] || [fragment.type isEqualToString: [@(FRESHCHAT_QUICK_REPLY_FRAGMENT) stringValue]]) {
@@ -144,6 +145,13 @@
             fileFragment.delegate = self.delegate;
             [fragmensViewArr addObject:[@"button_" stringByAppendingFormat:@"%d",i]];
             //NSLog(@"Button");
+        } else if ([fragment.type integerValue] == FRESHCHAT_TEMPLATE_FRAGMENT) {
+            TemplateFragmentData *templateFragment = [[TemplateFragmentData alloc]initWith:fragment.dictionaryValue];
+            FCCarouselCard *carouselFragment = [[FCCarouselCard alloc] initWithTemplateFragmentData:templateFragment isCardSelected:YES inReplyTo:currentMessage.messageId withDelegate:nil];
+            [views setObject:carouselFragment forKey:[@"carousel_" stringByAppendingFormat:@"%d",i]];
+            [contentEncloser addSubview:carouselFragment];
+            [fragmensViewArr addObject:[@"carousel_" stringByAppendingFormat:@"%d",i]];            
+            [self.chatBubbleImageView setHidden:YES];
         } else {
             //For Unknown fragment
             FCUnsupportedFragment *unknownFragment = [[FCUnsupportedFragment alloc] initWithFragment:fragment];
@@ -189,6 +197,10 @@
             [veriticalConstraint appendString:[NSString stringWithFormat:@"-(%@)-[%@(>=0)]",[self isTopFragment:fragmensViewArr currentIndex:i] ? topPadding : internalPadding,str]];
         } else if([str containsString:@"button_"]) {
             NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(>=75)]-(>=%@)-|",leftPadding,str,rightPadding];
+            [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
+            [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[%@]",[self isTopFragment:fragmensViewArr currentIndex:i]? topPadding : internalPadding, str]];
+        } else if([str containsString:@"carousel_"]) {
+            NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(212@999)]-(>=%@)-|",leftPadding,str,rightPadding];
             [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
             [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[%@]",[self isTopFragment:fragmensViewArr currentIndex:i]? topPadding : internalPadding, str]];
         }

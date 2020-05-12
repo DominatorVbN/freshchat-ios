@@ -131,6 +131,11 @@ static NSString *DEFAULT_LOCALIZATION_TABLE = @"FCLocalizable";
 
 #define LOC_DROPDOWN_SELECT @"dropdown_choose_select"
 
+#define LOC_CAROUSEL_CARD_SELECTED_TEXT @"carousel_card_selected_text"
+#define LOC_DEFAULT_CAROUSEL_CARD_VIEW_BTN @"default_carousel_card_view_btn"
+#define LOC_DEFAULT_CAROUSEL_CARD_SELECT_BTN @"default_carousel_card_select_btn"
+#define LOC_DEFAULT_CAROUSEL_LIST_PREVIEW_TEXT @"default_carousel_list_preview_text"
+
 @interface FCLocalization : NSObject
 
 +(NSString *)localize:(NSString *)key;

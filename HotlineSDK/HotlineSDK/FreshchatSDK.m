@@ -888,7 +888,7 @@ static BOOL MAKE_API_WAIT = NO;
 
 -(void)openFreshchatDeeplink:(NSString *)linkStr viewController:(UIViewController *) viewController {
     if (!viewController || [FCStringUtil isEmptyString:linkStr]) return;
-    BOOL hasProcessed = [FCUtilities handleLink:[[NSURL alloc]initWithString:linkStr] faqOptions:nil navigationController:viewController handleFreshchatLinks:YES];
+    BOOL hasProcessed = [FCUtilities handleLink:[[NSURL alloc]initWithString:linkStr] faqOptions:nil navigationController:viewController handleFreshchatLinks:YES postOutboundEvent:YES];
     if(!hasProcessed) {
         NSLog(@"Freshchat Error: Link not processed.");
     }

@@ -104,6 +104,7 @@
         NSLog(@"--With tags : %d",count);
     }];
     
+    /*
     [Freshchat sharedInstance].customLinkHandler = ^BOOL(NSURL * url) {
         UIStoryboard *inAppBrowserSB = [UIStoryboard storyboardWithName:IN_APP_BROWSER_STORYBOARD_CONTROLLER bundle:nil];
         InAppBrowser *inAppBrowserVC = [inAppBrowserSB instantiateViewControllerWithIdentifier:IN_APP_BROWSER_STORYBOARD_CONTROLLER];
@@ -113,6 +114,7 @@
         NSLog(@"%@",url.description);
         return YES;
     };
+     */
     
     [[Freshchat sharedInstance] unreadCountWithCompletion:^(NSInteger count) {
         self.unreadCountAll.text = [NSString stringWithFormat:@"UC  %d",count];

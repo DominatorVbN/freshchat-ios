@@ -412,6 +412,18 @@
                     textLabel = [self appendString:[NSString stringWithFormat:@"🔘 %@", label] toString: textLabel];
                 }
             }
+        } else if ([fragment.type integerValue] == FRESHCHAT_TEMPLATE_FRAGMENT) {
+            NSDictionary *dictionaryValue = fragment.dictionaryValue;
+            NSArray *sections = dictionaryValue[@"sections"];
+            for(int i=0;i<sections.count; i++) {
+                NSDictionary *sectionDict = sections[i];
+                if ([sectionDict[@"name"] isEqualToString:@"title"]) {
+                    NSDictionary *nameSectionDict  = sectionDict[@"fragments"][0];
+                    if(nameSectionDict) {
+                        return nameSectionDict[@"content"];
+                    }
+                }
+            }
         }
     }
     
@@ -426,6 +438,9 @@
            TemplateFragmentData *fragmentData = [FCTemplateFactory getFragmentFrom:fragments.firstObject];
             if ([fragmentData.templateType isEqualToString:FRESHHCAT_TEMPLATE_DROPDOWN]) {
                 description = [NSString stringWithFormat:@"🔽%@", description];
+            } else if ([fragmentData.templateType isEqualToString:FRESHHCAT_TEMPLATE_CARUOSEL]) {
+                description = [NSString stringWithFormat:@"🔘 %@", HLLocalizedString(LOC_DEFAULT_CAROUSEL_LIST_PREVIEW_TEXT)];
+                textLabel = @"";
             }
         }
     }
