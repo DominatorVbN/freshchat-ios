@@ -97,7 +97,7 @@
 + (void) addFlagToDisableUserPropUpdate;
 + (void) removeFlagToDisableUserPropUpdate;
 + (BOOL) canUpdateUserProperties;
-+ (BOOL) handleLink : (NSURL *)url faqOptions: (FAQOptions *)faqOptions navigationController:(UIViewController *) navController handleFreshchatLinks:(BOOL) handleFreshchatLinks;
++ (BOOL) handleLink : (NSURL *)url faqOptions: (FAQOptions *)faqOptions navigationController:(UIViewController *) navController handleFreshchatLinks:(BOOL) handleFreshchatLinks postOutboundEvent:(BOOL) postOutboundEvent;
 + (BOOL) canMakeConversationFetchCall;
 + (void) updateCurrentTimeForKey : (NSString *) keyName;
 + (NSString *) getSDKThemeName;
@@ -110,6 +110,15 @@
 
 + (NSString *)contentTypeForImageData:(NSData *)data;
 
++(void) loadImageFromURL:(NSString  * _Nonnull)imageURL withCache:(void (^ _Nullable)())cacheBlock withError:(void (^ _Nullable)())errorBlock withCompletion:(void (^_Nullable)(UIImage * _Nonnull))completionBlock;
++(void) loadImageWithUrl : (NSString *) url forView : (UIImageView *) imgView andErrorImage:(UIImage *)errorImage;
+
+@end
+
+
+@interface NSString (UtilMethods)
+-(BOOL) isTemplateFragment;
+-(NSDictionary *)dictionaryValue;
 @end
 
 #endif

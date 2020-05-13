@@ -39,6 +39,8 @@
 #define IMAGE_SEARCH_BAR_SEARCH_ICON @"SearchBar.SearchBarStyle.searchIcon"
 #define IMAGE_SEARCH_BAR_CLEAR_ICON @"SearchBar.SearchBarStyle.clearIcon"
 #define IMAGE_DROPDOWN_ICON @"ConversationDetail.DropDownIcon"
+#define IMAGE_CAROUSEL_PLACEHOLDER_IMAGE @"CarouselPlaceholderImage"
+#define IMAGE_CAROUSEL_ERROR_IMAGE @"CarouselErrorImage"
 
 @interface FCTheme : NSObject
 
@@ -292,4 +294,19 @@
 -(float)getDropDownPickerOptionHeight;
 -(float)getDropDownPickerViewPortraitHeight;
 -(float)getDropDownPickerViewLandScapeHeight;
+
+//Carousel
+-(UIColor *)getCarouselTitleColor;
+-(UIFont *)getCarouselTitleFont;
+
+-(UIColor *)getCarouselDescriptionColor;
+-(UIFont *)getCarouselDescriptionFont;
+
+-(UIColor *)getCarouselSelectedTextColor;
+-(UIFont *)getCarouselSelectedTextFont;
+
+-(UIColor *)getCarouselActionButtonColor;
+-(UIFont *)getCarouselActionButtonFont;
+
+-(UIColor *)getCarouselSelectedCardBackground;
 @end

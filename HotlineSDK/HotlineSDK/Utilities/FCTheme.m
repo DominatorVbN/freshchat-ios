@@ -479,6 +479,10 @@
     NSString *fontNameValue = [self fetchThemeValueForKey:[key stringByAppendingString:@".fontName"]];
     NSString *fontSizeValue = [self fetchThemeValueForKey:[key stringByAppendingString:@".textSize"]];
     
+    if (fontNameValue != nil && [fontNameValue caseInsensitiveCompare:@"SYS_DEFAULT_BOLD_FONT_NAME"] == NSOrderedSame) {
+        return [UIFont boldSystemFontOfSize:defaultSize];
+    }
+    
     if (([fontNameValue caseInsensitiveCompare:@"SYS_DEFAULT_FONT_NAME"] == NSOrderedSame) || (fontNameValue == nil) ){
         preferredFontName = self.systemFont.familyName;
     }else{
@@ -1162,6 +1166,45 @@
 -(float)getDropDownPickerViewLandScapeHeight{
     CGFloat value = [[self fetchThemeValueForKey:@"ConversationDetail.DropDownPickerStyle.viewLandScapeHeight"] floatValue];
     return value > 0.0 ? value : 220.0;
+}
+
+//Carousel
+
+-(UIColor *)getCarouselTitleColor {
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CarouselCardStyle.titleTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+-(UIFont *)getCarouselTitleFont {
+    return [self getFontValueWithKey:@"ConversationDetail.CarouselCardStyle.titleTextStyle" andDefaultSize:FD_FONT_SIZE_LARGE];
+}
+
+-(UIColor *)getCarouselDescriptionColor {
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CarouselCardStyle.descriptionTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+-(UIFont *)getCarouselDescriptionFont {
+    return [self getFontValueWithKey:@"ConversationDetail.CarouselCardStyle.descriptionTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCarouselSelectedTextColor {
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CarouselCardStyle.selectedTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_DARK_GRAY];
+}
+-(UIFont *)getCarouselSelectedTextFont {
+    return [self getFontValueWithKey:@"ConversationDetail.CarouselCardStyle.selectedTextStyle" andDefaultSize:FD_FONT_SIZE_MEDIUM];
+}
+
+-(UIColor *)getCarouselActionButtonColor {
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CarouselCardStyle.actionButtonStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_BUTTON_COLOR];
+}
+-(UIFont *)getCarouselActionButtonFont {
+    return [self getFontValueWithKey:@"ConversationDetail.CarouselCardStyle.actionButtonStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCarouselSelectedCardBackground {
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CarouselCardStyle.selectedCardStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
 }
 
 @end

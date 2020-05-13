@@ -282,7 +282,7 @@
     
     if((navigationAction.navigationType == WKNavigationTypeLinkActivated) && (requestURL != nil)){
         if(navigationAction.targetFrame == nil){
-            if(![FCUtilities handleLink:requestURL faqOptions:self.faqOptions navigationController:self handleFreshchatLinks:NO]) {
+            if(![FCUtilities handleLink:requestURL faqOptions:self.faqOptions navigationController:self handleFreshchatLinks:NO postOutboundEvent:YES]) {
                 [app openURL:requestURL];
             }
             decisionHandler(WKNavigationActionPolicyCancel);

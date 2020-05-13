@@ -60,6 +60,7 @@
 		35D707331BE2C1AF0035FD74 /* PSPDFUIKitMainThreadGuard.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D707321BE2C1AE0035FD74 /* PSPDFUIKitMainThreadGuard.m */; };
 		3C314F0C1C97DFCA00A255D4 /* FCResources.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 354D0D6C1C48D6D8004D2AA1 /* FCResources.bundle */; };
 		952C4AEA20BD53B800F8033A /* languageSwitcher.png in Resources */ = {isa = PBXBuildFile; fileRef = 952C4AE920BD53B800F8033A /* languageSwitcher.png */; };
+		954DFB36244E1D8F00E97947 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 954DFB35244E1D8E00E97947 /* QuartzCore.framework */; };
 		955807EF21958521000CD9A7 /* JWTScheduler.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 955807EC21958521000CD9A7 /* JWTScheduler.storyboard */; };
 		955807F121958C8A000CD9A7 /* JWTScheduler.m in Sources */ = {isa = PBXBuildFile; fileRef = 955807F021958C8A000CD9A7 /* JWTScheduler.m */; };
 		9579AD0A217F5781004AAD98 /* InAppBrowser.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9579AD09217F5781004AAD98 /* InAppBrowser.storyboard */; };
@@ -105,6 +106,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 356F19E61B9DBF14002F1E2A;
 			remoteInfo = Hotline;
+		};
+		954DFB32244E1D7D00E97947 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 354D0D161C48D10F004D2AA1 /* HotlineSDK.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 328ABDBA2429D04600B1B71F;
+			remoteInfo = FreshchatSDKTest;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -173,6 +181,8 @@
 		35D707321BE2C1AE0035FD74 /* PSPDFUIKitMainThreadGuard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSPDFUIKitMainThreadGuard.m; sourceTree = "<group>"; };
 		3C1159FC1DF1EA5800800A6C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		952C4AE920BD53B800F8033A /* languageSwitcher.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = languageSwitcher.png; sourceTree = "<group>"; };
+		954DFB2E244E1D7D00E97947 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		954DFB35244E1D8E00E97947 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		955807EC21958521000CD9A7 /* JWTScheduler.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = JWTScheduler.storyboard; path = Hotline/JWTScheduler/JWTScheduler.storyboard; sourceTree = SOURCE_ROOT; };
 		955807F021958C8A000CD9A7 /* JWTScheduler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JWTScheduler.m; sourceTree = "<group>"; };
 		955807F221958C9C000CD9A7 /* JWTScheduler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JWTScheduler.h; sourceTree = "<group>"; };
@@ -203,6 +213,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				954DFB36244E1D8F00E97947 /* QuartzCore.framework in Frameworks */,
 				EA5F0B94231B11EE007BD6C4 /* WebKit.framework in Frameworks */,
 				CE60546A1F8797EF00326E5A /* Photos.framework in Frameworks */,
 				CE6054681F87967500326E5A /* Security.framework in Frameworks */,
@@ -306,6 +317,7 @@
 			children = (
 				354D0D1E1C48D10F004D2AA1 /* libFreshchatSDK.a */,
 				354D0D241C48D10F004D2AA1 /* FreshchatModels.bundle */,
+				954DFB33244E1D7D00E97947 /* FreshchatSDKTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -462,6 +474,8 @@
 		CE6054671F87967500326E5A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				954DFB35244E1D8E00E97947 /* QuartzCore.framework */,
+				954DFB2E244E1D7D00E97947 /* MobileCoreServices.framework */,
 				021DA7CF23E18F9700CA7F02 /* CoreServices.framework */,
 				EA5F0B91231B11EE007BD6C4 /* WebKit.framework */,
 				CE6054691F8797EF00326E5A /* Photos.framework */,
@@ -579,6 +593,13 @@
 			fileType = wrapper.cfbundle;
 			path = FreshchatModels.bundle;
 			remoteRef = 354D0D231C48D10F004D2AA1 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		954DFB33244E1D7D00E97947 /* FreshchatSDKTest.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = FreshchatSDKTest.xctest;
+			remoteRef = 954DFB32244E1D7D00E97947 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

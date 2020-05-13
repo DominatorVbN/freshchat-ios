@@ -54,6 +54,8 @@
 #import "FCReplyFlowLayout.h"
 #import "FCEventsManager.h"
 #import "FCTemplateFactory.h"
+#import "FCTemplateSection.h"
+#import "FCCarouselCardsList.h"
 
 typedef struct {
     BOOL isLoading;
@@ -727,6 +729,8 @@ typedef struct {
             if (!agentCell) {
                 agentCell = [[FCAgentMessageCell alloc] initWithReuseIdentifier:agentCellIdentifier andDelegate:self];
             }
+            agentCell.isLastMessage = (message.messageAlias == ((FCMessageData *)[self.messages lastObject]).messageAlias);
+            agentCell.templateDelegate = self;
             agentCell.tagVal = indexPath.row;
             agentCell.maxcontentWidth = (NSInteger) screenRect.size.width - ((screenRect.size.width/100)*20);
             agentCell.messageData = message;
@@ -864,7 +868,9 @@ typedef struct {
     [FCMessageHelper uploadMessageWithImageData:nil textFeed:toSend onConversation:self.conversation andChannel:self.channel];
     [self checkPushNotificationState];
     [self inputToolbar:toolbar textViewDidChange:toolbar.textView];
-    [self refreshView];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        [self refreshView];
+    });
     [self.messagesPoller reset];
 }
 
@@ -1138,7 +1144,7 @@ typedef struct {
 }
 
 -(void)scrollTableViewToLastCell{
-     NSInteger lastSpot = _flags.isLoading ? self.messagesDisplayedCount : (self.messagesDisplayedCount-1);
+    NSInteger lastSpot = _flags.isLoading ? self.messagesDisplayedCount : (self.messagesDisplayedCount-1);
     
     if(lastSpot<0) return;
     
@@ -1344,6 +1350,14 @@ typedef struct {
                                 });
                             }
                         }
+                        if([jsonDict[@"templateType"]  isEqual:FRESHHCAT_TEMPLATE_CARUOSEL]) {
+                            FCOutboundEvent *event = [[FCOutboundEvent alloc] initOutboundEvent:FCEventCarouselShow withParams:@{@(FCPropertyOption): jsonDict}];
+                            [FCEventsHelper postNotificationForEvent:event];
+                            [self cleanupBottomView];
+                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                                [self scrollTableViewToLastCell];
+                            });
+                        }
                     }
                 }
             }
@@ -1396,7 +1410,7 @@ typedef struct {
         [imageController presentOnController:self];
     } else if ([fragmentType isEqualToValue:@5]) {
         NSURL *url = [fragment getOpenURL];
-        BOOL linkHandled  = [FCUtilities handleLink:url faqOptions:nil navigationController:self handleFreshchatLinks:NO];
+        BOOL linkHandled  = [FCUtilities handleLink:url faqOptions:nil navigationController:self handleFreshchatLinks:NO postOutboundEvent:YES];
         if(!linkHandled) {
             if([[UIApplication sharedApplication] canOpenURL:url]){
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -1408,7 +1422,7 @@ typedef struct {
 }
 
 -(BOOL)handleLinkDelegate: (NSURL *)url {
-    return [FCUtilities handleLink:url faqOptions:nil navigationController:self handleFreshchatLinks:NO];
+    return [FCUtilities handleLink:url faqOptions:nil navigationController:self handleFreshchatLinks:NO postOutboundEvent:YES];
 }
 
 //TODO: Needs refractor
@@ -1762,4 +1776,5 @@ typedef struct {
         [self scrollTableViewToLastCell];
     }
 }
+
 @end

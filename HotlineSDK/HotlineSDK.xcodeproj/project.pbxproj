@@ -47,6 +47,8 @@
 		328ABDE0242A3DA200B1B71F /* FCDropDownViewModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDDE242A3DA200B1B71F /* FCDropDownViewModel.h */; };
 		328ABDE1242A3DA200B1B71F /* FCDropDownViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDF242A3DA200B1B71F /* FCDropDownViewModel.m */; };
 		32DF18F7244741FD00B2AE58 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32DF18F6244741FD00B2AE58 /* CoreServices.framework */; };
+		32E406EA24321650003C31CA /* FCTemplateSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */; };
+		32E406EB2432165C003C31CA /* FCTemplateSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDD9242A1C5D00B1B71F /* FCTemplateSection.h */; };
 		32E406EF24321F49003C31CA /* FCTemplateDropDownView.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E406ED24321F49003C31CA /* FCTemplateDropDownView.h */; };
 		32E406F024321F49003C31CA /* FCTemplateDropDownView.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E406EE24321F49003C31CA /* FCTemplateDropDownView.m */; };
 		354F26C61D0AED2F00DCD158 /* FCKeyChainStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 354F26C51D0AED2F00DCD158 /* FCKeyChainStore.m */; };
@@ -135,6 +137,9 @@
 		950A3F85216742990000754E /* FCJWTAuthValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 950A3F84216742990000754E /* FCJWTAuthValidator.m */; };
 		951A3CD321996DF90096E816 /* FCJWTViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 951A3CD121996DF90096E816 /* FCJWTViewController.h */; };
 		951A3CD421996DF90096E816 /* FCJWTViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 951A3CD221996DF90096E816 /* FCJWTViewController.m */; };
+		95464D64246003C9003934E0 /* FCCarouselCardsListCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 95464D63246003C9003934E0 /* FCCarouselCardsListCell.m */; };
+		95E728E42435D80500EA0833 /* FCCarouselCard.m in Sources */ = {isa = PBXBuildFile; fileRef = 95E728E32435D80500EA0833 /* FCCarouselCard.m */; };
+		95E728E62435D83800EA0833 /* FCCarouselCardsList.m in Sources */ = {isa = PBXBuildFile; fileRef = 95E728E52435D83800EA0833 /* FCCarouselCardsList.m */; };
 		95EBEDF721A7FF390087F6D4 /* FCChannelUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 95EBEDF521A7FF390087F6D4 /* FCChannelUtil.h */; };
 		95EBEDF821A7FF390087F6D4 /* FCChannelUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 95EBEDF621A7FF390087F6D4 /* FCChannelUtil.m */; };
 		C3D2919C230D43F10034B27E /* FCReplyCollectionCell.h in Headers */ = {isa = PBXBuildFile; fileRef = C3D2919A230D43F10034B27E /* FCReplyCollectionCell.h */; };
@@ -451,7 +456,13 @@
 		950A3F86216744F40000754E /* FCJWTAuthValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCJWTAuthValidator.h; sourceTree = "<group>"; };
 		951A3CD121996DF90096E816 /* FCJWTViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FCJWTViewController.h; sourceTree = "<group>"; };
 		951A3CD221996DF90096E816 /* FCJWTViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCJWTViewController.m; sourceTree = "<group>"; };
+		95464D62246003B5003934E0 /* FCCarouselCardsListCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCarouselCardsListCell.h; sourceTree = "<group>"; };
+		95464D63246003C9003934E0 /* FCCarouselCardsListCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCarouselCardsListCell.m; sourceTree = "<group>"; };
 		95DEF8B520E39B8B00422D58 /* FCProtocols.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCProtocols.h; sourceTree = "<group>"; };
+		95E728E22435D7F100EA0833 /* FCCarouselCard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCarouselCard.h; sourceTree = "<group>"; };
+		95E728E32435D80500EA0833 /* FCCarouselCard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCarouselCard.m; sourceTree = "<group>"; };
+		95E728E52435D83800EA0833 /* FCCarouselCardsList.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCarouselCardsList.m; sourceTree = "<group>"; };
+		95E728E72435D84000EA0833 /* FCCarouselCardsList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCarouselCardsList.h; sourceTree = "<group>"; };
 		95EBEDF521A7FF390087F6D4 /* FCChannelUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FCChannelUtil.h; sourceTree = "<group>"; };
 		95EBEDF621A7FF390087F6D4 /* FCChannelUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCChannelUtil.m; sourceTree = "<group>"; };
 		C3D29198230D210E0034B27E /* FreshchatModel 5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "FreshchatModel 5.xcdatamodel"; sourceTree = "<group>"; };
@@ -1138,6 +1149,19 @@
 			path = JWTProxy;
 			sourceTree = "<group>";
 		};
+		95E728E12435D7C200EA0833 /* FCCarousel */ = {
+			isa = PBXGroup;
+			children = (
+				95E728E22435D7F100EA0833 /* FCCarouselCard.h */,
+				95E728E32435D80500EA0833 /* FCCarouselCard.m */,
+				95E728E52435D83800EA0833 /* FCCarouselCardsList.m */,
+				95E728E72435D84000EA0833 /* FCCarouselCardsList.h */,
+				95464D62246003B5003934E0 /* FCCarouselCardsListCell.h */,
+				95464D63246003C9003934E0 /* FCCarouselCardsListCell.m */,
+			);
+			name = FCCarousel;
+			sourceTree = "<group>";
+		};
 		C3D29199230D43B50034B27E /* ReplyCell */ = {
 			isa = PBXGroup;
 			children = (
@@ -1224,6 +1248,7 @@
 		CEFA05531EE82EE700DC74CF /* MessageFragments */ = {
 			isa = PBXGroup;
 			children = (
+				95E728E12435D7C200EA0833 /* FCCarousel */,
 				021DA7C623E1811200CA7F02 /* FCGIFSupport */,
 				CEFA05631EE82F7400DC74CF /* FCFileFragment.h */,
 				CEFA05641EE82F7400DC74CF /* FCFileFragment.m */,
@@ -1269,6 +1294,7 @@
 				024529482386E62C0018FC38 /* FCEventsConstants.h in Headers */,
 				EA6EB25E21070D4400411D5F /* FCCSATUtil.h in Headers */,
 				EAD751E520EF9B44003DE477 /* FCLocaleConstants.h in Headers */,
+				32E406EB2432165C003C31CA /* FCTemplateSection.h in Headers */,
 				32E406EF24321F49003C31CA /* FCTemplateDropDownView.h in Headers */,
 				EAB07907216B696B00B701C9 /* FCUserAuthConfig.h in Headers */,
 				95EBEDF721A7FF390087F6D4 /* FCChannelUtil.h in Headers */,
@@ -1476,8 +1502,10 @@
 				CE642C201F308C1D00264CA0 /* FCUserMessageCell.m in Sources */,
 				35D4E81C1D118E9000EFFE07 /* FCImagePreviewController.m in Sources */,
 				35B2EFA51D000E620014867F /* FCCoreServices.m in Sources */,
+				95464D64246003C9003934E0 /* FCCarouselCardsListCell.m in Sources */,
 				32857E1024225FA300E841F4 /* FCTemplateFactory.m in Sources */,
 				CE8C7A821F6C216B00E77494 /* UIImage+WebP.m in Sources */,
+				95E728E42435D80500EA0833 /* FCCarouselCard.m in Sources */,
 				35B2EFA81D000E620014867F /* FCServiceRequest.m in Sources */,
 				35B2EFAC1D000E620014867F /* FCIndexManager.m in Sources */,
 				95EBEDF821A7FF390087F6D4 /* FCChannelUtil.m in Sources */,
@@ -1530,6 +1558,7 @@
 				35B2EF941D000E620014867F /* FCCategories.m in Sources */,
 				35B2EFAA1D000E620014867F /* FCBackgroundTaskManager.m in Sources */,
 				CEC95A851E097B44009A1FCD /* FCConversationUtil.m in Sources */,
+				95E728E62435D83800EA0833 /* FCCarouselCardsList.m in Sources */,
 				35B2EFC11D000E620014867F /* FCMarginalView.m in Sources */,
 				35B2EFBB1D000E620014867F /* FCBarButtonItem.m in Sources */,
 				35D4E8181D118E9000EFFE07 /* FCCategoryListController.m in Sources */,
@@ -1537,6 +1566,7 @@
 				35B2EF9A1D000E620014867F /* FCMessageBinaries.m in Sources */,
 				CE8C7A6D1F6C216B00E77494 /* FDWebImageDownloader.m in Sources */,
 				35B2EF8F1D000E620014867F /* FreshchatUser.m in Sources */,
+				32E406EA24321650003C31CA /* FCTemplateSection.m in Sources */,
 				35B2EF921D000E620014867F /* FCFAQSearchIndex.m in Sources */,
 				35B2EFAF1D000E620014867F /* FCReachabilityManager.m in Sources */,
 				CED138481DB4D55200404686 /* FCCSATView.m in Sources */,

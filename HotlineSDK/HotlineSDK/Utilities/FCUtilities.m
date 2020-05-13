@@ -556,18 +556,24 @@ static NSInteger networkIndicator = 0;
 + (void) loadImageAndPlaceholderBgWithUrl:(NSString *)url forView:(UIImageView *)imageView withColor: (UIColor*)color andName:(NSString *)channelName {
     imageView.image = [FCUtilities generateImageForLabel:channelName withColor:color];
     if (url.length){//check if its valid but empty stringas well as if it's nil, since calling length on nil will also return 0
-        [FCUtilities loadImageWithUrl:url forView:imageView];
+        [FCUtilities loadImageWithUrl:url forView:imageView andErrorImage:nil];
     }
 }
 
-+ (void) loadImageWithUrl : (NSString *) url forView : (UIImageView *) imgView{
++ (void) loadImageWithUrl : (NSString *) url forView : (UIImageView *) imgView andErrorImage:(UIImage *)errorImage{
     FDWebImageManager *manager = [FDWebImageManager sharedManager];
     [manager loadImageWithURL:[NSURL URLWithString:url] options:FDWebImageDelayPlaceholder progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
         
     } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, FDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if(imgView){
+            if ([imgView isKindOfClass:[FCAnimatedImageView class]] && data &&  [[FCUtilities contentTypeForImageData:data] isEqualToString:@"image/gif"]) {
+                FCAnimatedImageView *animatedImageView = (FCAnimatedImageView *)imgView;
+                animatedImageView.animatedImage = [FCAnimatedImage animatedImageWithGIFData: data];
+            }
+            else if(imgView){
                 imgView.image = image;
+            } else if(errorImage) {
+                imgView.image = errorImage;
             }
         });
     }];
@@ -998,7 +1004,8 @@ static NSInteger networkIndicator = 0;
 
 +(BOOL) handleLink : (NSURL *)url faqOptions: (FAQOptions *)faqOptions
     navigationController:(UIViewController *) navController
-    handleFreshchatLinks:(BOOL) handleFreshchatLinks {
+    handleFreshchatLinks:(BOOL) handleFreshchatLinks
+    postOutboundEvent:(BOOL) postOutboundEvent {
     
     if(url == nil) {
         return NO;
@@ -1061,16 +1068,17 @@ static NSInteger networkIndicator = 0;
             return YES;
         }
     } else if(!handleFreshchatLinks) {
-        
-        FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventLinkTap
-                                                                  withParams:@{
-                                                                               @(FCPropertyURL)  : url.absoluteString
-                                                                               }];
-        [FCEventsHelper postNotificationForEvent:outEvent];
-        
-        if ([Freshchat sharedInstance].customLinkHandler != nil) {
-            return [Freshchat sharedInstance].customLinkHandler(url);
+        if(postOutboundEvent) {
+            FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventLinkTap
+                                                                      withParams:@{
+                                                                                   @(FCPropertyURL)  : url.absoluteString
+                                                                                   }];
+            [FCEventsHelper postNotificationForEvent:outEvent];
         }
+        
+    }
+    if ([Freshchat sharedInstance].customLinkHandler != nil) {
+        return [Freshchat sharedInstance].customLinkHandler(url);
     }
     return NO;
 }
@@ -1084,4 +1092,45 @@ static NSInteger networkIndicator = 0;
     }
 }
 
++(void) loadImageFromURL:(NSString  * _Nonnull)imageURL withCache:(void (^ _Nullable)())cacheBlock withError:(void (^ _Nullable)())errorBlock withCompletion:(void (^_Nullable)(UIImage * _Nonnull))completionBlock {
+    [[FDWebImageManager sharedManager] diskImageExistsForURL:[NSURL URLWithString:imageURL] completion:^(BOOL isInCache) {
+        if(isInCache) {
+            cacheBlock();
+        }
+        else {
+            FDWebImageManager *manager = [FDWebImageManager sharedManager];
+            [manager loadImageWithURL:[NSURL URLWithString:imageURL] options:FDWebImageDelayPlaceholder progress:nil completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, FDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
+                if (error) {
+                    errorBlock();
+                } else {
+                    if(image && finished){
+                        completionBlock(image);
+                    }
+                }
+            }];
+        }
+    }];
+}
+
+@end
+
+
+@implementation NSString(UtilMethods)
+
+-(BOOL) isTemplateFragment {
+    NSData *jsonData = [self dataUsingEncoding:NSUTF8StringEncoding];
+    NSArray *jsonArray = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:nil];
+    NSDictionary *jsonDict = jsonArray.firstObject;
+    if(jsonDict && ![jsonDict isKindOfClass:[NSNull class]] && jsonDict[@"fragmentType"]) {
+        if ([jsonDict[@"fragmentType"] integerValue] == FRESHCHAT_TEMPLATE_FRAGMENT) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+-(NSDictionary *)dictionaryValue {
+    NSData *fragmentData = [self dataUsingEncoding:NSUTF8StringEncoding];
+    return [NSJSONSerialization JSONObjectWithData:fragmentData options:0 error:nil];    
+}
 @end
