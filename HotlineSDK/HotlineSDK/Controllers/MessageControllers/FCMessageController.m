@@ -186,6 +186,7 @@ typedef struct {
 }
 
 -(void)willMoveToParentViewController:(UIViewController *)parent{
+    self.view.accessibilityIdentifier = @"FreshchatMessageView";
     parent.navigationItem.title = self.channel.name;
     self.messagesDisplayedCount = 20;
     self.replyTexts = [[NSMutableArray alloc] init];
@@ -480,6 +481,11 @@ typedef struct {
     if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
         [self removeJWTObservers];
     }
+    
+    if ([self isMovingFromParentViewController] )
+    {
+        [FCMessageHelper setDelegate:nil];
+    }
 }
 
 -(void)registerAppAudioCategory{
@@ -703,14 +709,16 @@ typedef struct {
 }
 
 -(void)updateBottomViewWith:(UIView *)view andHeight:(CGFloat) height{
-    [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    [self.bottomView addSubview:view];
-    self.bottomViewHeightConstraint.constant = height;
-    self.bottomViewHeightConstraint.active = ![view isKindOfClass:[FCYesNoPromptView class]];
-    
-    NSDictionary *views = @{ @"bottomInputView" : view };
-    [self.bottomView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[bottomInputView]|" options:0 metrics:nil views:views]];
-    [self.bottomView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[bottomInputView]|" options:0 metrics:nil views:views]];
+    if(view) {
+        [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+        [self.bottomView addSubview:view];
+        self.bottomViewHeightConstraint.constant = height;
+        self.bottomViewHeightConstraint.active = ![view isKindOfClass:[FCYesNoPromptView class]];
+        
+        NSDictionary *views = @{ @"bottomInputView" : view };
+        [self.bottomView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[bottomInputView]|" options:0 metrics:nil views:views]];
+        [self.bottomView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[bottomInputView]|" options:0 metrics:nil views:views]];
+    }
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{

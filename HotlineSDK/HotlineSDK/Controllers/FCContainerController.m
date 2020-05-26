@@ -114,6 +114,10 @@
 }
 
 -(void)viewWillDisappear:(BOOL)animated{
+    if ([self isMovingFromParentViewController] && self.navBar)
+    {
+        [FCUtilities replaceNavigationPropertyForBar:self.navBar withCurrentBar:self.navigationController.navigationBar];
+    }
     [super viewWillDisappear:animated];
     [HotlineAppState sharedInstance].currentVisibleController = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:FRESHCHAT_ACCOUNT_DELETED_EVENT];

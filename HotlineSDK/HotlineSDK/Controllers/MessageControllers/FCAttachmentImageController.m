@@ -29,6 +29,8 @@
 @property (nonatomic, strong) FCInputToolbarView *inputToolbar;
 @property (nonatomic) CGFloat keyboardHeight;
 @property (nonatomic) CGRect viewFrame;
+@property (nonatomic, strong) UINavigationBar *navBar;
+@property (nonatomic) BOOL prefersLargeTitles;
 @end
 
 @implementation FCAttachmentImageController
@@ -94,6 +96,22 @@
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:|-10-[imageView(>=0)]-10-[inputToolbar(==%d)][footerView(%d)]-0-|",(int)messageHeight + 10, footerViewHeight]  options:0 metrics:nil views:views]];
     
     [self localNotificationSubscription];
+    self.navBar = [[UINavigationBar alloc]init];
+    
+    if (@available(iOS 11.0, *)) {
+        self.prefersLargeTitles = self.navigationController.navigationBar.prefersLargeTitles;
+    }
+    
+    if (@available(iOS 13.0, *)) {
+        self.navBar.standardAppearance = self.navigationController.navigationBar.standardAppearance;
+        self.navBar.compactAppearance = self.navigationController.navigationBar.compactAppearance;
+        self.navBar.scrollEdgeAppearance = self.navigationController.navigationBar.scrollEdgeAppearance;
+    } else {
+        self.navBar.backgroundColor = self.navigationController.navigationBar.backgroundColor;
+        self.navBar.barTintColor = self.navigationController.navigationBar.barTintColor;
+        self.navBar.titleTextAttributes = self.navigationController.navigationBar.titleTextAttributes;
+    }
+    [FCUtilities setNavigationPropertyForBar: self.navigationController.navigationBar];
 }
 
 -(void)inputToolbar:(FCInputToolbarView *)toolbar attachmentButtonPressed:(id)sender {

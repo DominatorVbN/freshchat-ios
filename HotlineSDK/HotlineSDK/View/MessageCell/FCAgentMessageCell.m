@@ -58,8 +58,8 @@
 -(BOOL) showAgentAvatarLabelWithAlias : (NSString *)alias {
     if(self.showteamMemberInfo){
         FCParticipants *participant = [FCParticipants fetchParticipantForAlias:alias inContext:[FCDataManager sharedInstance].mainObjectContext];
-        if(participant.firstName || participant.lastName){
-            self.agentName = [FCUtilities appendFirstName:participant.firstName withLastName:participant.lastName];
+        if(participant.firstName && trimString(participant.firstName).length > 0){
+            self.agentName = participant.firstName;
         }
         else{
             self.agentName = [self getLocalizedAgentName];

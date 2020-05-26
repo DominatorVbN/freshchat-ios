@@ -113,6 +113,9 @@
 +(void) loadImageFromURL:(NSString  * _Nonnull)imageURL withCache:(void (^ _Nullable)())cacheBlock withError:(void (^ _Nullable)())errorBlock withCompletion:(void (^_Nullable)(UIImage * _Nonnull))completionBlock;
 +(void) loadImageWithUrl : (NSString *) url forView : (UIImageView *) imgView andErrorImage:(UIImage *)errorImage;
 
++ (void) setNavigationPropertyForBar:(UINavigationBar *)bar;
++ (void) replaceNavigationPropertyForBar:(UINavigationBar *)bar withCurrentBar:(UINavigationBar *)originalbar;
+
 @end
 
 
