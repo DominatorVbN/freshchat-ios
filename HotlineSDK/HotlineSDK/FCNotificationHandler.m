@@ -165,8 +165,15 @@ typedef NS_ENUM(NSInteger, FCNotifType) {
     });
     BOOL bannerEnabled = [[FCSecureStore sharedInstance] boolValueForKey:HOTLINE_DEFAULTS_SHOW_NOTIFICATION_BANNER];
     if(bannerEnabled && ![channel isActiveChannel]){
-        [self.banner setMessage:message inChannel:channel];
-        [self.banner displayBannerWithChannel:channel];
+        @try {
+            //As a preventive method to fix public repo crash #100
+            [self.banner setMessage:message inChannel:channel];
+            [self.banner displayBannerWithChannel:channel];
+        }
+        @catch (NSException *exception) {
+            NSString *exceptionDesc = [NSString stringWithFormat:@"Notification banner issue: %@", exception.description];
+            [[FCMemLogger new]addMessage:exceptionDesc];
+        }
     }
 }
 

@@ -18,6 +18,7 @@
 @property (nonatomic,strong) UIView *containerView;
 @property (nonatomic, strong) FCViewController *childController;
 @property (nonatomic, strong) FCFooterView  *footerView;
+@property (nonatomic, strong) UINavigationBar *navBar;
 
 - (instancetype)initWithController:(FCViewController *)controller andEmbed:(BOOL) embed;
 

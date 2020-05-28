@@ -17,20 +17,20 @@
 #import "FCUserUtil.h"
 #import "Photos/Photos.h"
 
-@interface FCImageInput () <FDAttachmentImageControllerDelegate, UIPopoverControllerDelegate>{
+@interface FCImageInput () <FDAttachmentImageControllerDelegate, UIPopoverPresentationControllerDelegate>{
     BOOL isCameraCaptureEnabled;
     BOOL isGallerySelectionEnabled;
 }
 
-@property (strong, nonatomic) UIView* sourceView;
-@property (strong, nonatomic) UIViewController* sourceViewController;
+@property (weak, nonatomic) UIView* sourceView;
+@property (weak, nonatomic) UIViewController* sourceViewController;
 @property (strong, nonatomic) NSData* pickedImageData;
-@property (strong, nonatomic) UIPopoverController* popover;
+@property (strong, nonatomic) UIPopoverPresentationController* popover;
 
 @property (nonatomic, strong) FCConversations *conversation;
 @property (nonatomic, strong) FCChannels *channel;
 @property (nonatomic, strong) FCAttachmentImageController *imageController;
-@property (nonatomic, strong) UIActionSheet *inputOptions;
+@property (nonatomic, strong) UIAlertController *inputOptions;
 
 @end
 
@@ -55,55 +55,45 @@
     FCSecureStore *store = [FCSecureStore sharedInstance];
     isCameraCaptureEnabled = [store boolValueForKey:HOTLINE_DEFAULTS_CAMERA_CAPTURE_ENABLED];
     isGallerySelectionEnabled = [store boolValueForKey:HOTLINE_DEFAULTS_GALLERY_SELECTION_ENABLED];
-    NSArray *actionButtons;
-    self.inputOptions = [[UIActionSheet alloc] initWithTitle:nil
-                                                              delegate:self
-                                                     cancelButtonTitle:HLLocalizedString(LOC_IMAGE_ATTACHMENT_CANCEL_BUTTON_TEXT)
-                                                destructiveButtonTitle:nil
-                                                     otherButtonTitles:nil];
-    if(isCameraCaptureEnabled && isGallerySelectionEnabled){
-        actionButtons = @[HLLocalizedString(LOC_IMAGE_ATTACHMENT_EXISTING_IMAGE_BUTTON_TEXT),HLLocalizedString(LOC_IMAGE_ATTACHMENT_NEW_IMAGE_BUTTON_TEXT)];
-        self.inputOptions.tag = 0;
+
+    self.inputOptions = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+
+    if(isGallerySelectionEnabled){
+        [self.inputOptions addAction:[UIAlertAction actionWithTitle:HLLocalizedString(LOC_IMAGE_ATTACHMENT_EXISTING_IMAGE_BUTTON_TEXT) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self checkLibraryAccessPermission];
+        }]];
     }
-    else if(isCameraCaptureEnabled){
-        actionButtons = @[HLLocalizedString(LOC_IMAGE_ATTACHMENT_NEW_IMAGE_BUTTON_TEXT)];
-        self.inputOptions.tag = 2;
-    }
-    else if(isGallerySelectionEnabled){
-        actionButtons = @[HLLocalizedString(LOC_IMAGE_ATTACHMENT_EXISTING_IMAGE_BUTTON_TEXT)];
-        self.inputOptions.tag = 1;
+    if(isCameraCaptureEnabled){
+        [self.inputOptions addAction:[UIAlertAction actionWithTitle:HLLocalizedString(LOC_IMAGE_ATTACHMENT_NEW_IMAGE_BUTTON_TEXT) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self checkCameraCapturePermission];
+        }]];
     }
     
-    for (NSString *actionTitle in actionButtons) {
-        [self.inputOptions addButtonWithTitle:actionTitle];
-    }
-    self.inputOptions.delegate = self;
+    [self.inputOptions addAction:[UIAlertAction actionWithTitle:HLLocalizedString(LOC_IMAGE_ATTACHMENT_CANCEL_BUTTON_TEXT) style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        [self.inputOptions dismissViewControllerAnimated:true completion:nil];
+    }]];
+    
+    
     self.sourceViewController=viewController;
     self.sourceView=viewController.view;
-    [self.inputOptions showInView:self.sourceView];
-    
+    popover = [self.inputOptions popoverPresentationController];
+    popover.delegate = self;
+    [popover setPermittedArrowDirections:UIPopoverArrowDirectionDown];
+    [self.inputOptions setModalPresentationStyle:UIModalPresentationPopover];
+    [viewController presentViewController:self.inputOptions animated:true completion:nil];
 }
 
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex{
-    NSInteger actionInput = (actionSheet.tag > 0 && buttonIndex) ? actionSheet.tag : buttonIndex;
-    switch (actionInput) {
-        case 1:
-            [self checkLibraryAccessPermission];
-            break;
-        case 2:
-            [self checkCameraCapturePermission];
-            break;
-        default:
-            break;
-    }
+- (void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController {
+    popover.sourceView = self.sourceView;
+    CGRect rectInView = CGRectMake(self.sourceViewController.view.frame.origin.x,self.sourceViewController.view.frame.origin.y+sourceViewController.view.frame.size.height-20,40,40);
+    popover.sourceRect = CGRectMake(CGRectGetMidX(rectInView), CGRectGetMaxY(rectInView)-40, 1, 1);
 }
 
-- (void)popoverController:(UIPopoverController *)popoverController willRepositionPopoverToRect:(inout CGRect *)rect inView:(inout UIView *__autoreleasing *)view
+- (void)popoverPresentationController:(UIPopoverPresentationController *)popoverPresentationController willRepositionPopoverToRect:(inout CGRect *)rect inView:(inout UIView  * __nonnull * __nonnull)view
 {
     CGRect rectInView = CGRectMake(self.sourceViewController.view.frame.origin.x,self.sourceViewController.view.frame.origin.y+sourceViewController.view.frame.size.height-20,40,40);
     *rect = CGRectMake(CGRectGetMidX(rectInView), CGRectGetMaxY(rectInView)-40, 1, 1);
     *view = self.sourceViewController.view;
-    
 }
 
 - (void)checkCameraCapturePermission{
@@ -179,15 +169,15 @@
     imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     imagePicker.allowsEditing = NO;
     if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad){
-        popover=[[UIPopoverController alloc] initWithContentViewController:imagePicker];
+        [imagePicker setModalPresentationStyle:UIModalPresentationPopover];
+        popover=[imagePicker popoverPresentationController];
+        [popover setPermittedArrowDirections:UIPopoverArrowDirectionDown];
+        popover.sourceView = self.sourceView;
         popover.delegate = self;
-        dispatch_async(dispatch_get_main_queue(), ^ {
-            [popover presentPopoverFromRect:CGRectMake(self.sourceViewController.view.frame.origin.x,self.sourceViewController.view.frame.origin.y+sourceViewController.view.frame.size.height-20,40,40) inView:self.sourceViewController.view permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
-        });
     }else{
         [imagePicker setModalPresentationStyle:UIModalPresentationFullScreen];
-        [self.sourceViewController presentViewController:imagePicker animated:YES completion:NULL];
     }
+    [self.sourceViewController presentViewController:imagePicker animated:YES completion:NULL];
 }
 
 - (void)showCamPicker{
@@ -246,7 +236,7 @@
 }
 
 - (void) dismissAttachmentActionSheet{
-    [self.inputOptions dismissWithClickedButtonIndex:0 animated:YES];
+    [self.inputOptions dismissModalViewControllerAnimated:false];
 }
 
 -(void)attachmentController:(FCAttachmentImageController *)controller didFinishImgWithCaption:(NSString *)caption {

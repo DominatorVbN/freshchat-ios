@@ -1112,6 +1112,60 @@ static NSInteger networkIndicator = 0;
     }];
 }
 
++ (void) setNavigationPropertyForBar:(UINavigationBar *)navigationBar {
+    FCTheme *theme = [FCTheme sharedInstance];
+    if (@available(iOS 13.0, *)) {
+        UINavigationBarAppearance *appearance = [UINavigationBarAppearance new];
+        [appearance setTitleTextAttributes:@{
+            NSForegroundColorAttributeName: [theme navigationBarTitleColor],
+            NSFontAttributeName: [theme navigationBarTitleFont]
+        }];
+        navigationBar.prefersLargeTitles = false;
+        navigationBar.barTintColor = [theme navigationBarBackgroundColor];
+        appearance.backgroundColor = [theme navigationBarBackgroundColor];
+        navigationBar.standardAppearance = appearance;
+        navigationBar.compactAppearance = appearance;
+        navigationBar.scrollEdgeAppearance = appearance;
+    }
+    if (@available(iOS 11.0, *)) {
+        navigationBar.prefersLargeTitles = false;
+    }
+    [navigationBar setTitleTextAttributes:@{
+        NSForegroundColorAttributeName: [theme navigationBarTitleColor],
+        NSFontAttributeName: [theme navigationBarTitleFont]
+    }];
+    navigationBar.translucent = false;
+    navigationBar.barTintColor = [theme navigationBarBackgroundColor];
+    navigationBar.backgroundColor = [theme navigationBarBackgroundColor];
+}
+
++ (void) replaceNavigationPropertyForBar:(UINavigationBar *)bar withCurrentBar:(UINavigationBar *)originalbar {
+    if(bar == nil){
+        return;
+    }
+    if (@available(iOS 13.0, *)) {
+        if (bar.standardAppearance){
+            originalbar.standardAppearance = bar.standardAppearance;
+        }
+        if (bar.compactAppearance){
+            originalbar.compactAppearance = bar.compactAppearance;
+        }
+        if (bar.scrollEdgeAppearance) {
+            originalbar.scrollEdgeAppearance = bar.scrollEdgeAppearance;
+        }
+    }
+    if (@available(iOS 11.0, *)) {
+        originalbar.prefersLargeTitles = bar.prefersLargeTitles;
+        [originalbar setLargeTitleTextAttributes:bar.largeTitleTextAttributes];
+    }
+    originalbar.translucent = bar.translucent;
+    [originalbar setTitleTextAttributes:bar.titleTextAttributes];
+    originalbar.barTintColor = bar.barTintColor;
+    originalbar.tintColor = bar.tintColor;
+    originalbar.backgroundColor = bar.backgroundColor;
+}
+
+
 @end
 
 
