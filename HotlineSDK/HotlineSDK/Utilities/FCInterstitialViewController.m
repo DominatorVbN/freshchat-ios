@@ -244,6 +244,7 @@
 }
 
 -(void) handleConversations:(UIViewController *)controller andEmbed:(BOOL) isEmbed{
+    __weak __block FCInterstitialViewController* weakSelf = self;
     [[FCDataManager sharedInstance] fetchAllVisibleChannelsWithCompletion:^(NSArray *channelInfos, NSError *error) {
         FCContainerController *preferredController = nil;
         if (!error) {
@@ -257,7 +258,7 @@
         //default with or without error
         if(!preferredController) {
             FCChannelViewController *channelViewController = [[FCChannelViewController alloc]init];
-            [channelViewController setConversationOptions:self.freshchatOptions];
+            [channelViewController setConversationOptions:weakSelf.freshchatOptions];
             preferredController = [[FCContainerController alloc]initWithController:channelViewController andEmbed:isEmbed];
         }
         

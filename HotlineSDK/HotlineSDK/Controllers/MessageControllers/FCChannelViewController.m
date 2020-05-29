@@ -38,7 +38,7 @@
 #import "FCRemoteConfig.h"
 #import "FCMessages.h"
 
-@interface FCChannelViewController () <HLLoadingViewBehaviourDelegate,UIAlertViewDelegate>
+@interface FCChannelViewController () <HLLoadingViewBehaviourDelegate>
 
 @property (nonatomic, strong) NSArray *channels;
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicator;
@@ -389,18 +389,15 @@
 
 -(void)showAlertWithTitle:(NSString *)title andMessage:(NSString *)message{
     dispatch_async(dispatch_get_main_queue(), ^{ /* show alert view */
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:title message:message delegate:self
-                                            cancelButtonTitle:@"OK" otherButtonTitles: nil];
-        [alert show];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+        __block __weak FCChannelViewController *weakSelf = self;
+           [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+               if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
+                   weakSelf.isJWTAlertShown = FALSE;
+               }
+           }]];
+           [self presentViewController:alert animated:true completion:nil];
     });
-}
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
-        if (buttonIndex == [alertView cancelButtonIndex]){
-            self.isJWTAlertShown = FALSE;
-        }
-    }
 }
 
 -(void)dealloc {

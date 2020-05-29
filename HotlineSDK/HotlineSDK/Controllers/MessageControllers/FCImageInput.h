@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FCMessageHelper.h"
 
-@interface FCImageInput : NSObject <UIAlertViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,UITextViewDelegate>
+@interface FCImageInput : NSObject <UIImagePickerControllerDelegate,UINavigationControllerDelegate,UITextViewDelegate>
 
 - (instancetype) initWithConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel;
 - (void) showInputOptions:(UIViewController*) viewController;

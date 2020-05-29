@@ -408,9 +408,7 @@
             }
             
             if (label) {
-                if (textLabel.length > 0) {
-                    textLabel = [self appendString:[NSString stringWithFormat:@"🔘 %@", label] toString: textLabel];
-                }
+                textLabel = [self appendString:[NSString stringWithFormat:@"🔘 %@", label] toString: textLabel];
             }
         } else if ([fragment.type integerValue] == FRESHCHAT_TEMPLATE_FRAGMENT) {
             NSDictionary *dictionaryValue = fragment.dictionaryValue;

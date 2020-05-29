@@ -69,7 +69,7 @@ typedef struct {
     @property (nonatomic, strong) NSNumber *channelID;
 @end
 
-@interface FCMessageController () <UITableViewDelegate, UITableViewDataSource, HLMessageCellDelegate, HLMessageCellDelegate, FDAudioInputDelegate, KonotorDelegate, HLLoadingViewBehaviourDelegate,UIAlertViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, FCReplyDelegate, FCTemplateDelegate>
+@interface FCMessageController () <UITableViewDelegate, UITableViewDataSource, HLMessageCellDelegate, HLMessageCellDelegate, FDAudioInputDelegate, KonotorDelegate, HLLoadingViewBehaviourDelegate, UICollectionViewDelegate, UICollectionViewDataSource, FCReplyDelegate, FCTemplateDelegate>
 
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingView;
@@ -848,20 +848,14 @@ typedef struct {
 }
 
 -(void)showAlertWithTitle:(NSString *)title andMessage:(NSString *)message{
-    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:title
-                                                  message:message
-                                                 delegate:self
-                                        cancelButtonTitle:@"OK"
-                                        otherButtonTitles: nil];
-    [alert show];
-    
-}
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
-        if (buttonIndex == [alertView cancelButtonIndex]){
-            self.isJWTAlertShown = FALSE;
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    __block __weak FCMessageController *weakSelf = self;
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
+            weakSelf.isJWTAlertShown = FALSE;
         }
-    }
+    }]];
+    [self presentViewController:alert animated:true completion:nil];
 }
 
 -(void)inputToolbar:(FCInputToolbarView *)toolbar sendButtonPressed:(id)sender{
