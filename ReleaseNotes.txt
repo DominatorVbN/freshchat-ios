@@ -1,8 +1,8 @@
-Freshchat iOS SDK - Powered by Freshdesk
-Documentation   : https://support.freshchat.com
-Support Email   : support@freshchat.com
-Version         : 3.6.1
 
+Ver 3.6.2 
+__________________________
+Enhancement:
+- Removed deprecated UIAlertViews.
 Ver 3.6.1 
 __________________________
 Enhancements:

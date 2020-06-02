@@ -16,6 +16,7 @@
 #import "FCRemoteConfig.h"
 #import "FCUserUtil.h"
 #import "Photos/Photos.h"
+#import "FCUtilities.h"
 
 @interface FCImageInput () <FDAttachmentImageControllerDelegate, UIPopoverPresentationControllerDelegate>{
     BOOL isCameraCaptureEnabled;
@@ -153,14 +154,17 @@
 }
 
 - (void) showAccessDeniedAlert{
-    
-    UIAlertView *permissionAlert = [[UIAlertView alloc] initWithTitle:nil message:HLLocalizedString(LOC_CAMERA_PERMISSION_DENIED_TEXT) delegate:nil cancelButtonTitle:HLLocalizedString(LOC_CAMERA_PERMISSION_ALERT_CANCEL) otherButtonTitles:nil, nil];
-    [permissionAlert show];
+    [FCUtilities showAlertViewWithTitle:nil
+                                message:HLLocalizedString(LOC_CAMERA_PERMISSION_DENIED_TEXT)
+                          andCancelText:HLLocalizedString(LOC_CAMERA_PERMISSION_ALERT_CANCEL)
+                           inController:self.sourceViewController];
 }
 
 - (void) showLibAccessDeniedAlert{
-    UIAlertView *permissionAlert = [[UIAlertView alloc] initWithTitle:nil message:HLLocalizedString(LOC_PHOTO_LIBRARY_PERMISSION_DENIED_TEXT) delegate:nil cancelButtonTitle:HLLocalizedString(LOC_PHOTO_LIBRARY_PERMISSION_ALERT_CANCEL) otherButtonTitles:nil, nil];
-    [permissionAlert show];
+    [FCUtilities showAlertViewWithTitle:nil
+                                message:HLLocalizedString(LOC_PHOTO_LIBRARY_PERMISSION_DENIED_TEXT)
+                          andCancelText:HLLocalizedString(LOC_PHOTO_LIBRARY_PERMISSION_ALERT_CANCEL)
+                           inController:self.sourceViewController];
 }
 
 - (void)showImagePicker{
@@ -192,9 +196,10 @@
             
         });
     }else{
-        UIAlertView *alertview=[[UIAlertView alloc] initWithTitle:HLLocalizedString(LOC_CAMERA_UNAVAILABLE_TITLE) message:HLLocalizedString(LOC_CAMERA_UNAVAILABLE_DESCRIPTION) delegate:nil
-                                                cancelButtonTitle:HLLocalizedString(LOC_CAMERA_UNAVAILABLE_OK_BUTTON) otherButtonTitles:nil];
-        [alertview show];
+        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_CAMERA_UNAVAILABLE_TITLE)
+                                    message:HLLocalizedString(LOC_CAMERA_UNAVAILABLE_DESCRIPTION)
+                              andCancelText:HLLocalizedString(LOC_CAMERA_UNAVAILABLE_OK_BUTTON)
+                               inController:self.sourceViewController];
     }
 }
 

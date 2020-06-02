@@ -713,7 +713,7 @@ static BOOL MAKE_API_WAIT = NO;
     }
     else{
         [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_FAQ_FEATURE_DISABLED_TEXT) message:nil
-                              andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL)];
+                              andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL) inController:controller];
     }
 }
 
@@ -728,13 +728,13 @@ static BOOL MAKE_API_WAIT = NO;
     }
     else{
         [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_CHANNELS_FEATURE_DISABLED_TEXT) message:nil
-                              andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL)];
+                              andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL) inController:controller];
     }
 }
 
 -(void)showFAQs:(UIViewController *)controller withOptions:(FAQOptions *)options{
     if([FCUtilities isAccountDeleted]){
-        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_TEXT) message:nil andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL)];
+        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_TEXT) message:nil andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL) inController:controller];
         return;
     }
     if(options.tags.count > MAX_SOL_FILTER_TAGS) {
@@ -746,7 +746,7 @@ static BOOL MAKE_API_WAIT = NO;
 
 - (void) showConversations:(UIViewController *)controller withOptions :(ConversationOptions *)options {
     if([FCUtilities isAccountDeleted]){
-        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_TEXT) message:nil andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL)];
+        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_TEXT) message:nil andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL) inController:controller];
         return;
     }
     if(options.tags.count > MAX_SOL_FILTER_TAGS) {

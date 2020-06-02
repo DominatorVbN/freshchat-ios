@@ -66,7 +66,7 @@
 + (void)initiatePendingTasks;
 + (BOOL)hasInitConfig;
 + (void)unreadCountInternalHandler:(void (^)(NSInteger count))completion;
-+ (void) showAlertViewWithTitle : (NSString *)title message : (NSString *)message andCancelText : (NSString *) cancelText;
++ (void) showAlertViewWithTitle : (NSString *)title message : (NSString *)message andCancelText : (NSString *) cancelText inController:(UIViewController*) viewController;
 + (BOOL) containsHTMLContent: (NSString *)content;
 + (BOOL) containsString: (NSString *)original andTarget:(NSString *)target;
 + (BOOL) canMakeSessionCall;

@@ -357,14 +357,17 @@ static NSInteger networkIndicator = 0;
     return lastUpdateTime;
 }
 
-+(void) showAlertViewWithTitle : (NSString *)title message : (NSString *)message andCancelText : (NSString *) cancelText{
++(void) showAlertViewWithTitle : (NSString *)title message : (NSString *)message andCancelText : (NSString *) cancelText inController:(UIViewController *)viewController{
     
-    if(title.length == 0) {
+    if(title && title.length == 0) {
         return;
     }
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:cancelText otherButtonTitles:nil, nil];
-    [alertView show];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+       [alert addAction:[UIAlertAction actionWithTitle:cancelText style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+           [alert dismissViewControllerAnimated:true completion:nil];
+       }]];
+       [viewController presentViewController:alert animated:true completion:nil];
 }
 
 +(BOOL) isValidPropKey: (NSString *) str {
