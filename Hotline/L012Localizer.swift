@@ -99,10 +99,10 @@ extension UITextField {
         if self.tag <= 0 {
             if UIApplication.isRTL()  {
                 if self.textAlignment == .right { return }
-                //self.textAlignment = .right
+                self.textAlignment = .right
             } else {
                 if self.textAlignment == .left { return }
-                //self.textAlignment = .left
+                self.textAlignment = .left
             }
         }
     }

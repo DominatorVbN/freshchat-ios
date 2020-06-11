@@ -21,6 +21,11 @@ enum ResponseTimeType {
     LAST_WEEK_AVG = 2
 };
 
+enum FCCalendarOptionType {
+    BOOK_NOW = 1,
+    CANCEL_NOW = 2
+};
+
 @interface FCMessageController : FCJWTViewController <FDInputToolbarViewDelegate, UIGestureRecognizerDelegate, FCYesNoPromptViewDelegate, HLCSATViewDelegate, ConversationOptionsInterface>
 
 -(BOOL)isModal;

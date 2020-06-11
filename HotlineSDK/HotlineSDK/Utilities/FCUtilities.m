@@ -35,6 +35,7 @@
 #import "FCEventsManager.h"
 #import "FCUserUtil.h"
 #import "FCAnimatedImage.h"
+#import "FCParticipants.h"
 
 #define EXTRA_SECURE_STRING @"73463f9d-70de-41f8-857a-58590bdd5903"
 #define ERROR_CODE_USER_DELETED 19
@@ -590,6 +591,16 @@ static NSInteger networkIndicator = 0;
     }];
 }
 
++ (void) setAgentImage : (FCAnimatedImageView *)imageView forAlias : (NSString *)alias {
+    BOOL showteamMemberInfo = [[FCSecureStore sharedInstance] boolValueForKey:HOTLINE_DEFAULTS_AGENT_AVATAR_ENABLED];
+    if (showteamMemberInfo) {
+        FCParticipants *participant = [FCParticipants fetchParticipantForAlias:alias inContext:[FCDataManager sharedInstance].mainObjectContext];
+        if (participant.profilePicURL) {
+            [FCUtilities loadImageWithUrl:participant.profilePicURL forView:imageView andErrorImage:[[FCTheme sharedInstance] getImageWithKey:IMAGE_CAROUSEL_ERROR_IMAGE]];
+        }
+    }
+}
+
 +(UIImage *)generateImageForLabel:(NSString *)labelText withColor :(UIColor *)color{
     FCTheme *theme = [FCTheme sharedInstance];
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
@@ -1095,16 +1106,45 @@ static NSInteger networkIndicator = 0;
     }
 }
 
++ (NSString *) intervalStrFromMillis : (long)fromMillis toMillis: (long) toMillis {
+    long interval = labs(toMillis - fromMillis);
+    return [self getDurationFromSecs:(int)(interval/1000.0)];
+}
+
++ (NSString *) getDurationFromSecs : (int) seconds {
+    int minutes = seconds / 60;
+    if(minutes > 59){
+        //display hour + min
+        NSString *hrsStr = (minutes / 60) >= 2 ? HLLocalizedString(LOC_CALENDAR_DURATION_HOURS) : HLLocalizedString(LOC_CALENDAR_DURATION_HOUR);
+        if(minutes % 60 == 0){
+            return ([NSString stringWithFormat:@"%d %@", (minutes / 60), hrsStr]);
+        }
+        else{
+            return ([NSString stringWithFormat:@"%d %@ %d %@", (minutes / 60), hrsStr, (minutes % 60), HLLocalizedString(LOC_CALENDAR_DURATION_MINS)]);
+        }
+    }
+    return ([NSString stringWithFormat:@"%d %@", minutes, HLLocalizedString(LOC_CALENDAR_DURATION_MINS)]);
+}
+
++ (float) calendarMsgWidthInBounds : (CGRect)bound {
+    float minWidth = MIN(bound.size.width, bound.size.height);
+    return (minWidth - ((minWidth/100)*20));
+}
+
 +(void) loadImageFromURL:(NSString  * _Nonnull)imageURL withCache:(void (^ _Nullable)())cacheBlock withError:(void (^ _Nullable)())errorBlock withCompletion:(void (^_Nullable)(UIImage * _Nonnull))completionBlock {
     [[FDWebImageManager sharedManager] diskImageExistsForURL:[NSURL URLWithString:imageURL] completion:^(BOOL isInCache) {
         if(isInCache) {
-            cacheBlock();
+            if (cacheBlock) {
+                cacheBlock();
+            }
         }
         else {
             FDWebImageManager *manager = [FDWebImageManager sharedManager];
             [manager loadImageWithURL:[NSURL URLWithString:imageURL] options:FDWebImageDelayPlaceholder progress:nil completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, FDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
                 if (error) {
-                    errorBlock();
+                    if(errorBlock) {
+                        errorBlock();
+                    }
                 } else {
                     if(image && finished){
                         completionBlock(image);

@@ -18,6 +18,8 @@
 #import "FCLocalNotification.h"
 #import "FCCoreServices.h"
 #import "FCConstants.h"
+#import "FCUserDefaults.h"
+#import "FCEventsHelper.h"
 
 #define KONOTOR_IMG_COMPRESSION YES
 
@@ -446,18 +448,82 @@ static BOOL messageTimeDirty = YES;
     return false;
 }
 
++ (NSDictionary *) getInternalMetaForData : (NSString *)data {
+    if(data){
+        NSError *error;
+        NSDictionary *metaDict = [self objectFromStringData:data withError:error];
+        if (!error) {
+            return metaDict;
+        }
+    }
+    return nil;
+}
+
 +(NSArray<NSDictionary *> *)getReplyFragmentsIn:(NSString*)data {
     if (data) {
-        NSData *extraJSONData = [data dataUsingEncoding:NSUTF8StringEncoding];
         NSError *error;
-        NSArray<NSDictionary *> *fragments = [NSJSONSerialization JSONObjectWithData:extraJSONData
-                                                                             options:0
-                                                                               error:&error];
+        NSArray<NSDictionary *> *fragments =[self objectFromStringData:data withError:error];
         if (!error) {
             return fragments;
         }
     }
     return nil;
+}
+
++ (id) objectFromStringData : (NSString *)data withError:(NSError *)error {
+    NSData *extraJSONData = [data dataUsingEncoding:NSUTF8StringEncoding];
+    return [NSJSONSerialization JSONObjectWithData:extraJSONData
+                                           options:0
+                                             error:&error];
+}
+
++ (void) cancelCalendarInviteForMsg : (FCMessageData *)message andConv :(FCConversations *) conv {
+    NSDictionary *info = @{@"hasActiveCalInvite" : @NO, @"internalMeta" :[FCStringUtil isNotEmptyString: message.internalMeta] ? message.internalMeta : @""};
+    NSDictionary *jsonDict = [FCMessageUtil getInternalMetaForData:message.internalMeta];
+    
+    NSString *inviteId = [jsonDict valueForKeyPath:@"calendarMessageMeta.calendarInviteId"];
+    if([FCStringUtil isNotEmptyString:inviteId]){
+        
+        FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventCalendarInviteCancel
+                                                                    withParams:@{@(FCPropertyInviteId) : inviteId}];
+        [FCEventsHelper postNotificationForEvent:outEvent];
+        
+        [FCMessages updateCalInviteStatusForId:[jsonDict valueForKeyPath:@"calendarMessageMeta.calendarInviteId"] forChannel:conv.belongsToChannel completionHandler:^{
+            [FCMessageHelper uploadNewMsgWithImageData:nil textFeed:@"Cancelled the invite" messageType:FC_CALENDAR_CANCEL_MSG withInfo:info onConversation:conv andChannel:conv.belongsToChannel];
+        }];
+    }
+}
+
++ (void) sendCalendarInviteForMsg : (FCMessageData *)message withSlotInfo :(NSDictionary*)slotInfo andConv :(FCConversations *) conv {
+    NSDictionary *info = [FCMessageUtil getInternalMetaForData:message.internalMeta];
+    if ([info count] > 0){
+        //update active status flag
+        [FCMessages updateCalInviteStatusForId:[info valueForKeyPath:@"calendarMessageMeta.calendarInviteId"] forChannel:conv.belongsToChannel completionHandler:^{
+            NSMutableDictionary *jsonDict = [[NSMutableDictionary alloc] initWithDictionary:info];
+                
+                NSMutableDictionary *infoDict = [[NSMutableDictionary alloc] init];
+                NSMutableDictionary *extraJsonInfo = [[NSMutableDictionary alloc]init];
+                extraJsonInfo[@"endMillis"] = [slotInfo valueForKey:@"endMillis"];
+                extraJsonInfo[@"eventProviderType"] = @1;
+                extraJsonInfo[@"fragmentType"] = @7;
+                extraJsonInfo[@"isPendingCreation"] = @"true";
+                extraJsonInfo[@"startMillis"] = [slotInfo valueForKey:@"startMillis"];
+                extraJsonInfo[@"userTimeZone"] = [slotInfo valueForKey:@"userTimeZone"];
+                infoDict[@"extraJSON"] = extraJsonInfo;
+                
+                NSMutableDictionary *calendarMeta = [jsonDict mutableCopy];
+                
+                NSMutableDictionary *innerDict = [jsonDict[@"calendarMessageMeta"] mutableCopy];
+                innerDict[@"calendarBookingEmail"] = [FCUserDefaults getStringForKey:FRESHCHAT_DEFAULTS_CALENDAR_INVITE_EMAILID];
+                calendarMeta[@"calendarMessageMeta"] = innerDict;
+                
+                NSMutableDictionary *internalMeta = [[NSMutableDictionary alloc] init];
+                internalMeta[@"internalMeta"] = [calendarMeta mutableCopy];
+                infoDict[@"internalMeta"] = [FCMessages getJsonStringObjForMessage:internalMeta withKey:@"internalMeta"];// convert to string
+            
+                [FCMessageHelper uploadNewMsgWithImageData:nil textFeed:@"" messageType:@1 withInfo:infoDict onConversation:conv andChannel:conv.belongsToChannel];
+        }];
+    }
 }
 
 @end

@@ -26,6 +26,8 @@
 
 #define HOTLINE_BANNER_MESSAGE_UPDATED @"com.freshdesk.hotline_banner_message_updated"
 
+#define FRESHCHAT_CALENDAR_SLOT_SELECTED @"com.freshworks.freshchatSDK_calendar_slot_selected"
+
 @interface FCLocalNotification : NSObject
 
 +(void)post:(NSString *)name;

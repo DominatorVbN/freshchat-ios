@@ -479,8 +479,12 @@
     NSString *fontNameValue = [self fetchThemeValueForKey:[key stringByAppendingString:@".fontName"]];
     NSString *fontSizeValue = [self fetchThemeValueForKey:[key stringByAppendingString:@".textSize"]];
     
-    if (fontNameValue != nil && [fontNameValue caseInsensitiveCompare:@"SYS_DEFAULT_BOLD_FONT_NAME"] == NSOrderedSame) {
-        return [UIFont boldSystemFontOfSize:defaultSize];
+    if ([fontNameValue caseInsensitiveCompare:@"SYS_DEFAULT_BOLD_FONT_NAME"] == NSOrderedSame) {
+        if(fontNameValue != nil){
+            return [UIFont boldSystemFontOfSize:[fontSizeValue floatValue]];
+        }else {
+            return [UIFont boldSystemFontOfSize:defaultSize];
+        }
     }
     
     if (([fontNameValue caseInsensitiveCompare:@"SYS_DEFAULT_FONT_NAME"] == NSOrderedSame) || (fontNameValue == nil) ){
@@ -1204,6 +1208,312 @@
 
 -(UIColor *)getCarouselSelectedCardBackground {
     UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CarouselCardStyle.selectedCardStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+//Calendar Msg Detail
+
+-(UIColor *)getFindSlotButtonTitleColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarInviteOptionsStyle.findSlotButtonStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getFindSlotButtonTitleFont{
+    return [self getFontValueWithKey:@"ConversationDetail.CalendarInviteOptionsStyle.findSlotButtonStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getFindSlotButtonBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarInviteOptionsStyle.findSlotButtonStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLUE];
+}
+
+-(UIColor *)getNotInterestedButtonColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarInviteOptionsStyle.notInterestedButtonStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_GRAY];
+}
+
+-(UIFont *)getNotInterestedButtonFont{
+    return [self getFontValueWithKey:@"ConversationDetail.CalendarInviteOptionsStyle.notInterestedButtonStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getBannerTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarBannerStyle.textStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_GRAY];
+}
+
+-(UIFont *)getBannerTextFont{
+    return [self getFontValueWithKey:@"ConversationDetail.CalendarBannerStyle.textStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getBannerBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarBannerStyle.textStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLUE];
+}
+
+// Calendar : Message Detail View - Invitation
+-(UIColor *)getInvitationStatusTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarEventStyle.statusStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+
+-(UIFont *)getInvitationStatusTextFont{
+    return [self getFontValueWithKey:@"ConversationDetail.CalendarEventStyle.statusStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getInvitationDurationTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarEventStyle.meetingDurationTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+
+-(UIFont *)getInvitationDurationTextFont{
+    return [self getFontValueWithKey:@"ConversationDetail.CalendarEventStyle.meetingDurationTextStyle" andDefaultSize:FD_FONT_SIZE_SMALL];
+}
+
+-(UIColor *)getInvitationDescriptionTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarEventStyle.descriptionTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+
+-(UIFont *)getInvitationDescriptionTextFont{
+    return [self getFontValueWithKey:@"ConversationDetail.CalendarEventStyle.descriptionTextStyle" andDefaultSize:FD_FONT_SIZE_SMALL];
+}
+
+-(UIColor *)getInvitationTimeTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarEventStyle.meetingTimeTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+
+-(UIFont *)getInvitationTimeTextFont{
+    return [self getFontValueWithKey:@"ConversationDetail.CalendarEventStyle.meetingTimeTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getInvitationDateTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarEventStyle.meetingDateTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+
+-(UIFont *)getInvitationDateTextFont{
+    return [self getFontValueWithKey:@"ConversationDetail.CalendarEventStyle.meetingDateTextStyle" andDefaultSize:FD_FONT_SIZE_SMALL];
+}
+
+-(UIColor *)getInvitationAvatarsBorderColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarEventStyle.avatarBorderColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIColor *)getInvitationBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"ConversationDetail.CalendarEventStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+// Calendar Popup-View
+
+-(UIColor *)getCalendarPopupBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.backgroundColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+// Calendar Popup-View : Navigation bar
+-(UIColor *)getCalendarPopupNavBarTitleTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.NavigationBar.titleTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+
+-(UIFont *)getCalendarPopupNavBarTitleTextFont{
+    return [self getFontValueWithKey:@"Calendar.NavigationBar.titleTextStyle" andDefaultSize:FD_FONT_SIZE_MEDIUM];
+}
+
+-(UIColor *)getCalendarPopupNavBarBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.NavigationBar.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIColor *)getCalendarPopupNavBarDurationTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.NavigationBar.meetingDurationTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+
+-(UIFont *)getCalendarPopupNavBarDurationTextFont{
+    return [self getFontValueWithKey:@"Calendar.NavigationBar.meetingDurationTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarPopupNavBarDividerColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.NavigationBar.dividerColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_GRAY];
+}
+
+// Calendar Popup-View : Email view
+-(UIColor *)getCalendarEmailViewDescTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.EmailPrompt.descriptionTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarEmailViewDescTextFont{
+    return [self getFontValueWithKey:@"Calendar.EmailPrompt.descriptionTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarEmailViewTextFieldTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.EmailPrompt.emailInputViewStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarEmailViewTextFieldTextFont{
+    return [self getFontValueWithKey:@"Calendar.EmailPrompt.emailInputViewStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarEmailViewNextBtnTitleColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.EmailPrompt.nextButtonStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarEmailViewNextBtnTitleFont{
+    return [self getFontValueWithKey:@"Calendar.EmailPrompt.nextButtonStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarEmailViewNextBtnBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.EmailPrompt.nextButtonStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+// Calendar Popup-View : Slots View
+-(UIColor *)getCalendarSlotsSessionNameTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.sessionNameTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarSlotsSessionNameTextFont{
+    return [self getFontValueWithKey:@"Calendar.TimeSlotPrompt.sessionNameTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarSlotsDateTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.dateTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarSlotsDateTextFont{
+    return [self getFontValueWithKey:@"Calendar.TimeSlotPrompt.dateTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarSlotsStateDescTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.stateDescriptionTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarSlotsStateDescTextFont{
+    return [self getFontValueWithKey:@"Calendar.TimeSlotPrompt.stateDescriptionTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarSlotsButtonTitleColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.slotButtonStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_BLACK];
+}
+
+-(UIFont *)getCalendarSlotsButtonTitleFont{
+    return [self getFontValueWithKey:@"Calendar.TimeSlotPrompt.slotButtonStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarSlotsButtonBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.slotButtonStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIColor *)getCalendarSlotsButtonSelectedBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.slotButtonStyle.selectBackground"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_GRAY];
+}
+
+-(UIColor *)getCalendarSlotsButtonBorderColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.slotButtonStyle.borderColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_GRAY];
+}
+
+-(UIColor *)getCalendarSlotsShowMoreButtonTitleColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.showMoreButtonStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarSlotsShowMoreButtonTitleFont{
+    return [self getFontValueWithKey:@"Calendar.TimeSlotPrompt.showMoreButtonStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarSlotsShowMoreButtonBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.showMoreButtonStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIColor *)getCalendarSlotsShowMoreButtonBorderColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.showMoreButtonStyle.borderColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIColor *)getCalendarSlotsDividerColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.TimeSlotPrompt.dividerColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+// Calendar Popup-View : Confirmation View
+-(UIColor *)getCalendarConfirmDescriptionTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.descriptionTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_GRAY];
+}
+
+-(UIFont *)getCalendarConfirmDescriptionTextFont{
+    return [self getFontValueWithKey:@"Calendar.ConfirmationPrompt.descriptionTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarConfirmTimeTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.meetingTimeTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_GRAY];
+}
+
+-(UIFont *)getCalendarConfirmTimeTextFont{
+    return [self getFontValueWithKey:@"Calendar.ConfirmationPrompt.meetingTimeTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarConfirmDateTextColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.meetingDateTextStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_GRAY];
+}
+
+-(UIFont *)getCalendarConfirmDateTextFont{
+    return [self getFontValueWithKey:@"Calendar.ConfirmationPrompt.meetingDateTextStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarConfirmAvatarsBorderColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.avatarBorderColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIColor *)getCalendarConfirmButtonTitleColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.confirmButtonStyle.textColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarConfirmButtonTitleFont{
+    return [self getFontValueWithKey:@"Calendar.ConfirmationPrompt.confirmButtonStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarConfirmButtonBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.confirmButtonStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIColor *)getCalendarConfirmChangeSlotButtonTitleColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.changeSlotButtonStyle.borderColor"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIFont *)getCalendarConfirmChangeSlotButtonTitleFont{
+    return [self getFontValueWithKey:@"Calendar.ConfirmationPrompt.changeSlotButtonStyle" andDefaultSize:FD_FONT_SIZE_NORMAL];
+}
+
+-(UIColor *)getCalendarConfirmChangeSlotButtonBackgroundColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.changeSlotButtonStyle.background"];
+    return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
+}
+
+-(UIColor *)getCalendarConfirmChangeSlotButtonBorderColor{
+    UIColor *color = [self getColorValueForKeyPath:@"Calendar.ConfirmationPrompt.changeSlotButtonStyle.borderColor"];
     return color ? color : [FCTheme colorWithHex:FD_COLOR_WHITE];
 }
 

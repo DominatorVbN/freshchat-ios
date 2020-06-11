@@ -26,8 +26,10 @@
 #import "FCDateUtil.h"
 #import "FCCarouselCardsList.h"
 #import "FCConstants.h"
+#import "FCCalendarOptionsView.h"
 #import "FCTemplateFactory.h"
 #import "FCTemplateSection.h"
+
 
 @interface FCAgentMessageCell ()
 
@@ -35,6 +37,7 @@
 @property (nonatomic, strong) NSString *agentName;
 @property (nonatomic, assign) BOOL showteamMemberInfo; //display team member info
 @property (nonatomic, assign) BOOL showAvatarView; //plist flag TeamMemberAvatarStyle.visible
+@property (nonatomic, assign) BOOL hasAgentCalenderInvite;
 
 @end
 
@@ -136,6 +139,8 @@
 - (void) drawMessageViewForMessage:(FCMessageData*)currentMessage parentView:(UIView*)parentView withTag:(NSInteger )tag {
     
     [self clearAllSubviews];
+    self.hasAgentCalenderInvite = ([currentMessage.messageType isEqualToNumber: FC_CALENDAR_INVITE_MSG]
+                                   && currentMessage.hasActiveCalInvite);
     contentEncloser = [[UIView alloc] init];
     contentEncloser.translatesAutoresizingMaskIntoConstraints = NO;
     [contentEncloser setLayoutMargins:UIEdgeInsetsMake(0,0,0,0)];
@@ -234,6 +239,14 @@
         }
     }
     
+    if (self.hasAgentCalenderInvite){
+        FCCalendarOptionsView *calendarOptions = [[FCCalendarOptionsView alloc] initCalendarOptionsViewForMessage:currentMessage];
+        [views setObject:calendarOptions forKey:@"calendarOptions"];
+        calendarOptions.delegate = self.delegate;
+        [contentEncloser addSubview:calendarOptions];
+        [fragmensViewArr addObject:@"calendarOptions"];
+    }
+    
     //All details are in contentview but no constrains set
     int agentImagedim = self.showAvatarView ? FC_PROFILEIMAGE_DIMENSION : 0;
     [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"H:|-5-[profileImageView(%d)]-5-[contentEncloser(<=%ld)]",agentImagedim ,(long)self.maxcontentWidth] options:0 metrics:nil views:views]];
@@ -310,6 +323,10 @@
             NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(>=75)]-(>=%@)-|",leftPadding,str,rightPadding];
             [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
             [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[%@]",[self isTopFragment:fragmensViewArr currentIndex:i]? topPadding : internalPadding, str]];
+        } else if([str containsString:@"calendarOptions"]) {
+            NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(>=75)]-%@-|",leftPadding,str, rightPadding];
+            [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
+            [veriticalConstraint appendString:[NSString stringWithFormat:@"-[%@(>=0)]",str]];
         }
     }
     if(!currentMessage.isWelcomeMessage) { //Show time for non welcome messages.

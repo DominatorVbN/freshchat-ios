@@ -246,7 +246,7 @@
 
 -(void)attachmentController:(FCAttachmentImageController *)controller didFinishImgWithCaption:(NSString *)caption {
     
-    [FCMessageHelper uploadMessageWithImageData:self.pickedImageData textFeed:caption onConversation:self.conversation andChannel:self.channel];
+    [FCMessageHelper uploadMessageWithImageData:self.pickedImageData textFeed:caption messageType:@1  onConversation:self.conversation andChannel:self.channel];
 }
 
 @end

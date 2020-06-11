@@ -65,3 +65,6 @@
 #define FRESHCHAT_API_USER_RENEW_BY_JWT_PATH @"/app/services/app/%@/user/renew-by-jwt"
 
 #define FRESHCHAT_API_TRACK_INBOUND_EVENTS @"/app/services/app/%@/user/%@/events/multi"
+
+//TODO : Add correct once right Availablility API is there
+#define FRESHCHAT_API_CALENDAR_AVAILABILITY @"app/services/app/%@/agent/%@/calendar/availability"

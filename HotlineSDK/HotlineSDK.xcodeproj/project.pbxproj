@@ -26,17 +26,27 @@
 		021DA7CE23E1814F00CA7F02 /* FCAnimatedImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 021DA7CA23E1814F00CA7F02 /* FCAnimatedImageView.m */; };
 		021DA7D423E1902E00CA7F02 /* FCAnimatedImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 021DA7D323E1902D00CA7F02 /* FCAnimatedImage.m */; };
 		024529482386E62C0018FC38 /* FCEventsConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 024529472386E62C0018FC38 /* FCEventsConstants.h */; };
+		0257E210247569F300E3A8E3 /* FCCalendarSlotConfirmationView.h in Headers */ = {isa = PBXBuildFile; fileRef = 0257E20E247569F300E3A8E3 /* FCCalendarSlotConfirmationView.h */; };
+		0257E211247569F300E3A8E3 /* FCCalendarSlotConfirmationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0257E20F247569F300E3A8E3 /* FCCalendarSlotConfirmationView.m */; };
+		025AA0CD24504EB1003B5F69 /* FCCalendarOptionsView.h in Headers */ = {isa = PBXBuildFile; fileRef = 025AA0CB24504EB1003B5F69 /* FCCalendarOptionsView.h */; };
+		025AA0CE24504EB1003B5F69 /* FCCalendarOptionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 025AA0CC24504EB1003B5F69 /* FCCalendarOptionsView.m */; };
+		025AA0D92450D60E003B5F69 /* FCCalendarViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 025AA0D72450D60E003B5F69 /* FCCalendarViewController.h */; };
+		025AA0DA2450D60E003B5F69 /* FCCalendarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 025AA0D82450D60E003B5F69 /* FCCalendarViewController.m */; };
+		025AA0DD2450E48F003B5F69 /* FCCalendarInvitationFragment.h in Headers */ = {isa = PBXBuildFile; fileRef = 025AA0DB2450E48F003B5F69 /* FCCalendarInvitationFragment.h */; };
+		025AA0DE2450E48F003B5F69 /* FCCalendarInvitationFragment.m in Sources */ = {isa = PBXBuildFile; fileRef = 025AA0DC2450E48F003B5F69 /* FCCalendarInvitationFragment.m */; };
 		02C480B62377E07700EDADB2 /* FCEventsManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C480B42377E07700EDADB2 /* FCEventsManager.h */; };
 		02C480B72377E07700EDADB2 /* FCEventsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B52377E07700EDADB2 /* FCEventsManager.m */; };
 		02C480BA2377E27200EDADB2 /* FCEventsConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C480B82377E27200EDADB2 /* FCEventsConfig.h */; };
 		02C480BB2377E27200EDADB2 /* FCEventsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B92377E27200EDADB2 /* FCEventsConfig.m */; };
+		321D4EA7248A4F0900034560 /* libOCMock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 321D4EA6248A4F0900034560 /* libOCMock.a */; };
 		32346524242B2721000F4CEB /* FCTemplateSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDD9242A1C5D00B1B71F /* FCTemplateSection.h */; };
 		32346525242B2725000F4CEB /* FCTemplateSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */; };
+		323DD88B247547E900835F59 /* FCCalendarBannerView.h in Headers */ = {isa = PBXBuildFile; fileRef = 323DD889247547E900835F59 /* FCCalendarBannerView.h */; };
+		323DD88C247547E900835F59 /* FCCalendarBannerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 323DD88A247547E900835F59 /* FCCalendarBannerView.m */; };
 		32857E0F24225FA300E841F4 /* FCTemplateFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 32857E0D24225FA300E841F4 /* FCTemplateFactory.h */; };
 		32857E1024225FA300E841F4 /* FCTemplateFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 32857E0E24225FA300E841F4 /* FCTemplateFactory.m */; };
 		328ABDBD2429D04600B1B71F /* FreshchatSDKTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDBC2429D04600B1B71F /* FreshchatSDKTest.m */; };
 		328ABDBF2429D04600B1B71F /* libFreshchatSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 35591AB11B9ED58100BC0B60 /* libFreshchatSDK.a */; };
-		328ABDC62429D15C00B1B71F /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDC52429D15C00B1B71F /* OCMock.framework */; };
 		328ABDC82429D1CE00B1B71F /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDC72429D1CE00B1B71F /* WebKit.framework */; };
 		328ABDCA2429D1EE00B1B71F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDC92429D1EE00B1B71F /* AVFoundation.framework */; };
 		328ABDCC2429D1FC00B1B71F /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDCB2429D1FC00B1B71F /* CoreData.framework */; };
@@ -46,6 +56,12 @@
 		328ABDD82429D2B800B1B71F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328ABDD72429D2B800B1B71F /* CoreMedia.framework */; };
 		328ABDE0242A3DA200B1B71F /* FCDropDownViewModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDDE242A3DA200B1B71F /* FCDropDownViewModel.h */; };
 		328ABDE1242A3DA200B1B71F /* FCDropDownViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDF242A3DA200B1B71F /* FCDropDownViewModel.m */; };
+		32D8BEB6243F23C300061DE8 /* FCCalendarModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 32D8BEB4243F23C300061DE8 /* FCCalendarModel.m */; };
+		32D8BEB7243F5B5D00061DE8 /* FCCalendarModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 32D8BEB3243F23C300061DE8 /* FCCalendarModel.h */; };
+		32D8BEBA2440AAEA00061DE8 /* FCCalendarTableViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 32D8BEB82440AAEA00061DE8 /* FCCalendarTableViewController.h */; };
+		32D8BEBB2440AAEA00061DE8 /* FCCalendarTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 32D8BEB92440AAEA00061DE8 /* FCCalendarTableViewController.m */; };
+		32D8BEBE2441C46F00061DE8 /* FCCalendarTableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 32D8BEBC2441C46F00061DE8 /* FCCalendarTableViewCell.h */; };
+		32D8BEBF2441C46F00061DE8 /* FCCalendarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 32D8BEBD2441C46F00061DE8 /* FCCalendarTableViewCell.m */; };
 		32DF18F7244741FD00B2AE58 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32DF18F6244741FD00B2AE58 /* CoreServices.framework */; };
 		32E406EA24321650003C31CA /* FCTemplateSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */; };
 		32E406EB2432165C003C31CA /* FCTemplateSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDD9242A1C5D00B1B71F /* FCTemplateSection.h */; };
@@ -252,16 +268,27 @@
 		021DA7CA23E1814F00CA7F02 /* FCAnimatedImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCAnimatedImageView.m; sourceTree = "<group>"; };
 		021DA7D323E1902D00CA7F02 /* FCAnimatedImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCAnimatedImage.m; sourceTree = "<group>"; };
 		024529472386E62C0018FC38 /* FCEventsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsConstants.h; sourceTree = "<group>"; };
+		0257E20E247569F300E3A8E3 /* FCCalendarSlotConfirmationView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarSlotConfirmationView.h; sourceTree = "<group>"; };
+		0257E20F247569F300E3A8E3 /* FCCalendarSlotConfirmationView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarSlotConfirmationView.m; sourceTree = "<group>"; };
+		025AA0CB24504EB1003B5F69 /* FCCalendarOptionsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarOptionsView.h; sourceTree = "<group>"; };
+		025AA0CC24504EB1003B5F69 /* FCCalendarOptionsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarOptionsView.m; sourceTree = "<group>"; };
+		025AA0D72450D60E003B5F69 /* FCCalendarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarViewController.h; sourceTree = "<group>"; };
+		025AA0D82450D60E003B5F69 /* FCCalendarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarViewController.m; sourceTree = "<group>"; };
+		025AA0DB2450E48F003B5F69 /* FCCalendarInvitationFragment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarInvitationFragment.h; sourceTree = "<group>"; };
+		025AA0DC2450E48F003B5F69 /* FCCalendarInvitationFragment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarInvitationFragment.m; sourceTree = "<group>"; };
+		02BA5837245CB4E9008C5930 /* FreshchatModel 7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "FreshchatModel 7.xcdatamodel"; sourceTree = "<group>"; };
 		02C480B42377E07700EDADB2 /* FCEventsManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsManager.h; sourceTree = "<group>"; };
 		02C480B52377E07700EDADB2 /* FCEventsManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsManager.m; sourceTree = "<group>"; };
 		02C480B82377E27200EDADB2 /* FCEventsConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsConfig.h; sourceTree = "<group>"; };
 		02C480B92377E27200EDADB2 /* FCEventsConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsConfig.m; sourceTree = "<group>"; };
+		321D4EA6248A4F0900034560 /* libOCMock.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libOCMock.a; path = FreshchatSDKTest/usr/lib/libOCMock.a; sourceTree = "<group>"; };
+		323DD889247547E900835F59 /* FCCalendarBannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarBannerView.h; sourceTree = "<group>"; };
+		323DD88A247547E900835F59 /* FCCalendarBannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarBannerView.m; sourceTree = "<group>"; };
 		32857E0D24225FA300E841F4 /* FCTemplateFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCTemplateFactory.h; sourceTree = "<group>"; };
 		32857E0E24225FA300E841F4 /* FCTemplateFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCTemplateFactory.m; sourceTree = "<group>"; };
 		328ABDBA2429D04600B1B71F /* FreshchatSDKTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreshchatSDKTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		328ABDBC2429D04600B1B71F /* FreshchatSDKTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FreshchatSDKTest.m; sourceTree = "<group>"; };
 		328ABDBE2429D04600B1B71F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		328ABDC52429D15C00B1B71F /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OCMock.framework; sourceTree = "<group>"; };
 		328ABDC72429D1CE00B1B71F /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		328ABDC92429D1EE00B1B71F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		328ABDCB2429D1FC00B1B71F /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/CoreData.framework; sourceTree = DEVELOPER_DIR; };
@@ -275,6 +302,12 @@
 		328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCTemplateSection.m; sourceTree = "<group>"; };
 		328ABDDE242A3DA200B1B71F /* FCDropDownViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCDropDownViewModel.h; sourceTree = "<group>"; };
 		328ABDDF242A3DA200B1B71F /* FCDropDownViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCDropDownViewModel.m; sourceTree = "<group>"; };
+		32D8BEB3243F23C300061DE8 /* FCCalendarModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarModel.h; sourceTree = "<group>"; };
+		32D8BEB4243F23C300061DE8 /* FCCalendarModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarModel.m; sourceTree = "<group>"; };
+		32D8BEB82440AAEA00061DE8 /* FCCalendarTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarTableViewController.h; sourceTree = "<group>"; };
+		32D8BEB92440AAEA00061DE8 /* FCCalendarTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarTableViewController.m; sourceTree = "<group>"; };
+		32D8BEBC2441C46F00061DE8 /* FCCalendarTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarTableViewCell.h; sourceTree = "<group>"; };
+		32D8BEBD2441C46F00061DE8 /* FCCalendarTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarTableViewCell.m; sourceTree = "<group>"; };
 		32DF18F6244741FD00B2AE58 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		32E406ED24321F49003C31CA /* FCTemplateDropDownView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCTemplateDropDownView.h; sourceTree = "<group>"; };
 		32E406EE24321F49003C31CA /* FCTemplateDropDownView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCTemplateDropDownView.m; sourceTree = "<group>"; };
@@ -610,6 +643,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				321D4EA7248A4F0900034560 /* libOCMock.a in Frameworks */,
 				32DF18F7244741FD00B2AE58 /* CoreServices.framework in Frameworks */,
 				328ABDD82429D2B800B1B71F /* CoreMedia.framework in Frameworks */,
 				328ABDD62429D29F00B1B71F /* SystemConfiguration.framework in Frameworks */,
@@ -618,7 +652,6 @@
 				328ABDCC2429D1FC00B1B71F /* CoreData.framework in Frameworks */,
 				328ABDCA2429D1EE00B1B71F /* AVFoundation.framework in Frameworks */,
 				328ABDC82429D1CE00B1B71F /* WebKit.framework in Frameworks */,
-				328ABDC62429D15C00B1B71F /* OCMock.framework in Frameworks */,
 				328ABDBF2429D04600B1B71F /* libFreshchatSDK.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -665,7 +698,6 @@
 		328ABDBB2429D04600B1B71F /* FreshchatSDKTest */ = {
 			isa = PBXGroup;
 			children = (
-				328ABDC52429D15C00B1B71F /* OCMock.framework */,
 				328ABDBC2429D04600B1B71F /* FreshchatSDKTest.m */,
 				328ABDBE2429D04600B1B71F /* Info.plist */,
 			);
@@ -801,6 +833,8 @@
 				35B2EED01D000E620014867F /* FCListViewController.m */,
 				35B2EECD1D000E620014867F /* FCContainerController.h */,
 				35B2EECE1D000E620014867F /* FCContainerController.m */,
+				32D8BEB82440AAEA00061DE8 /* FCCalendarTableViewController.h */,
+				32D8BEB92440AAEA00061DE8 /* FCCalendarTableViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -845,6 +879,8 @@
 				CE2A883D1EF006D900082811 /* FCMessageData.m */,
 				CE0FDB151EF10E4000E686BE /* FCFragmentData.h */,
 				CE0FDB161EF10E4000E686BE /* FCFragmentData.m */,
+				32D8BEB3243F23C300061DE8 /* FCCalendarModel.h */,
+				32D8BEB4243F23C300061DE8 /* FCCalendarModel.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -1005,6 +1041,8 @@
 				35B2EF6A1D000E620014867F /* InputToolbarView */,
 				35B2EF6F1D000E620014867F /* MessageCell */,
 				35B2EF781D000E620014867F /* PromptView */,
+				323DD889247547E900835F59 /* FCCalendarBannerView.h */,
+				323DD88A247547E900835F59 /* FCCalendarBannerView.m */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1036,12 +1074,16 @@
 		35B2EF6F1D000E620014867F /* MessageCell */ = {
 			isa = PBXGroup;
 			children = (
-				CE642C1B1F308C1D00264CA0 /* FCAgentMessageCell.m */,
-				CE642C1C1F308C1D00264CA0 /* FCUserMessageCell.m */,
 				CE642C1D1F308C1D00264CA0 /* FCAgentMessageCell.h */,
+				CE642C1B1F308C1D00264CA0 /* FCAgentMessageCell.m */,
+				025AA0CB24504EB1003B5F69 /* FCCalendarOptionsView.h */,
+				025AA0CC24504EB1003B5F69 /* FCCalendarOptionsView.m */,
 				CE642C1E1F308C1D00264CA0 /* FCUserMessageCell.h */,
+				CE642C1C1F308C1D00264CA0 /* FCUserMessageCell.m */,
 				35B2EF721D000E620014867F /* FCAudioMessageUnit.h */,
 				35B2EF731D000E620014867F /* FCAudioMessageUnit.m */,
+				32D8BEBC2441C46F00061DE8 /* FCCalendarTableViewCell.h */,
+				32D8BEBD2441C46F00061DE8 /* FCCalendarTableViewCell.m */,
 			);
 			path = MessageCell;
 			sourceTree = "<group>";
@@ -1100,6 +1142,8 @@
 				35D4E8111D118E9000EFFE07 /* FCMessageController.m */,
 				35D4E8121D118E9000EFFE07 /* FCChannelViewController.h */,
 				35D4E8131D118E9000EFFE07 /* FCChannelViewController.m */,
+				025AA0D72450D60E003B5F69 /* FCCalendarViewController.h */,
+				025AA0D82450D60E003B5F69 /* FCCalendarViewController.m */,
 				35D4E8141D118E9000EFFE07 /* FCImageInput.h */,
 				35D4E8151D118E9000EFFE07 /* FCImageInput.m */,
 			);
@@ -1230,6 +1274,7 @@
 		CEEDD0FF1F6BFC5A006CCF66 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				321D4EA6248A4F0900034560 /* libOCMock.a */,
 				32DF18F6244741FD00B2AE58 /* CoreServices.framework */,
 				328ABDD72429D2B800B1B71F /* CoreMedia.framework */,
 				328ABDD52429D29F00B1B71F /* SystemConfiguration.framework */,
@@ -1264,6 +1309,10 @@
 				CE372FC31EEA8CBB001C803F /* FCDeeplinkFragment.m */,
 				EA104802213F247700122843 /* FCUnsupportedFragment.h */,
 				EA104803213F247700122843 /* FCUnsupportedFragment.m */,
+				025AA0DB2450E48F003B5F69 /* FCCalendarInvitationFragment.h */,
+				025AA0DC2450E48F003B5F69 /* FCCalendarInvitationFragment.m */,
+				0257E20E247569F300E3A8E3 /* FCCalendarSlotConfirmationView.h */,
+				0257E20F247569F300E3A8E3 /* FCCalendarSlotConfirmationView.m */,
 			);
 			name = MessageFragments;
 			sourceTree = "<group>";
@@ -1276,14 +1325,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				951A3CD321996DF90096E816 /* FCJWTViewController.h in Headers */,
+				32D8BEB7243F5B5D00061DE8 /* FCCalendarModel.h in Headers */,
 				C3D2919C230D43F10034B27E /* FCReplyCollectionCell.h in Headers */,
 				EAB0790B216CB7D000B701C9 /* FCJWTUtilities.h in Headers */,
 				CEDCBC041FD55E700054CFCE /* FCFooterView.h in Headers */,
+				32D8BEBE2441C46F00061DE8 /* FCCalendarTableViewCell.h in Headers */,
 				32857E0F24225FA300E841F4 /* FCTemplateFactory.h in Headers */,
 				EA7B897D2187AAA300447052 /* FCUnsupportedFragmentErrorMsgs.h in Headers */,
 				328ABDE0242A3DA200B1B71F /* FCDropDownViewModel.h in Headers */,
 				021DA7CB23E1814F00CA7F02 /* FCAnimatedImage.h in Headers */,
+				025AA0D92450D60E003B5F69 /* FCCalendarViewController.h in Headers */,
 				EA035F1620D9515800165D00 /* FCAttributedText.h in Headers */,
+				025AA0CD24504EB1003B5F69 /* FCCalendarOptionsView.h in Headers */,
+				0257E210247569F300E3A8E3 /* FCCalendarSlotConfirmationView.h in Headers */,
 				C3D291A0230D79540034B27E /* FCReplyFlowLayout.h in Headers */,
 				02C480B62377E07700EDADB2 /* FCEventsManager.h in Headers */,
 				EA104804213F247700122843 /* FCUnsupportedFragment.h in Headers */,
@@ -1294,11 +1348,16 @@
 				024529482386E62C0018FC38 /* FCEventsConstants.h in Headers */,
 				EA6EB25E21070D4400411D5F /* FCCSATUtil.h in Headers */,
 				EAD751E520EF9B44003DE477 /* FCLocaleConstants.h in Headers */,
+				323DD88B247547E900835F59 /* FCCalendarBannerView.h in Headers */,
 				32E406EB2432165C003C31CA /* FCTemplateSection.h in Headers */,
+				EAB07907216B696B00B701C9 /* FCUserAuthConfig.h in Headers */,
+				95EBEDF721A7FF390087F6D4 /* FCChannelUtil.h in Headers */,
+				32D8BEBA2440AAEA00061DE8 /* FCCalendarTableViewController.h in Headers */,
 				32E406EF24321F49003C31CA /* FCTemplateDropDownView.h in Headers */,
 				EAB07907216B696B00B701C9 /* FCUserAuthConfig.h in Headers */,
 				95EBEDF721A7FF390087F6D4 /* FCChannelUtil.h in Headers */,
 				32346524242B2721000F4CEB /* FCTemplateSection.h in Headers */,
+				025AA0DD2450E48F003B5F69 /* FCCalendarInvitationFragment.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1456,6 +1515,7 @@
 				35B2EFB81D000E620014867F /* FCAudioRecorder.m in Sources */,
 				CE8C7A6F1F6C216B00E77494 /* FDWebImageDownloaderOperation.m in Sources */,
 				EACA6D1C22F03F87000F1AC9 /* FreshchatEvent.m in Sources */,
+				32D8BEBF2441C46F00061DE8 /* FCCalendarTableViewCell.m in Sources */,
 				CE0C7C6E1D9539A100F545AE /* FCPlistManager.m in Sources */,
 				C3D291A1230D79540034B27E /* FCReplyFlowLayout.m in Sources */,
 				CE8C7A801F6C216B00E77494 /* UIImage+MultiFormat.m in Sources */,
@@ -1469,6 +1529,7 @@
 				35B2EFB91D000E620014867F /* FCArticleListCell.m in Sources */,
 				35B2EFA01D000E620014867F /* FCMessagesUpdater.m in Sources */,
 				35B2EF8C1D000E620014867F /* FCNotificationHandler.m in Sources */,
+				32D8BEB6243F23C300061DE8 /* FCCalendarModel.m in Sources */,
 				CE2A883E1EF006D900082811 /* FCMessageData.m in Sources */,
 				35B2EFCD1D000E620014867F /* FCYesNoPromptView.m in Sources */,
 				CE9053521DD47C4E00F52B5F /* FCCsat.m in Sources */,
@@ -1548,6 +1609,7 @@
 				35B2EFC81D000E620014867F /* FCAudioMessageUnit.m in Sources */,
 				35B2EF9E1D000E620014867F /* FCDataUpdaterWithInterval.m in Sources */,
 				35D4E81F1D118E9000EFFE07 /* FCImageInput.m in Sources */,
+				025AA0DE2450E48F003B5F69 /* FCCalendarInvitationFragment.m in Sources */,
 				CE8C7A881F6C216B00E77494 /* UIView+WebCache.m in Sources */,
 				35B2EFAE1D000E620014867F /* FCRanking.m in Sources */,
 				35B2EFB31D000E620014867F /* FCVotingManager.m in Sources */,
@@ -1555,19 +1617,23 @@
 				CE8C7A651F6C216B00E77494 /* FDImageCache.m in Sources */,
 				C5D4ED991E57036100E121B4 /* FCUserDefaults.m in Sources */,
 				35B2EFA11D000E620014867F /* FCSolutionUpdater.m in Sources */,
+				323DD88C247547E900835F59 /* FCCalendarBannerView.m in Sources */,
 				35B2EF941D000E620014867F /* FCCategories.m in Sources */,
 				35B2EFAA1D000E620014867F /* FCBackgroundTaskManager.m in Sources */,
 				CEC95A851E097B44009A1FCD /* FCConversationUtil.m in Sources */,
 				95E728E62435D83800EA0833 /* FCCarouselCardsList.m in Sources */,
 				35B2EFC11D000E620014867F /* FCMarginalView.m in Sources */,
 				35B2EFBB1D000E620014867F /* FCBarButtonItem.m in Sources */,
+				32D8BEBB2440AAEA00061DE8 /* FCCalendarTableViewController.m in Sources */,
 				35D4E8181D118E9000EFFE07 /* FCCategoryListController.m in Sources */,
 				CE8C7A7C1F6C216B00E77494 /* UIButton+WebCache.m in Sources */,
 				35B2EF9A1D000E620014867F /* FCMessageBinaries.m in Sources */,
 				CE8C7A6D1F6C216B00E77494 /* FDWebImageDownloader.m in Sources */,
+				025AA0DA2450D60E003B5F69 /* FCCalendarViewController.m in Sources */,
 				35B2EF8F1D000E620014867F /* FreshchatUser.m in Sources */,
 				32E406EA24321650003C31CA /* FCTemplateSection.m in Sources */,
 				35B2EF921D000E620014867F /* FCFAQSearchIndex.m in Sources */,
+				0257E211247569F300E3A8E3 /* FCCalendarSlotConfirmationView.m in Sources */,
 				35B2EFAF1D000E620014867F /* FCReachabilityManager.m in Sources */,
 				CED138481DB4D55200404686 /* FCCSATView.m in Sources */,
 				35B2EF911D000E620014867F /* FCArticleContent.m in Sources */,
@@ -1591,6 +1657,7 @@
 				35B2EFCC1D000E620014867F /* FCPromptView.m in Sources */,
 				CE3EFB571EDFF9B000470AB1 /* FCMessageFragments.m in Sources */,
 				CE8C7A691F6C216B00E77494 /* FDWebImageCompat.m in Sources */,
+				025AA0CE24504EB1003B5F69 /* FCCalendarOptionsView.m in Sources */,
 				35B2EF981D000E620014867F /* FCDataManager.m in Sources */,
 				CEFA055B1EE82F2000DC74CF /* FCHtmlFragment.m in Sources */,
 				EA306AA621B7C96B005211E4 /* FCMessageMaskConfig.m in Sources */,
@@ -1666,20 +1733,20 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = PKUQ4ZWJH3;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/FreshchatSDKTest",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/FreshchatSDKTest/usr/include";
 				INFOPLIST_FILE = FreshchatSDKTest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(PROJECT_DIR)/FreshchatSDKTest";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/FreshchatSDKTest/usr/lib";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.freshdesk.example.hotlineios.FreshchatSDKTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -1708,20 +1775,20 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = PKUQ4ZWJH3;
 				ENABLE_NS_ASSERTIONS = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/FreshchatSDKTest",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/FreshchatSDKTest/usr/include";
 				INFOPLIST_FILE = FreshchatSDKTest/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(PROJECT_DIR)/FreshchatSDKTest";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/FreshchatSDKTest/usr/lib";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.freshdesk.example.hotlineios.FreshchatSDKTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -1984,6 +2051,7 @@
 		CE95B5781F6D6E5D006EC8AA /* FreshchatModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				02BA5837245CB4E9008C5930 /* FreshchatModel 7.xcdatamodel */,
 				32E406FB2434C68B003C31CA /* FreshchatModel 6.xcdatamodel */,
 				C3D29198230D210E0034B27E /* FreshchatModel 5.xcdatamodel */,
 				EA16778F22F037EC00E3C46E /* FreshchatModel 4.xcdatamodel */,
@@ -1992,7 +2060,7 @@
 				CE1739791F6D725E00950F30 /* FreshchatModel 1.xcdatamodel */,
 				CE95B5791F6D6E5D006EC8AA /* FreshchatModel.xcdatamodel */,
 			);
-			currentVersion = 32E406FB2434C68B003C31CA /* FreshchatModel 6.xcdatamodel */;
+			currentVersion = 02BA5837245CB4E9008C5930 /* FreshchatModel 7.xcdatamodel */;
 			path = FreshchatModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

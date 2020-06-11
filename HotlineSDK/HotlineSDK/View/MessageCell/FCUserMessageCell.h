@@ -19,7 +19,7 @@
 @property (nonatomic) BOOL showsUploadStatus;
 @property (strong, nonatomic) UIFont *messageTextFont;
 @property (strong, nonatomic) NSString* customFontName;
-@property (nonatomic) NSInteger maxcontentWidth;
+@property (nonatomic, assign) CGRect messageViewBounds;
 @property (nonatomic, strong) FCMessageData *messageData;
 @property (nonatomic, weak) id<HLMessageCellDelegate> delegate;
 

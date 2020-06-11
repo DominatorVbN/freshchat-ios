@@ -851,4 +851,28 @@ static Boolean FC_REMOTE_CONFIG_IN_PROGRESS = NO;
     return task;
 }
 
++(NSURLSessionDataTask *)fetchAvilCalendarSlotsForAgent : (NSString *)agentCalAlias :(void (^)(NSDictionary *slotsInfo, NSError *error))handler{
+    FCSecureStore *store = [FCSecureStore sharedInstance];
+    NSString *appID = [store objectForKey:HOTLINE_DEFAULTS_APP_ID];
+    NSString *appKey = [NSString stringWithFormat:@"t=%@",[store objectForKey:HOTLINE_DEFAULTS_APP_KEY]];
+    NSString *path = [NSString stringWithFormat:FRESHCHAT_API_CALENDAR_AVAILABILITY,appID, agentCalAlias];
+    
+    FCAPIClient *apiClient = [FCAPIClient sharedInstance];
+    FCServiceRequest *request = [[FCServiceRequest alloc]initWithMethod:HTTP_METHOD_GET];
+    [request setRelativePath:path andURLParams:@[appKey]];
+    NSURLSessionDataTask *task = [apiClient request:request isIdAuthEnabled:YES withHandler:^(FCResponseInfo *responseInfo, NSError *error) {
+        NSInteger statusCode = ((NSHTTPURLResponse *)responseInfo.response).statusCode;
+        NSDictionary *response = responseInfo.responseAsDictionary;
+        if(handler){
+            //Added to avoid edge loop cases
+            if (statusCode == 200) {
+                handler(response, error);
+            } else {
+                handler(nil, error);
+            }
+        }
+    }];
+    return task;
+}
+
 @end

@@ -82,6 +82,8 @@
 
 #define FRESTCHAT_DEFAULTS_MESSAGE_MASK @"freshchat_defaults_message_mask"
 
+#define FRESHCHAT_DEFAULTS_CALENDAR_INVITE_EMAILID @"freshchat_defaults_calendar_invite_emailid"
+
 @interface FCUserDefaults : NSObject
 
 +(void)setObject:(id)object forKey:(NSString *)key;

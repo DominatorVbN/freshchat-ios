@@ -33,6 +33,8 @@
     @dynamic replyToMessage;
     @dynamic messageId;
     @dynamic replyFragments;
+    @dynamic hasActiveCalInvite;
+    @dynamic internalMeta;
 
     static BOOL messageExistsDirty = YES;
     static BOOL messageTimeDirty = YES;
@@ -55,18 +57,22 @@
     return messageID;
 }
 
-+(FCMessages *)saveMessageInCoreData:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation inReplyTo:(NSNumber *)messageID{
++(FCMessages *)saveMessageInCoreData:(NSArray *)fragmentsInfo forMessageType:(NSNumber *)msgType withInfo:(NSDictionary *)info onConversation:(FCConversations *)conversation inReplyTo:(nullable NSNumber *)messageID{
     FCDataManager *datamanager = [FCDataManager sharedInstance];
     NSManagedObjectContext *context = [datamanager mainObjectContext];
     FCMessages *message = [NSEntityDescription insertNewObjectForEntityForName:FRESHCHAT_MESSAGES_ENTITY inManagedObjectContext:context];
     [message setMessageAlias:[FCMessages generateMessageID]];
     [message setMessageUserType:USER_TYPE_MOBILE];
-    [message setMessageType:@1];
+    [message setMessageType:msgType];
     [message setIsRead:YES];
     [message setCreatedMillis:[NSNumber numberWithDouble:[[NSDate date] timeIntervalSince1970]*1000]];
     message.belongsToConversation = conversation;
     message.isWelcomeMessage = NO;
     message.isMarkedForUpload = YES;
+    if ([info count]){
+        message.hasActiveCalInvite = [[info valueForKey:@"hasActiveCalInvite"] boolValue];
+        message.internalMeta = [info valueForKey:@"internalMeta"];
+    }
     [message setMessageId:@0];
     [message setReplyToMessage:messageID];
     for(int i=0;i<fragmentsInfo.count;i++) {
@@ -132,6 +138,36 @@
         }else{
             FDLog(@"There are %d unuploaded messages", (int)array.count);
             [FCMessageServices uploadAllUnuploadedMessages:sortedArr index:0];
+        }
+    }];
+}
+
++ (void) updateCalInviteStatusForId:(NSString *)calInviteId forChannel:(nonnull FCChannels *)channel completionHandler:(nullable void (^)())handler{
+    NSManagedObjectContext *context = [FCDataManager sharedInstance].mainObjectContext ;
+    [context performBlock:^{
+        NSError *pError;
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:FRESHCHAT_MESSAGES_ENTITY];
+        //hasActiveCalInvite check further reduce sample for query
+        NSPredicate *predicate =[NSPredicate predicateWithFormat:@"messageType == 9001 AND hasActiveCalInvite == YES"];
+        request.predicate = predicate;
+        NSArray *messages = [context executeFetchRequest:request error:&pError];
+        if (messages.count>0) {
+            for(int i=0;i<messages.count;i++){
+                FCMessages *message = messages[i];
+                if(message){
+                    NSDictionary *jsonDict = [FCMessageUtil getInternalMetaForData:message.internalMeta];
+                    NSString *inviteId = [jsonDict valueForKeyPath :@"calendarMessageMeta.calendarInviteId"];
+                    if ([FCStringUtil isNotEmptyString:inviteId] && [inviteId isEqualToString:calInviteId]){
+                        [message setHasActiveCalInvite:NO];
+                        [channel addMessagesObject:message];
+                        [context save:nil];
+                        break;
+                    }
+                }
+            }
+        }
+        if(handler){
+            handler();
         }
     }];
 }
@@ -210,6 +246,9 @@
         newMessage.messageAlias = [message valueForKey:@"alias"];
         [newMessage setMessageUserType:USER_TYPE_AGENT];
         [newMessage setMessageType:[message valueForKey:@"messageType"]];
+        if ([newMessage.messageType isEqualToNumber:FC_CALENDAR_INVITE_MSG]){
+            newMessage.hasActiveCalInvite = YES;
+        }
         if([message[@"readByUser"] boolValue]) {
             newMessage.isRead = YES;
         } else {
@@ -225,22 +264,26 @@
     [newMessage setMarketingId:[message valueForKey:@"marketingId"]];
     [newMessage setMessageUserAlias:[message valueForKey:@"messageUserAlias"]];
     [newMessage setMessageId:[message valueForKey:@"messageId"]];
-    NSString *jsonString = @"";
-    if ([message valueForKey:@"replyFragments"]) {
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[message valueForKey:@"replyFragments"]
-                                                           options:NSJSONWritingPrettyPrinted
-                                                             error:nil];
-        if (jsonData) {
-            jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-            
-        }
-    }
-    [newMessage setReplyFragments:jsonString];
+    [newMessage setReplyFragments:[self getJsonStringObjForMessage:message withKey:@"replyFragments"]];
+    [newMessage setInternalMeta:[self getJsonStringObjForMessage:message withKey:@"internalMeta"]];
     [FCMessageFragments createFragments:[message valueForKey:@"messageFragments"] toMessage:newMessage];
     [[FCDataManager sharedInstance]save];
     
     [FCMessages markDirty];
     return newMessage;
+}
+
++ (NSString*) getJsonStringObjForMessage : (NSDictionary *) message withKey : (NSString *) key {
+    NSString *jsonString = @"";
+    if([message valueForKey:key]){
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[message valueForKey:key]
+                                                           options:NSJSONWritingPrettyPrinted
+                                                             error:nil];
+        if (jsonData) {
+            jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        }
+    }
+    return jsonString;
 }
 
 -(FCMessageData *) ReturnMessageDataFromManagedObject{
@@ -250,11 +293,14 @@
     message.isRead = [self isRead];
     message.uploadStatus = [self uploadStatus];
     message.messageUserType = [self messageUserType];
+    message.messageType = [self messageType];
     message.isMarketingMessage = [self isMarketingMessage];
     message.marketingId = self.marketingId;
     message.isWelcomeMessage = self.isWelcomeMessage;
     message.messageUserAlias = self.messageUserAlias;
     message.replyFragments = self.replyFragments;
+    message.internalMeta = self.internalMeta;
+    message.hasActiveCalInvite = self.hasActiveCalInvite;
     message.fragments = [FCMessageFragments getAllFragments:self];
     message.messageId = [self messageId];
     return message;
@@ -268,15 +314,50 @@
         return YES;
 }
 
-+(NSArray *)getAllMesssageForChannel:(FCChannels *)channel{
++(NSArray *)getAllMesssageForChannel:(FCChannels *)channel withHandler:(void (^) (FCMessageData *)) calendarBlock {
     NSMutableArray *messages = [[NSMutableArray alloc]init];
     NSArray *matches = channel.messages.allObjects;
-    NSArray *filteredMessages = [FCMessageHelper getUserAndAgentMsgs:matches];
+    NSArray<FCMessages *> *filteredMessages = [FCMessageHelper getUserAndAgentMsgs:matches];
     BOOL isHideConversationsEnabled = [[FCRemoteConfig sharedInstance].conversationConfig hideResolvedConversation];
+    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+    NSTimeInterval nearestTime = [[NSDate date] timeIntervalSince1970];
+    FCMessageData* messageData;
         
     for (int i=0; i<filteredMessages.count; i++) {
         FCMessageData *message = [filteredMessages[i] ReturnMessageDataFromManagedObject];
         if (message){
+            BOOL shouldAddMessage = true;
+            for(int i=0;i < message.fragments.count; i ++) {
+                FCMessageFragments *messageFragment = message.fragments[i];
+                if(messageFragment && [messageFragment.type isEqualToString: @"7"] && [message.uploadStatus boolValue]) {
+                    NSString *extraJSONStr = [messageFragment extraJSON];
+                    if (trimString(extraJSONStr).length > 0) {
+                        NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
+                        NSData *data = [extraJSONStr dataUsingEncoding:NSUTF8StringEncoding];
+                        NSDictionary *extraJSONdict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                        if (extraJSONdict && extraJSONdict[@"extraJSON"]) {
+                            data = [extraJSONdict[@"extraJSON"] dataUsingEncoding:NSUTF8StringEncoding];
+                            extraJSONdict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                        }
+                        NSDictionary *internalDict;
+                        if (message.internalMeta) {
+                            NSData *internalData = [message.internalMeta dataUsingEncoding:NSUTF8StringEncoding];
+                            internalDict = [NSJSONSerialization JSONObjectWithData:internalData options:0 error:nil];
+                        }
+                        [dict addEntriesFromDictionary:extraJSONdict];
+                        if(dict[@"startMillis"] && [dict[@"startMillis"] isKindOfClass:[NSNumber class]] && internalDict && [internalDict valueForKeyPath:@"calendarMessageMeta.calendarEventLink"]){
+                            NSTimeInterval startMillis = [dict[@"startMillis"] doubleValue]/1000;
+                            if(startMillis > currentTime && (messageData == nil || startMillis < nearestTime)) {
+                                nearestTime = startMillis;
+                                messageData = message;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!shouldAddMessage) {
+                continue;
+            }
             if(isHideConversationsEnabled){
                 long long hideConvResolvedMillis = [FCMessageHelper getResolvedConvsHideTimeForChannel:channel.channelID];
                 if(([message.createdMillis longLongValue] > hideConvResolvedMillis) || message.isWelcomeMessage){
@@ -287,6 +368,9 @@
                 [messages addObject:message];
             }
         }
+    }
+    if(messageData) {
+        calendarBlock(messageData);
     }
     return messages;
 }
@@ -410,7 +494,10 @@
             if (label) {
                 textLabel = [self appendString:[NSString stringWithFormat:@"🔘 %@", label] toString: textLabel];
             }
-        } else if ([fragment.type integerValue] == FRESHCHAT_TEMPLATE_FRAGMENT) {
+        }else if ([fragment.type isEqualToString:@"7"]) {
+            textLabel = HLLocalizedString(LOC_CALENDAR_CHANNEL_LIST_AWAITING_CONFIRMATION);
+        }
+        else if ([fragment.type integerValue] == FRESHCHAT_TEMPLATE_FRAGMENT) {
             NSDictionary *dictionaryValue = fragment.dictionaryValue;
             NSArray *sections = dictionaryValue[@"sections"];
             for(int i=0;i<sections.count; i++) {
@@ -435,7 +522,7 @@
         if (fragments && fragments.count > 0) {
            TemplateFragmentData *fragmentData = [FCTemplateFactory getFragmentFrom:fragments.firstObject];
             if ([fragmentData.templateType isEqualToString:FRESHHCAT_TEMPLATE_DROPDOWN]) {
-                description = [NSString stringWithFormat:@"🔽%@", description];
+                description = [NSString stringWithFormat:@"🔻 %@", description];
             } else if ([fragmentData.templateType isEqualToString:FRESHHCAT_TEMPLATE_CARUOSEL]) {
                 description = [NSString stringWithFormat:@"🔘 %@", HLLocalizedString(LOC_DEFAULT_CAROUSEL_LIST_PREVIEW_TEXT)];
                 textLabel = @"";
@@ -447,6 +534,9 @@
     
     if(description.length == 0 && !hasQuickReplyFragment) {
         description = @"❗️";
+    }
+    if([self.messageType isEqualToNumber:FC_CALENDAR_INVITE_MSG] || [self.messageType isEqualToNumber:FC_CALENDAR_FAILURE_MSG]){
+        description = [@"🗓️ " stringByAppendingString:description];
     }
     return [description substringToIndex: MIN(300, [description length])];
 }

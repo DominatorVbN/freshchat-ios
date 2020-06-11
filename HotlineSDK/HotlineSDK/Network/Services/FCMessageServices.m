@@ -275,6 +275,13 @@ static FCNotificationHandler *handleUpdateNotification;
                                                                                 withParams:nil];
                     [FCEventsHelper postNotificationForEvent:outEvent];
                 }
+                if(([newMessage.messageType isEqualToNumber:FC_CALENDAR_CANCEL_MSG] || [newMessage.messageType isEqualToNumber:USER_TYPE_OWNER])
+                   && ([[messageInfo valueForKeyPath:@"internalMeta.calendarMessageMeta"] count] > 0)){
+                    NSString *inviteId = [messageInfo valueForKeyPath:@"internalMeta.calendarMessageMeta.calendarInviteId"];
+                    if ([FCStringUtil isNotEmptyString:inviteId]){
+                        [FCMessages updateCalInviteStatusForId:inviteId forChannel:newMessage.belongsToChannel completionHandler:nil];
+                    }
+                }
             }
         }
         
@@ -601,9 +608,20 @@ static FCNotificationHandler *handleUpdateNotification;
     NSMutableDictionary *data1 = [pMessage convertMessageToDictionary];
     data1[@"conversationId"] = conversation.conversationAlias;
     data1[@"channelId"] = channel.channelID;
+    data1[@"messageType"] = pMessage.messageType;
     data1[@"source"] = @2;
     if (pMessage.replyToMessage) {
         data1[@"replyTo"] = @{@"originalMessageId": pMessage.replyToMessage};
+    }
+    if([FCStringUtil isNotEmptyString: pMessage.internalMeta]){
+        data1[@"internalMeta"] = [FCMessageUtil getInternalMetaForData: pMessage.internalMeta];
+    }
+    
+    if(data1[@"internalMeta"] && [FCStringUtil isNotEmptyString:[data1 valueForKeyPath:@"internalMeta.calendarMessageMeta.calendarBookingEmail"]] && ([data1[@"messageFragments"] firstObject][@"extraJSON"])){
+        NSMutableArray *fragmentInfo = [[FCMessageUtil getReplyFragmentsIn: [data1[@"messageFragments"] firstObject][@"extraJSON"]] mutableCopy];
+        NSMutableArray * arr = [[NSMutableArray alloc] init];
+        [arr addObject:fragmentInfo];
+        data1[@"messageFragments"] = arr;
     }
     
     FCServiceRequest *request = [[FCServiceRequest alloc]initWithMethod:HTTP_METHOD_POST];
@@ -647,6 +665,34 @@ static FCNotificationHandler *handleUpdateNotification;
                 pMessage.messageId = messageInfo[@"id"];
                 pMessage.createdMillis = messageInfo[@"createdMillis"];
                 pMessage.isMarkedForUpload = NO;
+                if (messageInfo[@"internalMeta"] != nil ) {
+                    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:messageInfo[@"internalMeta"]
+                                                                       options:NSJSONWritingPrettyPrinted
+                                                                         error:nil];
+                    NSString *jsonString = @"";
+                    if (jsonData) {
+                        jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                        pMessage.internalMeta = jsonString;
+                    }
+                    NSString *inviteId = [messageInfo[@"internalMeta"] valueForKeyPath:@"calendarMessageMeta.calendarInviteId"];
+                    if([FCStringUtil isNotEmptyString:inviteId]){
+                        FCEvent eventName = -1;
+                        NSString *eventLink = [messageInfo[@"internalMeta"] valueForKeyPath:@"calendarMessageMeta.calendarEventLink"];
+                        BOOL canRetry = [[messageInfo[@"internalMeta"] valueForKeyPath:@"calendarMessageMeta.retryCalendarEvent"] boolValue];
+                        if (!canRetry){
+                            if([FCStringUtil isNotEmptyString:eventLink]){
+                                eventName = FCEventCalendarBookingSuccess;
+                            }else {
+                                eventName = FCEventCalendarBookingFailure;
+                            }
+                        }else{
+                            eventName = FCEventCalendarBookingRetry;
+                        }
+                        FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:eventName
+                                                                                    withParams:@{@(FCPropertyInviteId) : inviteId}];
+                        [FCEventsHelper postNotificationForEvent:outEvent];
+                    }
+                }
                 [[FCDataManager sharedInstance]save];
                 [FCMessageHelper performSelector:@selector(UploadFinishedNotification:) withObject:messageAlias];
             }else{
