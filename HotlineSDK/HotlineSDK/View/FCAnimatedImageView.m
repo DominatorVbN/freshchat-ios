@@ -14,7 +14,7 @@
 
 
 #if defined(DEBUG) && DEBUG
-@protocol FLAnimatedImageViewDebugDelegate <NSObject>
+@protocol FCAnimatedImageViewDebugDelegate <NSObject>
 @optional
 - (void)debug_animatedImageView:(FCAnimatedImageView *)animatedImageView waitingForFrame:(NSUInteger)index duration:(NSTimeInterval)duration;
 @end
@@ -35,7 +35,7 @@
 @property (nonatomic, assign) BOOL needsDisplayWhenImageBecomesAvailable;
 
 #if defined(DEBUG) && DEBUG
-@property (nonatomic, weak) id<FLAnimatedImageViewDebugDelegate> debug_delegate;
+@property (nonatomic, weak) id<FCAnimatedImageViewDebugDelegate> debug_delegate;
 #endif
 
 @end
@@ -233,7 +233,7 @@
 
 - (NSTimeInterval)frameDelayGreatestCommonDivisor
 {
-    const NSTimeInterval kGreatestCommonDivisorPrecision = 2.0 / kFLAnimatedImageDelayTimeIntervalMinimum;
+    const NSTimeInterval kGreatestCommonDivisorPrecision = 2.0 / kFCAnimatedImageDelayTimeIntervalMinimum;
 
     NSArray *delays = self.animatedImage.delayTimesForIndexes.allValues;
 
@@ -270,7 +270,7 @@ static NSUInteger gcd(NSUInteger a, NSUInteger b)
     if (self.animatedImage) {
         // Lazily create the display link.
         if (!self.displayLink) {
-            FLWeakProxy *weakProxy = [FLWeakProxy weakProxyForObject:self];
+            FCWeakProxy *weakProxy = [FCWeakProxy weakProxyForObject:self];
             self.displayLink = [CADisplayLink displayLinkWithTarget:weakProxy selector:@selector(displayDidRefresh:)];
             
             [self.displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:self.runLoopMode];

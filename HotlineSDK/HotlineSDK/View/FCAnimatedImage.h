@@ -19,7 +19,7 @@
     #endif
 #endif
 
-extern const NSTimeInterval kFLAnimatedImageDelayTimeIntervalMinimum;
+extern const NSTimeInterval kFCAnimatedImageDelayTimeIntervalMinimum;
 
 @interface FCAnimatedImage : NSObject
 
@@ -48,7 +48,7 @@ extern const NSTimeInterval kFLAnimatedImageDelayTimeIntervalMinimum;
 
 @end
 
-typedef NS_ENUM(NSUInteger, FLLogLevel) {
+typedef NS_ENUM(NSUInteger, FCLogLevel) {
     FLLogLevelNone = 0,
     FLLogLevelError,
     FLLogLevelWarn,
@@ -59,14 +59,14 @@ typedef NS_ENUM(NSUInteger, FLLogLevel) {
 
 @interface FCAnimatedImage (Logging)
 
-+ (void)setLogBlock:(void (^)(NSString *logString, FLLogLevel logLevel))logBlock logLevel:(FLLogLevel)logLevel;
-+ (void)logStringFromBlock:(NSString *(^)(void))stringBlock withLevel:(FLLogLevel)level;
++ (void)setLogBlock:(void (^)(NSString *logString, FCLogLevel logLevel))logBlock logLevel:(FCLogLevel)logLevel;
++ (void)logStringFromBlock:(NSString *(^)(void))stringBlock withLevel:(FCLogLevel)level;
 
 @end
 
 #define FCLog(logLevel, format, ...) [FCAnimatedImage logStringFromBlock:^NSString *{ return [NSString stringWithFormat:(format), ## __VA_ARGS__]; } withLevel:(logLevel)]
 
-@interface FLWeakProxy : NSProxy
+@interface FCWeakProxy : NSProxy
 
 + (instancetype)weakProxyForObject:(id)targetObject;
 
