@@ -27,7 +27,7 @@
             for (int i =0; i<timeSlots.count; i++) {
                 NSDictionary *timeSlot = timeSlots[i];
                 FCCalendarTimeSlot *calendarSlot = [[FCCalendarTimeSlot alloc] initWith:timeSlot];
-                if((([calendarSlot.to floatValue]/1000) - ([calendarSlot.from floatValue]/1000)) >= [self.meetingLength floatValue]){
+                if((([calendarSlot.to longValue]/1000) - ([calendarSlot.from longValue]/1000)) >= [self.meetingLength longValue]){
                     [calendarSlots addObject: calendarSlot];
                 }
             }
