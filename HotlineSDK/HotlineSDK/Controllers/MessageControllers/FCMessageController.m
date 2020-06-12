@@ -356,6 +356,7 @@ typedef struct {
         [self addJWTObservers];
         [self jwtStateChange];
     }
+    [FCMessageHelper setDelegate:self];
 }
 
 //TODO:checkRestoreStateChanged is duplicated in HLChannelViewController HLInterstitialViewController ~Sanjith

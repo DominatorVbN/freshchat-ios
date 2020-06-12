@@ -589,7 +589,7 @@
             [self.activityIndicator stopAnimating];
             [self.showMoreSlotsBtn setHidden:false];
             if (!error){
-                if ([[slotsInfo valueForKey:@"calendarTimeSlots"] firstObject] == nil) // best in performance
+                if ([[slotsInfo valueForKey:@"calendarTimeSlots"] firstObject] == nil || !([[FCCalendarModel alloc]initWith:slotsInfo].timeSlots.count)) // best in performance
                 {
                     // The array is empty
                     [self addCalendarEvent:FCEventCalendarNoTimeSlotFound];

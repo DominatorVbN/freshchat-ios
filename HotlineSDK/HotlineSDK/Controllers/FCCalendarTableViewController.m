@@ -82,13 +82,19 @@
     NSString *labelName = self.calendarDays[section].dateString;
     UIView *view = [[UIView alloc]initWithFrame:CGRectZero];
     view.backgroundColor = [theme getCalendarPopupBackgroundColor];
-    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(15, 15, 0, 0)];
+    UILabel *label = [[UILabel alloc]init];
+    label.translatesAutoresizingMaskIntoConstraints = false;
     [label setFont: [theme getCalendarSlotsDateTextFont]];
     [label setTextColor:[theme getCalendarSlotsDateTextColor]];
+    label.textAlignment = NSTextAlignmentNatural;
     [label setText:labelName];
     [label sizeToFit];
     view.frame = CGRectMake(0, 0, label.frame.size.width + 15, label.frame.size.height + 20);
     [view addSubview:label];
+    NSDictionary *views = @{@"label":label};
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-15-[label]-15-|" options:0 metrics:nil views:views]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-10-[label]-10-|" options:0 metrics:nil views:views]];
+    
     return view;
 }
 

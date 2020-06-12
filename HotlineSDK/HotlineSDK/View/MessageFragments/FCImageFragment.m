@@ -37,11 +37,11 @@
             int thumbnailWidth =  DEFAULT_THUMBNAIL_WIDTH ;
             self.imgFrame = CGRectMake(0, 0, thumbnailWidth, thumbnailHeight);
             BOOL isThumbnail = extraJSONDict[@"thumbnail"] != nil;
-            if ( !fragment.binaryData1 || !fragment.binaryData2) { //Data needed to be downloaded
+            if ( (!fragment.binaryData1 && !isThumbnail) || (!fragment.binaryData2 && isThumbnail)) { //Data needed to be downloaded
                 [fragment storeImageDataOfMessage:message withCompletion:^{
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [self setImageFromFragmentData:fragment ifAvailable:imageToBeDownloaded andIsThumbnail:isThumbnail];
                         imageToBeDownloaded = false;
+                        [self setImageFromFragmentData:fragment ifAvailable:imageToBeDownloaded andIsThumbnail:isThumbnail];
                     });
                 }];
             } else {
@@ -78,11 +78,12 @@
         [self setImage:[[FCTheme sharedInstance ] getImageWithKey:IMAGE_PLACEHOLDER]];
         //NSLog(@"FRAGMENT::Setting the PLACEHOLDER::::");
     } else {
-        if ([data.contentType isEqualToString: @"image/gif"]) {
+        NSData * imageData = isThumbnail ? data.binaryData2 : data.binaryData1;
+        if ([[FCUtilities contentTypeForImageData:imageData] isEqualToString:@"image/gif"] || [data.contentType isEqualToString: @"image/gif"]) {
             self.animatedImage = [FCAnimatedImage animatedImageWithGIFData:data.binaryData1];
         }
         else{
-            [self setImage:[UIImage imageWithData: isThumbnail ? data.binaryData2 : data.binaryData1]];
+            [self setImage:[UIImage imageWithData: imageData]];
         }
     }
 }
