@@ -1208,6 +1208,22 @@ static NSInteger networkIndicator = 0;
     originalbar.backgroundColor = bar.backgroundColor;
 }
 
++(UIWindow*)getAppKeyWindow
+{
+  UIWindow    *foundWindow = nil;
+  NSArray     *windows = [[UIApplication sharedApplication]windows];
+  for (UIWindow  *window in windows) {
+    if (window.isKeyWindow) {
+      foundWindow = window;
+      break;
+    }
+  }
+  return foundWindow;
+}
+
++(UIWindow*)getAppWindow {
+    return [[UIApplication sharedApplication]windows].firstObject;
+}
 
 @end
 

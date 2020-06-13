@@ -184,7 +184,10 @@
 }
 
 -(void) setView {
-    UIWindow* currentWindow = [UIApplication sharedApplication].keyWindow;
+    UIWindow *currentWindow = [FCUtilities getAppKeyWindow];
+    if(!currentWindow) {
+        return;
+    }
     [currentWindow addSubview:self];
     
     self.frame = CGRectMake(0, -(NOTIFICATION_BANNER_HEIGHT+(float)self.iPhoneXStatusbarHeightConstraint.constant), currentWindow.frame.size.width, NOTIFICATION_BANNER_HEIGHT+(float)self.iPhoneXStatusbarHeightConstraint.constant);
@@ -245,8 +248,10 @@
 }
 
 -(void)displayBannerWithChannel:(FCChannels *)channel{
-    
-    [[[[UIApplication sharedApplication] delegate] window] setWindowLevel:UIWindowLevelStatusBar+1];
+    UIWindow *window = [FCUtilities getAppWindow];
+    if(window) {
+        [window setWindowLevel:UIWindowLevelStatusBar+1];
+    }
     
     if([FCUtilities hasNotchDisplay]) {
         self.iPhoneXStatusbarHeightConstraint.constant = [self hasLandscapeOrientation] ? 0 : NOTCH_DEVICE_ST_BAR_HT;
@@ -268,8 +273,10 @@
     
     [FCUtilities loadImageAndPlaceholderBgWithUrl:channel.iconURL forView:self.imgView withColor:[[FCTheme sharedInstance] channelIconPlaceholderImageBackgroundColor] andName:channel.name];
     
-    UIWindow* currentWindow = [UIApplication sharedApplication].keyWindow;
-    [currentWindow bringSubviewToFront:self];
+    UIWindow *currentWindow = [FCUtilities getAppKeyWindow];
+    if(currentWindow) {
+        [currentWindow bringSubviewToFront:self];
+    }
     
     [UIView animateWithDuration:0.3 animations:^{
         self.hidden = NO;
@@ -292,7 +299,10 @@
         
     } completion:^(BOOL finished) {
         self.hidden = YES;
-        [[[[UIApplication sharedApplication] delegate] window] setWindowLevel:UIWindowLevelNormal];
+        UIWindow *window = [FCUtilities getAppWindow];
+        if(window) {
+            [window setWindowLevel:UIWindowLevelNormal];
+        }
     } ];
     if([FCUtilities hasNotchDisplay]) {
         [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];

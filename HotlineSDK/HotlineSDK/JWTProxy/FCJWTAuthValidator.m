@@ -121,12 +121,15 @@
     [FCJWTAuthValidator sharedInstance].prevState = TOKEN_EXPIRED;
     [self.expiryTimer invalidate];
     self.expiryTimer = nil;
-    UIViewController *rootController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-    if(!rootController.isBeingPresented) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:JWT_SHOW_LOADING
-                                                            object:nil];
-    } else {
-        [[Freshchat sharedInstance] dismissFreshchatViews];
+    UIWindow *window = [FCUtilities getAppWindow];
+    if(window) {
+        UIViewController *rootController = [window rootViewController];
+        if(!rootController.isBeingPresented) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:JWT_SHOW_LOADING
+                                                                object:nil];
+        } else {
+            [[Freshchat sharedInstance] dismissFreshchatViews];
+        }
     }
 }
 

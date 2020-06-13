@@ -77,8 +77,8 @@
     NSTimeZone* timeZone = [NSTimeZone timeZoneWithName:timeZoneID];
     for(int i = 0; i< calendarModel.timeSlots.count; i++) {
         FCCalendarTimeSlot *timeSlot = calendarModel.timeSlots[i];
-        NSDate *fromDate = [FCDateUtil nextlandMarkDate:[NSDate dateWithTimeIntervalSince1970:timeSlot.from.longValue/1000] andCalendar:calendar];
-        NSDate *toDate = [NSDate dateWithTimeIntervalSince1970:timeSlot.to.longValue/1000];
+        NSDate *fromDate = [FCDateUtil nextlandMarkDate:[NSDate dateWithTimeIntervalSince1970:timeSlot.from.longLongValue/1000] andCalendar:calendar];
+        NSDate *toDate = [NSDate dateWithTimeIntervalSince1970:timeSlot.to.longLongValue/1000];
         
         NSMutableArray<NSDate*>* dateArray = [FCDateUtil getTimeSlotsFrom:fromDate toDate:toDate andMeetingLength:calendarModel.meetingLength forTimeZone:timeZone];
         for (int j=0; j< dateArray.count; j++) {

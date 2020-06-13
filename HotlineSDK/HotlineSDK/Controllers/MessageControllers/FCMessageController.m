@@ -1542,7 +1542,7 @@ typedef struct {
         calendarEmailController.providesPresentationContextTransitionStyle = YES;
         calendarEmailController.definesPresentationContext = YES;
         calendarEmailController.modalPresentationStyle = UIModalPresentationOverFullScreen;
-        [topController presentModalViewController:calendarEmailController animated:true];
+        [topController presentViewController:calendarEmailController animated:true completion:nil];
     }else if (actionType == CANCEL_NOW) {
         [FCMessageUtil cancelCalendarInviteForMsg:message andConv:self.conversation];
         [self updateAndScrollToBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];

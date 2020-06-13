@@ -521,10 +521,13 @@
 
 - (CGFloat) layoutPadding {
     if (@available(iOS 11.0, *)) {
-        UIWindow *window = UIApplication.sharedApplication.keyWindow;
+        UIWindow *window = [FCUtilities getAppKeyWindow];
+        if(!window) {
+            return 0;
+        }
         return window.safeAreaInsets.left;
     }
-    return 0;;
+    return 0;
 }
 
 -(void)orientationChange :(NSNotification*)notification {
@@ -698,7 +701,7 @@
 }
 
 - (long) getMeetingEndMillisForStartTime :(NSNumber *) startTime{
-    return ([startTime longValue] + ([[self.slotsResponseDict objectForKey:@"meetingLength"] longValue] * 1000));
+    return ([startTime longLongValue] + ([[self.slotsResponseDict objectForKey:@"meetingLength"] longLongValue] * 1000));
 }
 
 - (void) sendCalendarConfirmationMsg :(id)sender {

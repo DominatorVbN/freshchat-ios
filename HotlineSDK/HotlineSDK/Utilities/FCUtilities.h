@@ -31,6 +31,10 @@
 
 @interface FCUtilities : NSObject
 
+
++(UIWindow*)getAppKeyWindow;
++(UIWindow*)getAppWindow;
+
 +(NSString *)currentUserAlias;
 +(void) removeUUIDWithAppID:(NSString *)appID;
 +(void) removeUUID;
@@ -120,7 +124,6 @@
 
 + (void) setNavigationPropertyForBar:(UINavigationBar *)bar;
 + (void) replaceNavigationPropertyForBar:(UINavigationBar *)bar withCurrentBar:(UINavigationBar *)originalbar;
-
 @end
 
 

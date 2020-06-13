@@ -76,10 +76,12 @@
     if (sessions.count == 0) { return; }
     CGFloat safeAreapadding = 0;
     if (@available(iOS 11.0, *)) {
-        UIWindow *window = [UIApplication sharedApplication].keyWindow;
-        UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
-        if (UIDeviceOrientationIsLandscape(orientation)) {
-            safeAreapadding = window.safeAreaInsets.left + window.safeAreaInsets.right;
+        UIWindow *window = [FCUtilities getAppKeyWindow];
+        if(window) {
+            UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+            if (UIDeviceOrientationIsLandscape(orientation)) {
+                safeAreapadding = window.safeAreaInsets.left + window.safeAreaInsets.right;
+            }
         }
     }
     

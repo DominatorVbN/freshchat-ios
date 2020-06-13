@@ -1177,7 +1177,11 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 }
 
 -(void) dismissEmbededFreshchatViews {
-    UIViewController *rootController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIWindow *window = [FCUtilities getAppWindow];
+    if(!window) {
+        return;
+    }
+    UIViewController *rootController = [window rootViewController];
     [self dismissHotlineViewInController:rootController withCompletion:nil];
     if(!rootController.isBeingPresented) { // Embeded case
         UITabBarController *tabBar = (UITabBarController*) rootController;
@@ -1204,7 +1208,11 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 }
 
 -(void) dismissFreshchatViews {
-    UIViewController *rootController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIWindow *window = [FCUtilities getAppWindow];
+    if(!window) {
+        return;
+    }
+    UIViewController *rootController = [window rootViewController];
     [self dismissHotlineViewInController:rootController withCompletion:nil];
 }
 

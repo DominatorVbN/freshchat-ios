@@ -108,8 +108,11 @@
     if (sender.state == UIGestureRecognizerStateEnded){
         if (self.searchResults.count == 0) {
             CGPoint location = [sender locationInView:nil]; //Passing nil gives us coordinates in the window
-            UIWindow *mainWindow = [[[UIApplication sharedApplication] delegate] window];
-            CGPoint pointInSubview = [self.view convertPoint:location fromView:mainWindow];
+            UIWindow *window = [FCUtilities getAppWindow];
+            if(!window) {
+                return;
+            }
+            CGPoint pointInSubview = [self.view convertPoint:location fromView:window];
             if (!CGRectContainsPoint(self.searchBar.bounds, pointInSubview)) {
                 // Remove the recognizer first so it's view.window is valid.
                 [self.view removeGestureRecognizer:sender];
