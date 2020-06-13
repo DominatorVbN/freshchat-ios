@@ -150,7 +150,7 @@
 }
 
 +(UIViewController*) topMostController {
-    UIViewController *topController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIViewController *topController = [[FCUtilities getAppWindow] rootViewController];
     while (topController.presentedViewController) {
         topController = topController.presentedViewController;
     }
