@@ -8,6 +8,8 @@
 
 #import "FCGrowingTextView.h"
 #import "FCMacros.h"
+#import "FCTheme.h"
+#define CSAT_INPUTTEXT_PADDING 5
 
 @interface FCGrowingTextView ()
 
@@ -20,6 +22,7 @@
 - (id)initWithFrame:(CGRect)frame{
     if( (self = [super initWithFrame:frame]) ){
         [self setPlaceholder:@""];
+        self.textContainerInset = UIEdgeInsetsMake(CSAT_INPUTTEXT_PADDING, 0, CSAT_INPUTTEXT_PADDING, 0);
         [self setPlaceholderColor:[UIColor lightGrayColor]];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textChanged:) name:UITextViewTextDidChangeNotification object:nil];
     }
@@ -50,19 +53,20 @@
             _placeHolderLabel.translatesAutoresizingMaskIntoConstraints = NO;
             NSMutableDictionary *views = [NSMutableDictionary
                                           dictionaryWithDictionary:@{@"placeHolderView" : _placeHolderLabel}];
-            _placeHolderLabel.font = [UIFont systemFontOfSize:14];
-            _placeHolderLabel.lineBreakMode = NSLineBreakByWordWrapping;
+            _placeHolderLabel.font = [[FCTheme sharedInstance] csatPromptInputTextFont];
             _placeHolderLabel.numberOfLines = 0;
             _placeHolderLabel.backgroundColor = [UIColor clearColor];
             _placeHolderLabel.textColor = self.placeholderColor;
             _placeHolderLabel.alpha = 0;
             
-            NSDictionary *metrics = @{@"heightPadding": @(self.frame.size.height-25), @"width" : @(self.frame.size.width-10)};
+            NSDictionary *metrics = @{@"width" : @(self.frame.size.width-10),
+                                      @"padding" : @(CSAT_INPUTTEXT_PADDING)
+            };
         
             [self addSubview:_placeHolderLabel];
-            [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-5-[placeHolderView(==width)]-5-|" options:0 metrics:metrics views:views]];
+            [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-padding-[placeHolderView(==width)]-padding-|" options:0 metrics:metrics views:views]];
             
-            [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-5-[placeHolderView(==20)]-heightPadding-|" options:0 metrics:metrics views:views]];
+            [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-padding-[placeHolderView]-padding-|" options:0 metrics:metrics views:views]];
         }
         
         _placeHolderLabel.text = self.placeholder;
