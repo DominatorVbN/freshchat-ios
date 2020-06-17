@@ -83,8 +83,8 @@ __weak static id <KonotorDelegate> _delegate;
     return [FCAudioPlayer currentPlaying:nil set:NO ];
 }
 
-+(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel inReplyTo:(NSNumber*)messageId{
-    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo onConversation:conversation inReplyTo:messageId];
++(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation withMessageType:(NSNumber *)msgType onChannel:(FCChannels *)channel inReplyTo:(NSNumber*)messageId{
+    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo forMessageType:msgType  withInfo :@{} onConversation:conversation inReplyTo:messageId];
     [channel addMessagesObject:message];
     [[FCDataManager sharedInstance]save];
     [FCMessageServices uploadNewMessage:message toConversation:conversation onChannel:channel];    
@@ -92,7 +92,7 @@ __weak static id <KonotorDelegate> _delegate;
     [self postOutBoundEventsForChannel:channel onConversation:conversation];
 }
 
-+(void)uploadNewMsgWithImageData:(NSData*)imageData textFeed:(NSString *)caption onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
++(void)uploadNewMsgWithImageData:(NSData*)imageData textFeed:(NSString *)caption messageType:(NSNumber *)msgType withInfo:(NSDictionary *)info onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
     //Upload the image with caption first then upload the message
     NSMutableArray *fragmentsInfo = [[NSMutableArray alloc] init];
     UIImage *image = [UIImage imageWithData:imageData];
@@ -160,9 +160,14 @@ __weak static id <KonotorDelegate> _delegate;
                                           caption,@"content",
                                           (image != nil) ? @1 : @0 ,@"position",nil];
         [fragmentsInfo addObject:textFragmentInfo];
+    }else if(([info count] > 0) && !(imageData)){
+        NSDictionary *calFragmentInfo = [[NSDictionary alloc] initWithObjectsAndKeys:  @7, @"fragmentType",
+                                         [FCMessages getJsonStringObjForMessage:info withKey:@"extraJSON"], @"extraJSON",
+                                         nil];
+        [fragmentsInfo addObject:calFragmentInfo];
     }
     
-    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo onConversation:conversation inReplyTo:nil];
+    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo forMessageType:msgType withInfo:info onConversation:conversation inReplyTo:nil];
     [channel addMessagesObject:message];
     [[FCDataManager sharedInstance]save];
     
@@ -192,13 +197,12 @@ __weak static id <KonotorDelegate> _delegate;
         [[FCMessageHelper delegate] didStartUploadingNewMessage];
     }
 }
-
-
-+(void) uploadMessageWithImageData:(NSData *)imageData textFeed:(NSString *)textFeedback onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
+    
++(void) uploadMessageWithImageData:(NSData *)imageData textFeed:(NSString *)textFeedback messageType:(NSNumber *)msgType onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
     [FCUserUtil setUserMessageInitiated];
     NSArray *freshchatRegexArray = [FCUserDefaults getObjectForKey:FRESTCHAT_DEFAULTS_MESSAGE_MASK];
     textFeedback = freshchatRegexArray.count > 0 ? [FCUtilities applyRegexForInputText:textFeedback] : textFeedback;
-    [self uploadNewMsgWithImageData:imageData textFeed:textFeedback onConversation:conversation andChannel:channel];
+    [self uploadNewMsgWithImageData:imageData textFeed:textFeedback messageType:msgType withInfo : @{} onConversation:conversation andChannel:channel];
     [self postOutBoundEventsForChannel:channel onConversation:conversation];
 }
 
@@ -261,7 +265,7 @@ __weak static id <KonotorDelegate> _delegate;
 + (NSArray *) getUserAndAgentMsgs: (NSArray *) allMessages{
     //Added to avoid disply empty staus messages if remote config fails
     // is added if any chance for old message(s) type value is 0
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageType < 1000"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(messageType < 1000) OR (messageType == 9001 OR messageType == 9002 OR messageType == 9003 OR messageType == 9004)"];
     return [allMessages filteredArrayUsingPredicate:predicate];
 }
 

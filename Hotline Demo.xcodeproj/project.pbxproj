@@ -79,6 +79,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		02C544DD2456DAD3002E71AF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 354D0D161C48D10F004D2AA1 /* HotlineSDK.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 328ABDBA2429D04600B1B71F;
+			remoteInfo = FreshchatSDKTest;
+		};
 		354D0D1D1C48D10F004D2AA1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 354D0D161C48D10F004D2AA1 /* HotlineSDK.xcodeproj */;
@@ -317,7 +324,7 @@
 			children = (
 				354D0D1E1C48D10F004D2AA1 /* libFreshchatSDK.a */,
 				354D0D241C48D10F004D2AA1 /* FreshchatModels.bundle */,
-				954DFB33244E1D7D00E97947 /* FreshchatSDKTest.xctest */,
+				02C544DE2456DAD3002E71AF /* FreshchatSDKTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -581,6 +588,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		02C544DE2456DAD3002E71AF /* FreshchatSDKTest.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = FreshchatSDKTest.xctest;
+			remoteRef = 02C544DD2456DAD3002E71AF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		354D0D1E1C48D10F004D2AA1 /* libFreshchatSDK.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -772,7 +786,8 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -820,7 +835,8 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -850,8 +866,9 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "Hotline/Supporting Files/Hotline Demo.entitlements";
-				CODE_SIGN_IDENTITY = "iPhone Developer: harish kumar (VYP5NB96B3)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = PKUQ4ZWJH3;
 				ENABLE_BITCODE = YES;
@@ -882,8 +899,9 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "Hotline/Supporting Files/Hotline Demo.entitlements";
-				CODE_SIGN_IDENTITY = "iPhone Developer: harish kumar (VYP5NB96B3)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = PKUQ4ZWJH3;
 				ENABLE_BITCODE = YES;

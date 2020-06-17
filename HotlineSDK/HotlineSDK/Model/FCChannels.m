@@ -162,10 +162,10 @@
     
     if([FCRemoteConfig sharedInstance].conversationConfig.hideResolvedConversation){
         long long hideConvResolvedMillis = [FCMessageHelper getResolvedConvsHideTimeForChannel:self.channelID];
-        predicate = hideConvResolvedMillis ? [NSPredicate predicateWithFormat:@"isRead == NO AND belongsToChannel == %@ AND messageType < 1000 AND createdMillis.longValue > %ld", self, hideConvResolvedMillis] : [NSPredicate predicateWithFormat:@"isRead == NO AND belongsToChannel == %@ AND messageType < 1000", self];
+        predicate = hideConvResolvedMillis ? [NSPredicate predicateWithFormat:@"isRead == NO AND belongsToChannel == %@ AND (messageType < 1000 OR messageType == 9001 OR messageType == 9003 OR messageType == 9004) AND createdMillis.longValue > %ld", self, hideConvResolvedMillis] : [NSPredicate predicateWithFormat:@"isRead == NO AND belongsToChannel == %@ AND (messageType < 1000 OR messageType == 9001 OR messageType == 9003 OR messageType == 9004)", self];
     }
     else{
-        predicate =[NSPredicate predicateWithFormat:@"isRead == NO AND belongsToChannel == %@ AND messageType < 1000", self];
+        predicate =[NSPredicate predicateWithFormat:@"isRead == NO AND belongsToChannel == %@ AND (messageType < 1000 OR messageType == 9001 OR messageType == 9003 OR messageType == 9004)", self];
     }
     request.predicate = predicate;
     NSArray *messages = [self.managedObjectContext executeFetchRequest:request error:nil];

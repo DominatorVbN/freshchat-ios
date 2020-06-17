@@ -20,18 +20,18 @@
 #define MEGABYTE (1024 * 1024)
 
 // This is how the fastest browsers do it as per 2012: http://nullsleep.tumblr.com/post/16524517190/animated-gif-minimum-frame-delay-browser-compatibility
-const NSTimeInterval kFLAnimatedImageDelayTimeIntervalMinimum = 0.02;
+const NSTimeInterval kFCAnimatedImageDelayTimeIntervalMinimum = 0.02;
 
 // An animated image's data size (dimensions * frameCount) category; its value is the max allowed memory (in MB).
 // E.g.: A 100x200px GIF with 30 frames is ~2.3MB in our pixel format and would fall into the `FLAnimatedImageDataSizeCategoryAll` category.
-typedef NS_ENUM(NSUInteger, FLAnimatedImageDataSizeCategory) {
+typedef NS_ENUM(NSUInteger, FCAnimatedImageDataSizeCategory) {
     FLAnimatedImageDataSizeCategoryAll = 10,       // All frames permanently in memory (be nice to the CPU)
     FLAnimatedImageDataSizeCategoryDefault = 75,   // A frame cache of default size in memory (usually real-time performance and keeping low memory profile)
     FLAnimatedImageDataSizeCategoryOnDemand = 250, // Only keep one frame at the time in memory (easier on memory, slowest performance)
     FLAnimatedImageDataSizeCategoryUnsupported     // Even for one frame too large, computer says no.
 };
 
-typedef NS_ENUM(NSUInteger, FLAnimatedImageFrameCacheSize) {
+typedef NS_ENUM(NSUInteger, FCAnimatedImageFrameCacheSize) {
     FLAnimatedImageFrameCacheSizeNoLimit = 0,                // 0 means no specific limit
     FLAnimatedImageFrameCacheSizeLowMemory = 1,              // The minimum frame cache size; this will produce frames on-demand.
     FLAnimatedImageFrameCacheSizeGrowAfterMemoryWarning = 2, // If we can produce the frames faster than we consume, one frame ahead will already result in a stutter-free playback.
@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, FLAnimatedImageFrameCacheSize) {
 
 
 #if defined(DEBUG) && DEBUG
-@protocol FLAnimatedImageDebugDelegate <NSObject>
+@protocol FCAnimatedImageDebugDelegate <NSObject>
 @optional
 - (void)debug_animatedImage:(FCAnimatedImage *)animatedImage didUpdateCachedFrames:(NSIndexSet *)indexesOfFramesInCache;
 - (void)debug_animatedImage:(FCAnimatedImage *)animatedImage didRequestCachedFrame:(NSUInteger)index;
@@ -72,12 +72,12 @@ typedef NS_ENUM(NSUInteger, FLAnimatedImageFrameCacheSize) {
 @property (nonatomic, strong, readonly) FCAnimatedImage *weakProxy;
 
 #if defined(DEBUG) && DEBUG
-@property (nonatomic, weak) id<FLAnimatedImageDebugDelegate> debug_delegate;
+@property (nonatomic, weak) id<FCAnimatedImageDebugDelegate> debug_delegate;
 #endif
 
 @end
 
-static NSHashTable *allAnimatedImagesWeak;
+static NSHashTable *allFCAnimatedImagesWeak;
 
 @implementation FCAnimatedImage
 
@@ -139,14 +139,14 @@ static NSHashTable *allAnimatedImagesWeak;
 {
     if (self == [FCAnimatedImage class]) {
         // UIKit memory warning notification handler shared by all of the instances
-        allAnimatedImagesWeak = [NSHashTable weakObjectsHashTable];
+        allFCAnimatedImagesWeak = [NSHashTable weakObjectsHashTable];
         
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidReceiveMemoryWarningNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
             NSAssert([NSThread isMainThread], @"Received memory warning on non-main thread");
             
             NSArray *images = nil;
-            @synchronized(allAnimatedImagesWeak) {
-                images = [[allAnimatedImagesWeak allObjects] copy];
+            @synchronized(allFCAnimatedImagesWeak) {
+                images = [[allFCAnimatedImagesWeak allObjects] copy];
             }
             [images makeObjectsPerformSelector:@selector(didReceiveMemoryWarning:) withObject:note];
         }];
@@ -240,7 +240,7 @@ static NSHashTable *allAnimatedImagesWeak;
                                 delayTime = delayTimesForIndexesMutable[@(i - 1)];
                             }
                         }
-                        if ([delayTime floatValue] < ((float)kFLAnimatedImageDelayTimeIntervalMinimum - FLT_EPSILON)) {
+                        if ([delayTime floatValue] < ((float)kFCAnimatedImageDelayTimeIntervalMinimum - FLT_EPSILON)) {
                             delayTime = @(kDelayTimeIntervalDefault);
                         }
                         delayTimesForIndexesMutable[@(i)] = delayTime;
@@ -281,10 +281,10 @@ static NSHashTable *allAnimatedImagesWeak;
         
         _allFramesIndexSet = [[NSIndexSet alloc] initWithIndexesInRange:NSMakeRange(0, self.frameCount)];
         
-        _weakProxy = (id)[FLWeakProxy weakProxyForObject:self];
+        _weakProxy = (id)[FCWeakProxy weakProxyForObject:self];
         
-        @synchronized(allAnimatedImagesWeak) {
-            [allAnimatedImagesWeak addObject:self];
+        @synchronized(allFCAnimatedImagesWeak) {
+            [allFCAnimatedImagesWeak addObject:self];
         }
     }
     return self;
@@ -617,16 +617,16 @@ static NSHashTable *allAnimatedImagesWeak;
 
 @implementation FCAnimatedImage (Logging)
 
-static void (^_logBlock)(NSString *logString, FLLogLevel logLevel) = nil;
-static FLLogLevel _logLevel;
+static void (^_logBlock)(NSString *logString, FCLogLevel logLevel) = nil;
+static FCLogLevel _logLevel;
 
-+ (void)setLogBlock:(void (^)(NSString *logString, FLLogLevel logLevel))logBlock logLevel:(FLLogLevel)logLevel
++ (void)setLogBlock:(void (^)(NSString *logString, FCLogLevel logLevel))logBlock logLevel:(FCLogLevel)logLevel
 {
     _logBlock = logBlock;
     _logLevel = logLevel;
 }
 
-+ (void)logStringFromBlock:(NSString *(^)(void))stringBlock withLevel:(FLLogLevel)level
++ (void)logStringFromBlock:(NSString *(^)(void))stringBlock withLevel:(FCLogLevel)level
 {
     if (level <= _logLevel && _logBlock && stringBlock) {
         _logBlock(stringBlock(), level);
@@ -636,22 +636,22 @@ static FLLogLevel _logLevel;
 @end
 
 
-#pragma mark - FLWeakProxy
+#pragma mark - FCWeakProxy
 
-@interface FLWeakProxy ()
+@interface FCWeakProxy ()
 
 @property (nonatomic, weak) id target;
 
 @end
 
 
-@implementation FLWeakProxy
+@implementation FCWeakProxy
 
 #pragma mark Life Cycle
 
 + (instancetype)weakProxyForObject:(id)targetObject
 {
-    FLWeakProxy *weakProxy = [FLWeakProxy alloc];
+    FCWeakProxy *weakProxy = [FCWeakProxy alloc];
     weakProxy.target = targetObject;
     return weakProxy;
 }

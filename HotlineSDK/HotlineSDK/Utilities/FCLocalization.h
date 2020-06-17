@@ -136,6 +136,50 @@ static NSString *DEFAULT_LOCALIZATION_TABLE = @"FCLocalizable";
 #define LOC_DEFAULT_CAROUSEL_CARD_SELECT_BTN @"default_carousel_card_select_btn"
 #define LOC_DEFAULT_CAROUSEL_LIST_PREVIEW_TEXT @"default_carousel_list_preview_text"
 
+#define LOC_DEFAULT_DATE_TODAY @"date_today"
+#define LOC_DEFAULT_DATE_TOMORROW @"date_tomorrow"
+
+#define LOC_CALENDAR_FIND_SLOTS_BTN @"calendar_find_slots_btn"
+#define LOC_CALENDAR_CANCEL_INVITE_BTN @"calendar_cancel_invite_btn"
+
+#define LOC_CALENDAR_VIEW_TITLE @"calendar_view_title"
+#define LOC_CALENDAR_EMAIL_DESCRIPTION @"calendar_email_description"
+#define LOC_CALENDAR_EMAIL_PLACEHOLDER @"calendar_email_placeholder"
+#define LOC_CALENDAR_NEXT_BTN @"calendar_next_btn"
+
+#define LOC_CALENDAR_ALERT_CANCEL_TITLE @"calendar_alert_cancel_title"
+#define LOC_CALENDAR_CANCEL_ALERT_DESCRIPTION @"calendar_cancel_alert_description"
+#define LOC_CALENDAR_CANCEL_ALERT_CONTINUE_BTN @"calendar_cancel_alert_continue_btn"
+#define LOC_CALENDAR_CANCEL_ALERT_BOOKING_BTN @"calendar_cancel_alert_booking_btn"
+
+#define LOC_CALENDAR_SLOTS_DATE_FORMAT @"calendar_slots_date_format"
+#define LOC_CALENDAR_SLOTS_TIME_FORMAT @"calendar_slots_time_format"
+
+#define LOC_CALENDAR_SLOTS_SESSION_MORNING @"calendar_slots_session_morning"
+#define LOC_CALENDAR_SLOTS_SESSION_AFTERNOON @"calendar_slots_session_afternoon"
+#define LOC_CALENDAR_SLOTS_SESSION_EVENING @"calendar_slots_session_evening"
+#define LOC_CALENDAR_SLOTS_SESSION_NIGHT @"calendar_slots_session_night"
+#define LOC_CALENDAR_SLOTS_SHOW_MORE_BTN @"calendar_slots_show_more_btn"
+#define LOC_CALENDAR_SLOTS_CANCEL_BTN @"calendar_slots_cancel_btn"
+#define LOC_CALENDAR_SLOTS_RETRY_BTN @"calendar_slots_retry_btn"
+
+#define LOC_CALENDAR_NO_SLOTS_AVAILABLE_TEXT @"calendar_no_slots_available_text"
+#define LOC_CALENDAR_SLOTS_ERROR @"calendar_slots_error"
+
+#define LOC_CALENDAR_INVITE_CONFIRM_BTN @"calendar_invite_confirm_btn"
+#define LOC_CALENDAR_INVITE_CHANGE_SLOT_BTN @"calendar_invite_change_slot_btn"
+
+#define LOC_CALENDAR_DURATION_HOUR @"calendar_duration_hour"
+#define LOC_CALENDAR_DURATION_HOURS @"calendar_duration_hours"
+#define LOC_CALENDAR_DURATION_MINS @"calendar_duration_mins"
+
+#define LOC_CALENDAR_INVITE_BANNER_VIEW_LABEL @"calendar_invite_banner_view_label"
+#define LOC_CALENDAR_INVITE_SCHEDULED @"calendar_invite_scheduled"
+#define LOC_CALENDAR_INVITE_FAILED @"calendar_invite_failed"
+#define LOC_CALENDAR_INVITE_SCHEDULED_DESCRIPTION @"calendar_invite_scheduled_description"
+#define LOC_CALENDAR_INVITE_PENDING @"calendar_invite_pending"
+#define LOC_CALENDAR_CHANNEL_LIST_AWAITING_CONFIRMATION @"calendar_channel_list_awaiting_confirmation"
+
 @interface FCLocalization : NSObject
 
 +(NSString *)localize:(NSString *)key;

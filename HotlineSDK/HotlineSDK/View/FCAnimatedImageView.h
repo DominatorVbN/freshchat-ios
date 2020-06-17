@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 
 @class FCAnimatedImage;
-@protocol FLAnimatedImageViewDebugDelegate;
+@protocol FCAnimatedImageViewDebugDelegate;
 
 
 //

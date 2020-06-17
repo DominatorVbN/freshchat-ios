@@ -39,8 +39,17 @@
 #define IMAGE_SEARCH_BAR_SEARCH_ICON @"SearchBar.SearchBarStyle.searchIcon"
 #define IMAGE_SEARCH_BAR_CLEAR_ICON @"SearchBar.SearchBarStyle.clearIcon"
 #define IMAGE_DROPDOWN_ICON @"ConversationDetail.DropDownIcon"
+#define IMAGE_CALENDAR_ICON @"CalendarIcon"
+#define IMAGE_CALENDAR_CLOSE_ICON @"CalendarCloseIcon"
+#define IMAGE_CALENDAR_SCHEDULED_ICON @"CalendarScheduledIcon"
+#define IMAGE_CALENDAR_CANCELLED_ICON @"CalenderCancelledIcon"
 #define IMAGE_CAROUSEL_PLACEHOLDER_IMAGE @"CarouselPlaceholderImage"
+#define IMAGE_CALENDAR_CUSTOMER_AVATAR @"CalendarCustomerAvatar"
+#define IMAGE_CALENDAR_AGENT_AVATAR @"CalendarAgentAvatar"
 #define IMAGE_CAROUSEL_ERROR_IMAGE @"CarouselErrorImage"
+#define IMAGE_CALENDAR_BANNER @"CalendarBannerImage"
+#define IMAGE_CALENDAR_PENDING_CONFIRMATION_ICON @"CalenderPendingConfirmationIcon"
+#define IMAGE_CALENDAR_ERROR_ICON @"CalendarErrorIcon"
 
 @interface FCTheme : NSObject
 
@@ -309,4 +318,108 @@
 -(UIFont *)getCarouselActionButtonFont;
 
 -(UIColor *)getCarouselSelectedCardBackground;
+
+// Calendar : Message Detail View
+-(UIColor *)getFindSlotButtonTitleColor;
+-(UIFont *)getFindSlotButtonTitleFont;
+-(UIColor *)getFindSlotButtonBackgroundColor;
+
+-(UIColor *)getNotInterestedButtonColor;
+-(UIFont *)getNotInterestedButtonFont;
+
+-(UIColor *)getBannerTextColor;
+-(UIFont *)getBannerTextFont;
+-(UIColor *)getBannerBackgroundColor;
+
+// Calendar : Message Detail View - Invitation
+-(UIColor *)getInvitationStatusTextColor;
+-(UIFont *)getInvitationStatusTextFont;
+
+-(UIColor *)getInvitationDurationTextColor;
+-(UIFont *)getInvitationDurationTextFont;
+
+-(UIColor *)getInvitationDescriptionTextColor;
+-(UIFont *)getInvitationDescriptionTextFont;
+
+-(UIColor *)getInvitationTimeTextColor;
+-(UIFont *)getInvitationTimeTextFont;
+
+-(UIColor *)getInvitationDateTextColor;
+-(UIFont *)getInvitationDateTextFont;
+
+-(UIColor *)getInvitationAvatarsBorderColor;
+
+-(UIColor *)getInvitationBackgroundColor;
+
+// Calendar Popup-Views
+
+-(UIColor *)getCalendarPopupBackgroundColor;
+
+// Calendar Popup-View : Navigation bar
+-(UIColor *)getCalendarPopupNavBarTitleTextColor;
+-(UIFont *)getCalendarPopupNavBarTitleTextFont;
+
+-(UIColor *)getCalendarPopupNavBarBackgroundColor;
+
+-(UIColor *)getCalendarPopupNavBarDurationTextColor;
+-(UIFont *)getCalendarPopupNavBarDurationTextFont;
+
+-(UIColor *)getCalendarPopupNavBarDividerColor;
+
+// Calendar Popup-View : Email view
+-(UIColor *)getCalendarEmailViewDescTextColor;
+-(UIFont *)getCalendarEmailViewDescTextFont;
+
+-(UIColor *)getCalendarEmailViewTextFieldTextColor;
+-(UIFont *)getCalendarEmailViewTextFieldTextFont;
+
+-(UIColor *)getCalendarEmailViewNextBtnTitleColor;
+-(UIFont *)getCalendarEmailViewNextBtnTitleFont;
+
+-(UIColor *)getCalendarEmailViewNextBtnBackgroundColor;
+
+// Calendar Popup-View : Slots View
+-(UIColor *)getCalendarSlotsSessionNameTextColor;
+-(UIFont *)getCalendarSlotsSessionNameTextFont;
+
+-(UIColor *)getCalendarSlotsDateTextColor;
+-(UIFont *)getCalendarSlotsDateTextFont;
+
+-(UIColor *)getCalendarSlotsStateDescTextColor;
+-(UIFont *)getCalendarSlotsStateDescTextFont;
+
+-(UIColor *)getCalendarSlotsButtonTitleColor;
+-(UIFont *)getCalendarSlotsButtonTitleFont;
+-(UIColor *)getCalendarSlotsButtonBackgroundColor;
+-(UIColor *)getCalendarSlotsButtonSelectedBackgroundColor;
+-(UIColor *)getCalendarSlotsButtonBorderColor;
+
+-(UIColor *)getCalendarSlotsShowMoreButtonTitleColor;
+-(UIFont *)getCalendarSlotsShowMoreButtonTitleFont;
+-(UIColor *)getCalendarSlotsShowMoreButtonBackgroundColor;
+-(UIColor *)getCalendarSlotsShowMoreButtonBorderColor;
+
+-(UIColor *)getCalendarSlotsDividerColor;
+
+// Calendar Popup-View : Confirmation View
+-(UIColor *)getCalendarConfirmDescriptionTextColor;
+-(UIFont *)getCalendarConfirmDescriptionTextFont;
+
+-(UIColor *)getCalendarConfirmTimeTextColor;
+-(UIFont *)getCalendarConfirmTimeTextFont;
+
+-(UIColor *)getCalendarConfirmDateTextColor;
+-(UIFont *)getCalendarConfirmDateTextFont;
+
+-(UIColor *)getCalendarConfirmAvatarsBorderColor;
+
+-(UIColor *)getCalendarConfirmButtonTitleColor;
+-(UIFont *)getCalendarConfirmButtonTitleFont;
+-(UIColor *)getCalendarConfirmButtonBackgroundColor;
+
+-(UIColor *)getCalendarConfirmChangeSlotButtonTitleColor;
+-(UIFont *)getCalendarConfirmChangeSlotButtonTitleFont;
+-(UIColor *)getCalendarConfirmChangeSlotButtonBackgroundColor;
+-(UIColor *)getCalendarConfirmChangeSlotButtonBorderColor;
+
 @end

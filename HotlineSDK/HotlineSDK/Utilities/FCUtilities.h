@@ -17,6 +17,7 @@
 #import "FCResponseInfo.h"
 #import "FCAttributedText.h"
 #import "FCBarButtonItem.h"
+#import "FCAnimatedImageView.h"
 
 #define FRESHCHAT_USER_RESTORE_STATE @"com.freshworks.freshchat_user_restore_state"
 
@@ -29,6 +30,10 @@
 
 
 @interface FCUtilities : NSObject
+
+
++(UIWindow*)getAppKeyWindow;
++(UIWindow*)getAppWindow;
 
 +(NSString *)currentUserAlias;
 +(void) removeUUIDWithAppID:(NSString *)appID;
@@ -109,13 +114,16 @@
 + (BOOL) isTodaySameAsDate : (NSDate *) date;
 
 + (NSString *)contentTypeForImageData:(NSData *)data;
++ (float) calendarMsgWidthInBounds : (CGRect)bound;
++ (NSString *) intervalStrFromMillis : (long)fromMillis toMillis: (long) toMillis;
++ (NSString *) getDurationFromSecs : (int) interval ;
 
 +(void) loadImageFromURL:(NSString  * _Nonnull)imageURL withCache:(void (^ _Nullable)())cacheBlock withError:(void (^ _Nullable)())errorBlock withCompletion:(void (^_Nullable)(UIImage * _Nonnull))completionBlock;
 +(void) loadImageWithUrl : (NSString *) url forView : (UIImageView *) imgView andErrorImage:(UIImage *)errorImage;
++ (void) setAgentImage : (FCAnimatedImageView *)imageView forAlias : (NSString *)alias;
 
 + (void) setNavigationPropertyForBar:(UINavigationBar *)bar;
 + (void) replaceNavigationPropertyForBar:(UINavigationBar *)bar withCurrentBar:(UINavigationBar *)originalbar;
-
 @end
 
 

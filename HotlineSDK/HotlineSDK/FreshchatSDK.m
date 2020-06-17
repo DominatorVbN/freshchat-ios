@@ -1116,7 +1116,7 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
                     ALog(@"Freshchat Error : Please Validate the user first.");
                     return;
                 }
-                [FCMessageHelper uploadMessageWithImageData:nil textFeed:messageObject.message onConversation:conversation andChannel:channel];
+                [FCMessageHelper uploadMessageWithImageData:nil textFeed:messageObject.message messageType:@1 onConversation:conversation andChannel:channel];
             }
         }];
     }];
@@ -1177,7 +1177,11 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 }
 
 -(void) dismissEmbededFreshchatViews {
-    UIViewController *rootController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIWindow *window = [FCUtilities getAppWindow];
+    if(!window) {
+        return;
+    }
+    UIViewController *rootController = [window rootViewController];
     [self dismissHotlineViewInController:rootController withCompletion:nil];
     if(!rootController.isBeingPresented) { // Embeded case
         UITabBarController *tabBar = (UITabBarController*) rootController;
@@ -1204,7 +1208,11 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 }
 
 -(void) dismissFreshchatViews {
-    UIViewController *rootController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIWindow *window = [FCUtilities getAppWindow];
+    if(!window) {
+        return;
+    }
+    UIViewController *rootController = [window rootViewController];
     [self dismissHotlineViewInController:rootController withCompletion:nil];
 }
 

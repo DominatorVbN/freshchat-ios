@@ -52,4 +52,6 @@
 
 + (NSURLSessionDataTask *) uploadInboundEvents:(NSDictionary *)events withCompletion:(void(^)(BOOL uploaded, NSDictionary *uploadedEvents, NSError *error))handler;
 
++(NSURLSessionDataTask *)fetchAvilCalendarSlotsForAgent : (NSString *)agentCalAlias :(void (^)(NSDictionary *slotsInfo, NSError *error))handler;
+
 @end

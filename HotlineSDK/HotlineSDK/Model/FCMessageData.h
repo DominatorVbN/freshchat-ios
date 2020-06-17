@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FCConversations.h"
 
 @interface FCMessageData : NSObject
 
@@ -22,6 +23,8 @@
 @property (nullable, nonatomic, retain) NSArray *fragments;
 @property(nullable, nonatomic, retain) NSNumber *uploadStatus;
 @property (nullable, nonatomic, retain) NSString *replyFragments;
+@property (nullable, nonatomic, retain) NSString *internalMeta;
+@property (nonatomic) BOOL hasActiveCalInvite;
 @property (nonatomic) BOOL isMarkedForUpload;
 @property (nonatomic) BOOL isWelcomeMessage;
 @property (nonatomic) BOOL isRead;
