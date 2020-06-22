@@ -202,13 +202,6 @@
     return filePath;
 }
 
-+(NSString *) getKeyForObject:(NSObject *) object {
-    if(object){
-        return [NSString stringWithFormat:@"%lu" , (unsigned long)[object hash]];
-    }
-    return @"nil";
-}
-
 +(NSString *)getAdID{
     NSString *adId = @"";
     Class advertisingClass = NSClassFromString(@"ASIdentifierManager");

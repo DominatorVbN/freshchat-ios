@@ -47,7 +47,6 @@
 + (void) resetNavigationStackWithController:(UIViewController *)controller currentController:(UIViewController *)currentController;
 
 +(UIImage *)imageWithColor:(UIColor *)color;
-+(NSString *) getKeyForObject:(NSObject *) object;
 +(NSString *)getAdID;
 +(NSString *)generateOfflineMessageAlias;
 +(NSDictionary *)deviceInfoProperties;
