@@ -15,6 +15,7 @@
 #import "FCUtilities.h"
 
 #define VIEWPADDING 4
+#define FC_FEEDBACKVIEW_HT 72
 
 @interface FCCSATView() <UIGestureRecognizerDelegate>
 
@@ -139,13 +140,13 @@
                 feedbackviewHeight = 0;
             }else{
                 promptHeight = 200;
-                feedbackviewHeight = 50;
+                feedbackviewHeight = FC_FEEDBACKVIEW_HT;
             }
             [self enableSubmitButton:NO];
        }else{
            ratingbarHeight = 0;
            promptHeight = 170;
-           feedbackviewHeight = 70;
+           feedbackviewHeight = FC_FEEDBACKVIEW_HT;
            [self enableSubmitButton:YES];
        }
         

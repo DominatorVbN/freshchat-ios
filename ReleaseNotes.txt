@@ -1,4 +1,9 @@
 
+Ver 3.7.1 
+__________________________
+Enhancement : 
+- Support for multiline placeholder text in feedback view
+
 Ver 3.7.0 
 __________________________
 Feature :
