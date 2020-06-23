@@ -16,31 +16,11 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: macOS-latest
-    strategy:
-        matrix:
-          destination: ['platform=iOS Simulator,OS=12.2,name=iPhone X']
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: sersoft-gmbh/xcodebuild-action@v1.1
-      with:
-        # The path to the xcworkspace to build. Mutually exclusive with `project`.
-        # workspace: # optional
-        # The path to the xcodeproj to build. Mutually exclusive with `workspace`.
-        project: HotlineSDK/
-        # The scheme to build. Required when using a workspace.
-        scheme: FreshchatSDKTest
-        # The destination specifier to build.
-        # destination: # optional
-        # The configuration to build.
-        # configuration: # optional
-        # The SDK to use for building.
-        # sdk: # optional
-        # A list of tests to skip.
-        # skip-testing: # optional
-        # Arbitrary, space separated build settings (e.g. PLATFORM_NAME=iphonesimulator).
-        # build-settings: # optional
-        # The action to perform (e.g. build, test, ...).
-        action: test
-        # Whether the output of xcodebuild should be forwarded to xcpretty.
-        use-xcpretty: true
+    - uses: actions/checkout@v1
+    - name: Force Xcode 11
+      run: sudo xcode-select -switch /Applications/Xcode_11.3.app
+    - name: GO to HotlineSDK
+      run: cd HotlineSDK
+    - name: Run tests
+      run: xcodebuild clean test -project "HotlineSDK.xcodeproj" -scheme "FreshchatSDKTest" -destination "platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest"
