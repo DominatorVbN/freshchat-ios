@@ -248,7 +248,7 @@
 }
 
 -(void)displayBannerWithChannel:(FCChannels *)channel{
-    UIWindow *window = [FCUtilities getAppWindow];
+    UIWindow *window = [FCUtilities getAppKeyWindow];
     if(window) {
         [window setWindowLevel:UIWindowLevelStatusBar+1];
     }
@@ -299,7 +299,7 @@
         
     } completion:^(BOOL finished) {
         self.hidden = YES;
-        UIWindow *window = [FCUtilities getAppWindow];
+        UIWindow *window = [FCUtilities getAppKeyWindow];
         if(window) {
             [window setWindowLevel:UIWindowLevelNormal];
         }

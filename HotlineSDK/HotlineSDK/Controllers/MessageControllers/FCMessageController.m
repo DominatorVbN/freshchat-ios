@@ -211,7 +211,9 @@ typedef struct {
     if(self.channel.channelAlias){
         [eventsDict setObject:self.channel.channelAlias forKey:@(FCPropertyChannelID)];
     }
-    [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+    if(self.channel.name){
+        [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+    }
     if(self.convOptions.tags.count > 0){
         [eventsDict setObject:self.convOptions.tags forKey:@(FCPropertyInputTags)];
     }
@@ -488,7 +490,7 @@ typedef struct {
         [self removeJWTObservers];
     }
     
-    if ([self isMovingFromParentViewController] )
+    if ([self isMovingFromParentViewController])
     {
         [FCMessageHelper setDelegate:nil];
     }
@@ -1535,14 +1537,16 @@ typedef struct {
     [self.view endEditing:true];
     if (actionType == BOOK_NOW){
         //show calendar email view
-        FCCalendarViewController *calendarEmailController = [[FCCalendarViewController alloc]init];
-        calendarEmailController.conversation = self.conversation;
-        calendarEmailController.message = message;
         UIViewController *topController = [FCUtilities topMostController];
-        calendarEmailController.providesPresentationContextTransitionStyle = YES;
-        calendarEmailController.definesPresentationContext = YES;
-        calendarEmailController.modalPresentationStyle = UIModalPresentationOverFullScreen;
-        [topController presentViewController:calendarEmailController animated:true completion:nil];
+        if(topController) {
+            FCCalendarViewController *calendarEmailController = [[FCCalendarViewController alloc]init];
+            calendarEmailController.conversation = self.conversation;
+            calendarEmailController.message = message;
+            calendarEmailController.providesPresentationContextTransitionStyle = YES;
+            calendarEmailController.definesPresentationContext = YES;
+            calendarEmailController.modalPresentationStyle = UIModalPresentationOverFullScreen;
+            [topController presentViewController:calendarEmailController animated:true completion:nil];
+        }
     }else if (actionType == CANCEL_NOW) {
         [FCMessageUtil cancelCalendarInviteForMsg:message andConv:self.conversation];
         [self updateAndScrollToBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];

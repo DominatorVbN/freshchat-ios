@@ -1177,7 +1177,7 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 }
 
 -(void) dismissEmbededFreshchatViews {
-    UIWindow *window = [FCUtilities getAppWindow];
+    UIWindow *window = [FCUtilities getAppKeyWindow];
     if(!window) {
         return;
     }
@@ -1208,7 +1208,7 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 }
 
 -(void) dismissFreshchatViews {
-    UIWindow *window = [FCUtilities getAppWindow];
+    UIWindow *window = [FCUtilities getAppKeyWindow];
     if(!window) {
         return;
     }
