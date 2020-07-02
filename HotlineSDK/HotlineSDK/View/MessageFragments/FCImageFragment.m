@@ -47,6 +47,8 @@
             } else {
                 imageToBeDownloaded = false;
             }
+            [self setImageFromFragmentData:fragment ifAvailable:imageToBeDownloaded andIsThumbnail:isThumbnail];
+            
             if(isThumbnail) {
                 NSDictionary *thumbnailDict = extraJSONDict[@"thumbnail"];
                 
@@ -67,7 +69,6 @@
                     self.imgFrame = CGRectMake(0, 0, thumbnailWidth, thumbnailHeight);
                 }
             }
-            [self setImageFromFragmentData:fragment ifAvailable:imageToBeDownloaded andIsThumbnail:isThumbnail];
             [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self  action:@selector(showImagePreview:)]];
         }
         return self;
