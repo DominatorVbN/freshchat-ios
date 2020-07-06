@@ -121,7 +121,7 @@
     [FCJWTAuthValidator sharedInstance].prevState = TOKEN_EXPIRED;
     [self.expiryTimer invalidate];
     self.expiryTimer = nil;
-    UIWindow *window = [FCUtilities getAppWindow];
+    UIWindow *window = [FCUtilities getAppKeyWindow];
     if(window) {
         UIViewController *rootController = [window rootViewController];
         if(!rootController.isBeingPresented) {

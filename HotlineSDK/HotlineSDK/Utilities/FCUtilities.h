@@ -33,7 +33,6 @@
 
 
 +(UIWindow*)getAppKeyWindow;
-+(UIWindow*)getAppWindow;
 
 +(NSString *)currentUserAlias;
 +(void) removeUUIDWithAppID:(NSString *)appID;

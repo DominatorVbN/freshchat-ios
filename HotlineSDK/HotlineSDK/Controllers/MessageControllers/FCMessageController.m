@@ -95,6 +95,7 @@ typedef struct {
 @property (strong, nonatomic) NSString *appAudioCategory;
 @property (nonatomic,strong) NSNumber *channelID;
 @property (nonatomic,strong) FCCalendarBannerView *calendarBanner;
+@property (nonatomic,strong) NSMutableDictionary *heightAtIndexPath;
 
 @property (nonatomic, strong) FCMessagePoller *messagesPoller;
 
@@ -192,6 +193,7 @@ typedef struct {
 
 -(void)willMoveToParentViewController:(UIViewController *)parent{
     self.view.accessibilityIdentifier = @"FreshchatMessageView";
+    self.heightAtIndexPath = [[NSMutableDictionary alloc]init];
     parent.navigationItem.title = self.channel.name;
     self.messagesDisplayedCount = 20;
     self.replyTexts = [[NSMutableArray alloc] init];
@@ -201,7 +203,6 @@ typedef struct {
     [self updateMessages];
     [self setNavigationItem];
     [self setNavigationTitle:parent];
-    [self scrollTableViewToLastCell];
     [self.tableView setHidden:true];
     [FCMessageServices fetchChannelsAndMessagesWithFetchType:ScreenLaunchFetch source:ChatScreen andHandler:nil];
     [FCMessages markAllMessagesAsReadForChannel:self.channel];
@@ -211,7 +212,9 @@ typedef struct {
     if(self.channel.channelAlias){
         [eventsDict setObject:self.channel.channelAlias forKey:@(FCPropertyChannelID)];
     }
-    [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+    if(self.channel.name){
+        [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+    }
     if(self.convOptions.tags.count > 0){
         [eventsDict setObject:self.convOptions.tags forKey:@(FCPropertyInputTags)];
     }
@@ -488,7 +491,7 @@ typedef struct {
         [self removeJWTObservers];
     }
     
-    if ([self isMovingFromParentViewController] )
+    if ([self isMovingFromParentViewController])
     {
         [FCMessageHelper setDelegate:nil];
     }
@@ -729,6 +732,13 @@ typedef struct {
 
 -(void)updateBottomViewWith:(UIView *)view andHeight:(CGFloat) height{
     if(view) {
+        if([view isKindOfClass:[FCInputToolbarView class]]) {
+            FCInputToolbarView *inputView = (FCInputToolbarView *)view;
+            UITextView *textView = inputView.textView;
+            if(textView.text.length > 0 && textView.frame.size.height + 10 + textView.frame.origin.y > height) {
+                height = textView.frame.size.height + 10 + textView.frame.origin.y;
+            }
+        }
         [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [self.bottomView addSubview:view];
         self.bottomViewHeightConstraint.constant = height;
@@ -742,7 +752,7 @@ typedef struct {
 
 -(void)updateAndScrollToBottomViewWith:(UIView *)view andHeight:(CGFloat) height{
     [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.4 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [self scrollTableViewToLastCell];
     });
 }
@@ -806,14 +816,14 @@ typedef struct {
 
 -(UITableViewCell *) showRefreshCellIfRequired: (NSIndexPath *)index {
     
-    if(index.row == 0 && [[self.tableView indexPathsForVisibleRows] containsObject:index] && self.messagesDisplayedCount < self.messages.count && !self.initalLoading){
+    if(index.row == 0 && [[self.tableView indexPathsForVisibleRows] containsObject:index] && self.messagesDisplayedCount < self.messages.count && !self.initalLoading && [self.tableView numberOfRowsInSection:0] == self.messagesDisplayedCount){
         UITableViewCell* cell =[self getRefreshStatusCell];
         NSInteger oldnumber = self.messagesDisplayedCount;
         self.messagesDisplayedCount += self.loadmoreCount;
         if(self.messagesDisplayedCount > self.messageCount){
             self.messagesDisplayedCount = self.messageCount;
         }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.4 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
             [self refreshView:@(oldnumber) forFirstTime:true];
         });
         
@@ -906,9 +916,6 @@ typedef struct {
     [FCMessageHelper uploadMessageWithImageData:nil textFeed:toSend messageType:@1 onConversation:self.conversation andChannel:self.channel];
     [self checkPushNotificationState];
     [self inputToolbar:toolbar textViewDidChange:toolbar.textView];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [self refreshView];
-    });
     [self.messagesPoller reset];
 }
 
@@ -1141,7 +1148,6 @@ typedef struct {
     self.keyboardHeight = 0.0;
     self.bottomViewBottomConstraint.constant = 0.0;
     self.CSATView.CSATPromptCenterYConstraint.constant = 0;
-    [self.messageDetailView layoutIfNeeded];
     [UIView animateWithDuration:animationDuration animations:^{
         [self.messageDetailView layoutIfNeeded];
     }];
@@ -1229,20 +1235,8 @@ typedef struct {
         _flags.isLoading = NO;
         [self refreshView];
         [self.messagesPoller reset];
-        FCMessageData *msgData = [self fetchMessages].lastObject;
-        [self handleInputForLastCalendarMsg:msgData];
     }
     [self processPendingCSAT];
-}
-
-- (void) handleInputForLastCalendarMsg :(FCMessageData *) msgData {
-    if([self isCalendarMsg: msgData]) {
-        self.bottomViewBottomConstraint.constant = 0;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            [self scrollTableViewToLastCell];
-        });
-        [self.view endEditing:YES];
-    }
 }
 
 - (BOOL) isCalendarMsg : (FCMessageData *)msg {
@@ -1318,6 +1312,7 @@ typedef struct {
        ((self.messageCount - self.messagesDisplayedCount)<3)){
         self.messagesDisplayedCount = self.messageCount;
     }
+    
     [self.tableView reloadData];
     
     [self checkForReplyFragmentAfterCSATUpdate:false];
@@ -1407,9 +1402,6 @@ typedef struct {
                             FCOutboundEvent *event = [[FCOutboundEvent alloc] initOutboundEvent:FCEventCarouselShow withParams:@{@(FCPropertyOption): jsonDict}];
                             [FCEventsHelper postNotificationForEvent:event];
                             [self cleanupBottomView];
-                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                                [self scrollTableViewToLastCell];
-                            });
                         }
                     }
                 }
@@ -1428,12 +1420,13 @@ typedef struct {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
             [self scrollTableViewToLastCell];
         });
-    }else {
-        if (shouldScroll) {
-             [self updateAndScrollToBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
-        } else {
-            [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
-        }
+    }else if (_bottomViewHeightConstraint.constant == 0 || !self.inputToolbar.superview) {
+        [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            if(shouldScroll) {
+                [self scrollTableViewToLastCell];
+            }
+        });
     }
 }
 
@@ -1535,14 +1528,16 @@ typedef struct {
     [self.view endEditing:true];
     if (actionType == BOOK_NOW){
         //show calendar email view
-        FCCalendarViewController *calendarEmailController = [[FCCalendarViewController alloc]init];
-        calendarEmailController.conversation = self.conversation;
-        calendarEmailController.message = message;
         UIViewController *topController = [FCUtilities topMostController];
-        calendarEmailController.providesPresentationContextTransitionStyle = YES;
-        calendarEmailController.definesPresentationContext = YES;
-        calendarEmailController.modalPresentationStyle = UIModalPresentationOverFullScreen;
-        [topController presentViewController:calendarEmailController animated:true completion:nil];
+        if(topController) {
+            FCCalendarViewController *calendarEmailController = [[FCCalendarViewController alloc]init];
+            calendarEmailController.conversation = self.conversation;
+            calendarEmailController.message = message;
+            calendarEmailController.providesPresentationContextTransitionStyle = YES;
+            calendarEmailController.definesPresentationContext = YES;
+            calendarEmailController.modalPresentationStyle = UIModalPresentationOverFullScreen;
+            [topController presentViewController:calendarEmailController animated:true completion:nil];
+        }
     }else if (actionType == CANCEL_NOW) {
         [FCMessageUtil cancelCalendarInviteForMsg:message andConv:self.conversation];
         [self updateAndScrollToBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
@@ -1898,7 +1893,7 @@ typedef struct {
 - (void)dismissAndSendFragment:(NSArray *)fragments inReplyTo:(NSNumber *)messageID {
     [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
     [FCMessageHelper uploadNewMessage:fragments onConversation:self.conversation withMessageType:@1 onChannel:self.channel inReplyTo:messageID];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
             [self scrollTableViewToLastCell];
     });
 }
@@ -1908,6 +1903,20 @@ typedef struct {
     if (scrollToLast) {
         [self scrollTableViewToLastCell];
     }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSNumber *height = [self.heightAtIndexPath objectForKey:indexPath];
+    if(height) {
+        return height.floatValue;
+    } else {
+        return UITableViewAutomaticDimension;
+    }
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSNumber *height = @(cell.frame.size.height);
+    [self.heightAtIndexPath setObject:height forKey:indexPath];
 }
 
 @end

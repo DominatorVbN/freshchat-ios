@@ -150,7 +150,11 @@
 }
 
 +(UIViewController*) topMostController {
-    UIViewController *topController = [[FCUtilities getAppWindow] rootViewController];
+    UIWindow *window = [FCUtilities getAppKeyWindow];
+    if(!window) {
+        return nil;
+    }
+    UIViewController *topController = [window rootViewController];
     while (topController.presentedViewController) {
         topController = topController.presentedViewController;
     }
@@ -1218,11 +1222,23 @@ static NSInteger networkIndicator = 0;
       break;
     }
   }
+    if (!foundWindow) {
+        if (@available(iOS 13.0, *)) {
+            NSSet *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+            for (UIScene *scene in connectedScenes) {
+                if (scene.activationState == UISceneActivationStateForegroundActive && [scene isKindOfClass:[UIWindowScene class]]) {
+                    UIWindowScene *windowScene = (UIWindowScene *)scene;
+                    for (UIWindow *window in windowScene.windows) {
+                        if (window.isKeyWindow) {
+                          foundWindow = window;
+                          break;
+                        }
+                    }
+                }
+            }
+        }
+    }
   return foundWindow;
-}
-
-+(UIWindow*)getAppWindow {
-    return [[UIApplication sharedApplication]windows].firstObject;
 }
 
 @end
