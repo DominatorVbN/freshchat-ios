@@ -31,6 +31,97 @@
 #import "FCFAQUtil.h"
 #import "FCJWTUtilities.h"
 #import "FCFooterView.h"
+#import "FCMessages.h"
+#import "FCReachability.h"
+#import "FCListViewController.h"
+#import "FCEventsConstants.h"
+#import "FreshchatSDK.h"
+#import "FCEventsManager.h"
+#import "FCYesNoPromptView.h"
+#import "FCPromptView.h"
+#import "FCAgentMessageCell.h"
+#import "FCCSATView.h"
+#import "FCLocaleUtil.h"
+#import "FCIndexManager.h"
+#import "FCCalendarViewController.h"
+#import "FCVotingManager.h"
+#import "FCArticleDetailViewController.h"
+#import "FCCategoryGridViewController.h"
+#import "FCCategoryListController.h"
+#import "FCJWTAuthValidator.h"
+#import "FCTags.h"
+#import "FCServiceRequest.h"
+#import "FCAPI.h"
+#import "FCAPIClient.h"
+
+@interface FCUtilities (Test)
++ (NSString*)convertIntoMD5 :(NSString *) str;
++ (NSString *) replaceMatchString : (NSString *)matchStr withString : (NSString *)replaceStr;
+@end
+
+@interface Freshchat (Test)
+- (NSString *)validateDomain:(NSString*)domain;
+-(BOOL)cannotMakeUserCalls;
+@end
+
+@interface FCEventsManager (Test)
+- (NSNumber *)nextEventId;
+@end
+
+@interface FCYesNoPromptView (Test)
+-(CGFloat)getPromptHeight;
+@end
+
+@interface FCAgentMessageCell (Test)
+-(NSString *) getLocalizedAgentName;
+-(BOOL) isTopFragment :(NSArray *)array currentIndex:(int)currentIndex;
+@end
+
+@interface FCCSATView (Test)
+-(UIView *)createStarRatingView;
+@end
+
+@interface FCLocaleUtil (Test)
++(NSArray *)userLocaleParams:(BOOL)voteReq;
+@end
+
+@interface FCMemLogger (Test)
+-(NSString *)getApplicationState;
+-(NSString *)getUserSessionId;
+@end
+
+@interface FCIndexManager (Test)
++(NSString *) stringByStrippingHTML:(NSString *)stringContent;
+@end
+
+@interface FCCalendarViewController (Test)
+@property (nonatomic, strong) NSDictionary* slotsResponseDict;
+- (long) getMeetingEndMillisForStartTime :(NSNumber *) startTime;
+@end
+
+@interface FCMessageController (Test)
+- (BOOL) checkIfResponseLabelIsEmpty;
+- (NSMutableDictionary *) getChannelReplyTimeForResponse : (NSArray *)convArr;
+- (float)lineCountForLabel:(UILabel *)label;
+- (BOOL) isCalendarMsg : (FCMessageData *)msg;
+- (NSString *)emptyText;
+- (NSString *)loadingText;
+@end
+
+@interface FCArticleDetailViewController (Test)
+-(NSString *)fixLinksForiOS9:(NSString *) content;
+-(NSString *)offLineMessageForContent:(NSString *) content;
+@end
+
+@interface FCCategoryGridViewController (Test)
+-(NSString *)emptyText;
+-(NSString *)loadingText;
+@end
+
+@interface FCCategoryListController (Test)
+-(NSString *)emptyText;
+-(NSString *)loadingText;
+@end
 
 @interface FreshchatSDKTest : XCTestCase
 
@@ -137,6 +228,15 @@
     }
 }
 
+- (void) testLocale{
+    NSArray *array = [FCLocaleUtil userLocaleParams:NO];
+    XCTAssertTrue([array isEqualToArray:@[@"locale=en"]]);
+    NSArray *arrLocale = [FCLocaleUtil channelLocaleParams];
+    NSArray *compArray = [NSArray arrayWithObjects:@"locale=en", @"lastLocaleId=0", nil];
+    XCTAssertTrue([arrLocale isEqualToArray:compArray]);
+    XCTAssertTrue([FCLocaleUtil hadLocaleChange]);
+}
+
 - (void)testDateUtils {
     id userDefaultsMock = OCMClassMock([FCUserDefaults class]);
     OCMStub([userDefaultsMock getStringForKey:HOTLINE_DEFAULTS_CONTENT_LOCALE]).andReturn(@"en_US");
@@ -148,14 +248,19 @@
     NSString *dateStr = [FCDateUtil stringRepresentationForDate:date];
 }
 
-/*-(void)testCalendar {
+-(void)testCalendar {
     NSString *calendarString = @"{\"id\": \"83d31c01-d52e-4c59-88fd-f415db7d257a\",\"calendarTimeSlots\": [{\"id\": 0,\"from\": 1586748600000,\"to\": 1586754900000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586758500000,\"to\": 1586773800000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586835000000,\"to\": 1586841300000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586844900000,\"to\": 1586855700000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586921400000,\"to\": 1586927700000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586931300000,\"to\": 1586956500000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586961000000,\"to\": 1586975340000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586975400000,\"to\": 1587014100000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587017700000,\"to\": 1587028500000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587033900000,\"to\": 1587042900000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587094200000,\"to\": 1587100500000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587104100000,\"to\": 1587111300000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587116700000,\"to\": 1587123000000,\"prevTo\": 0}],\"meetingLength\": 1800,\"bufferTime\": 900,\"minNoticeTime\": 1800,\"calendarType\": 1}";
        NSData *data = [calendarString dataUsingEncoding:NSUTF8StringEncoding];
        NSError *error;
        NSDictionary* calendarDic = [NSJSONSerialization JSONObjectWithData:data
                                                                             options:0
                                                                               error:&error];
-       if (!error){
+    FCCalendarViewController *calView = [[FCCalendarViewController alloc] init];
+    calView.slotsResponseDict = calendarDic;
+    float meetingEndMilli = (float)[calView getMeetingEndMillisForStartTime:@1800];
+    XCTAssertEqual(meetingEndMilli, 1801800);
+    NSLog(@"jhj");
+   /*    if (!error){
            id userDefaultsMock = OCMClassMock([FCUserDefaults class]);
            OCMStub([userDefaultsMock getStringForKey:HOTLINE_DEFAULTS_CONTENT_LOCALE]).andReturn(@"en_US");
            FCCalendarModel *model = [[FCCalendarModel alloc]initWith:calendarDic];
@@ -226,8 +331,9 @@
            [array.firstObject.morningSlots removeAllObjects];
            XCTAssert([[array.firstObject getSessionsIn:0] count] == 7);
        }
+    */
 }
- */
+
 
 //JWT token
 
@@ -239,6 +345,12 @@
     XCTAssertTrue([FCJWTUtilities isValidityExpiedForJWTToken :jwtToken]);
     XCTAssert([dict[@"reference_id"] isEqualToString: [FCJWTUtilities getReferenceID :jwtToken]]);
     XCTAssert([dict[@"freshchat_uuid"] isEqualToString: [FCJWTUtilities getAliasFrom :jwtToken]]);
+    XCTAssertTrue([FCJWTUtilities compareAlias:jwtToken str2:jwtToken]);
+    
+    FCJWTAuthValidator *authValidator = [FCJWTAuthValidator sharedInstance];
+    authValidator.prevState = TOKEN_VALID;
+    enum JWT_UI_STATE state = [authValidator getUiActionForTokenState:authValidator.prevState];
+    XCTAssertTrue(state == 3);
 }
 
 //Remote-Config Class
@@ -320,6 +432,15 @@
     }
 }
 
+//Memlogger
+- (void) testMemLogger {
+    FCMemLogger *memLog = [[FCMemLogger alloc] init];
+    NSString *appState = [memLog getApplicationState];
+    XCTAssertEqualObjects(appState, @"Active");
+    NSString *sessionId = [memLog getUserSessionId];
+    XCTAssertTrue(sessionId.length >32);
+}
+
 //Event Helper
 
 - (void) testvalidEventNameLength {
@@ -328,6 +449,9 @@
 }
 
 - (void) testGetValidatedEventProperties {
+    NSString *ctr = [FCUtilities returnLibraryPathForDir:FC_INBOUND_EVENT_DIR_PATH];
+    XCTAssertTrue(ctr != nil);
+    
     NSDictionary *dict1 = [FCEventsHelper getValidatedEventsProps: @{@"FCPropertyFAQID": @103,
                                                                     @"FCPropertyChannelID" : @40499728879621,
                                                                     @"FCPropertyFAQTitle" : @"inbox",
@@ -340,6 +464,9 @@
 }
 
 - (void) testDictForEventParams {
+    
+    XCTAssertTrue([FCEventsHelper hasValidEventNameLength:@"Event_Name"]);
+    
     NSDictionary *dict1 = [FCEventsHelper getDictionaryForParamsDict: @{@(FCPropertyFAQID): @103,
     @(FCPropertyChannelID) : @40499728879621,
     @(FCPropertyFAQTitle) : @"inbox"}];
@@ -348,6 +475,12 @@
                             @"FCPropertyChannelID" : @40499728879621,
                             @"FCPropertyFAQTitle" : @"inbox"};
     XCTAssertTrue([dict1 isEqualToDictionary:dict2]);
+}
+
+- (void) testNextEvent {
+    FCEventsManager *eventMgr = [[FCEventsManager alloc] init];
+    NSNumber *nextId = [eventMgr nextEventId];
+    XCTAssertTrue([nextId isEqualToNumber:@1]);
 }
     
 //SDK Header class tests
@@ -402,6 +535,27 @@
     XCTAssertEqual(user.email, @"support@freshchat.com");
     XCTAssertEqual(user.phoneNumber, nil); //No value set to check empty
     XCTAssertEqual(user.phoneCountryCode, nil);//No value set to check empty
+}
+
+- (void) testFreshchatSDKMisc {
+    NSString *domain = [[Freshchat sharedInstance] validateDomain:@"http://msdk.freshchat.com"];
+    XCTAssertEqualObjects(domain, @"msdk.freshchat.com");
+    
+    FCYesNoPromptView *prompt = [[FCYesNoPromptView alloc] init];
+    XCTAssertEqual([prompt getPromptHeight], (CGFloat)84.0);
+    
+    FCPromptView *promptView = [[FCPromptView alloc] init];
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    [button setTitle:@"Show View" forState:UIControlStateNormal];
+    button.frame = CGRectMake(80, 210, 160, 40);
+    CGFloat btnWidth = [promptView getDesiredWidthFor:button];
+    XCTAssertEqual(208, (int)btnWidth);
+    
+    FCCSATView *csatView = [[FCCSATView alloc] init];
+    UIView *starRateView = [csatView createStarRatingView];
+    XCTAssertTrue(starRateView != nil);// just check for rating view
+    
+    XCTAssertFalse([[Freshchat sharedInstance] cannotMakeUserCalls]);
 }
 
 - (void) testFaqAndConvOptions {
@@ -476,6 +630,9 @@
 - (void) testRegexPattern {
     BOOL isRegexmatch = [FCStringUtil checkRegexPattern:@"\\b(?:\\d{4}[ -]?){3}(?=\\d{4}\\b)" inString:@"1234-1234-1234-1234"];
     XCTAssertTrue(isRegexmatch);
+    
+    NSString *matchStr = [FCUtilities replaceMatchString:@"1234-1234-1234-1234" withString:@"11111"];
+    XCTAssertTrue([matchStr isEqualToString:@"11111"]);
 }
 
 - (void) testBase64EncodedString {
@@ -511,7 +668,35 @@
     XCTAssertTrue(isNotEmpty);
 }
 
+- (void) testStringMisc {
+    NSString *newLineStr = [FCStringUtil sanitizeStringForNewLineCharacter:@"line1 \n line2"];
+    XCTAssertEqualObjects(newLineStr, @"line1 line2");
+    NSString *utf8Str = [FCStringUtil sanitizeStringForUTF8: @"string 1 [\U00010000 string 2"];
+    XCTAssertEqualObjects(utf8Str, @"string 1 [  string 2");
+    NSString *idStr =  [FCStringUtil generateUUID];
+    XCTAssertTrue(idStr.length >=32);
+    NSString *strFromObj = [FCStringUtil getStringValue:[NSString stringWithFormat:@"String as object"]];
+    XCTAssertEqualObjects(strFromObj, @"String as object");
+}
+
+- (void) testIndexManager {
+    NSString *str = [FCIndexManager stringByStrippingHTML:@"<HTML>hello <b>there</b></HTML>"];
+    XCTAssertEqualObjects(str, @"hello there");
+}
+
+- (void) testCategoryGridTextDisplay {
+    FCCategoryGridViewController *catGrid = [[FCCategoryGridViewController alloc]init];
+    FCCategoryListController *catList = [[FCCategoryListController alloc]init];
+    XCTAssertEqualObjects([catGrid emptyText], [catList emptyText]);
+    XCTAssertEqualObjects([catGrid loadingText], [catList loadingText]);
+}
+
 //Test cases for FCUtilities
+
+- (void) testConvertToMD5 {
+    NSString *md5CovStr = [FCUtilities convertIntoMD5:@"fe0a6d4f8719e4bae981d659c65419e6"];
+    XCTAssertTrue([md5CovStr isEqualToString: @"f922209d12d7b7c0728a06ade8584ee8"]);
+}
 
 -(void) testString {
     NSString *str = @"Here is some <b>HTML</b>";
@@ -531,6 +716,12 @@
     NSArray *outPutArr = [FCUtilities convertTagsArrayToLowerCase:testArray];
     BOOL isbothArrayEqual = [outPutArr isEqualToArray:compArray];
     XCTAssertTrue(isbothArrayEqual);
+}
+
+- (void) testTags {
+    NSDictionary *dict = [FCTags createDictWithTagName:@"alfa" type:@1 andIdvalue:@1];
+    NSDictionary *compareDict = @{@"tagName" : @"alfa", @"taggableID" : @1, @"taggableType" : @1};
+    XCTAssertTrue([compareDict isEqualToDictionary:dict]);
 }
 
 - (void) testReplyResponseTime {
@@ -589,6 +780,7 @@
     XCTAssertTrue([FCUtilities isiOS10]);
     XCTAssertFalse([FCUtilities isVerLessThaniOS13]);
     XCTAssertFalse([FCUtilities isDeviceLanguageRTL]);
+    XCTAssertTrue([FCUtilities hasNotchDisplay]);
     NSDictionary *dict = [FCUtilities filterValidUserPropEntries: @{@"Key1": @103,
                                                                     @"Key2" : @40499728879621,
                                                                     @"Key3" : @"value"}];
@@ -599,7 +791,10 @@
     NSDictionary *dict2 = [FCUtilities deviceInfoProperties];
     XCTAssertTrue([dict2[@"app_version"] isEqualToString:@"1.0"]);
     XCTAssertTrue([dict2[@"app_version_code"] isEqualToString: @"16091"]);
-    NSLog(@"test");
+    XCTAssertTrue([[FCUtilities appName] isEqualToString:@"xctest"]);
+    XCTAssertTrue([FCUtilities deviceModelName].length != 0);
+    XCTAssertTrue([FCUtilities getCurrentTimeInMillis] > 1595303501586);
+    NSLog(@"Time");
 }
 
 - (void) testActivecalendarMessageType {
@@ -633,7 +828,88 @@
         
         XCTAssertEqualObjects(@9001, message.messageType);
         XCTAssertTrue(message.hasActiveCalInvite);
+        FCMessageController *msgCtr = [[FCMessageController alloc] init];
+        XCTAssertTrue([msgCtr isCalendarMsg : message]);
     }
+}
+
+- (void) testArticle {
+    
+    FCArticleDetailViewController *articleCtr = [[FCArticleDetailViewController alloc] init];
+    NSString *fixStr = [articleCtr fixLinksForiOS9 :@"src=\"//fc-use1-00-pics-bkt-00.s3.amazonaws.com\""];
+    XCTAssertTrue([fixStr isEqualToString:@"src=\"https://fc-use1-00-pics-bkt-00.s3.amazonaws.com\""]);
+    
+    FCVotingManager *votingMgr = [FCVotingManager sharedInstance];
+    votingMgr.votedArticlesDictionary = [[NSMutableDictionary alloc] init];
+    [votingMgr.votedArticlesDictionary setObject:@1 forKey:@12552];
+    [votingMgr.votedArticlesDictionary setObject:@0 forKey:@12553];
+    XCTAssertFalse([votingMgr isArticleVoted:@12552]);
+    XCTAssertTrue([votingMgr isArticleDownvoted:@12552]);
+    XCTAssertFalse([votingMgr getArticleVoteFor:@12553]);
+}
+
+- (void) testMsgControllerMethods {
+    FCMessageController *msgCtr = [[FCMessageController alloc] init];
+    XCTAssertTrue([msgCtr checkIfResponseLabelIsEmpty]);
+    NSArray *array = @[@{@"channelId" : @707, @"responseTime" : @0 },
+                       @{@"channelId" : @787, @"responseTime" : @0},
+                       @{@"channelId" : @789, @"responseTime" : @5},
+                       @{@"channelId" : @792, @"responseTime" : @0},
+                       @{@"channelId" : @30, @"responseTime" : @0}];
+    NSDictionary *dict = [msgCtr getChannelReplyTimeForResponse : array];
+    NSDictionary *dictInfo1 = [dict objectForKey:@707];
+    NSDictionary *dict2 = @{@"channelId": @707,
+                            @"responseTime" : @0};
+    XCTAssertTrue([dictInfo1 isEqualToDictionary:dict2]);
+    UILabel *lbl = [[UILabel alloc] init];
+    lbl.text= @"This is sample text";
+    XCTAssertTrue([msgCtr lineCountForLabel:lbl] == 1.0);
+    XCTAssertTrue([msgCtr emptyText].length == 0);
+    XCTAssertTrue([msgCtr loadingText].length == 0);
+}
+
+- (void) testHtWithFont {
+    UIFont *sysFont = [UIFont systemFontOfSize:14];
+    float cellHt =  [FCListViewController heightOfCell:sysFont];
+    XCTAssertEqual(58.0, cellHt);
+    
+}
+- (void) testAgentAndUserMsgs {
+    
+    BOOL isMe = [FCMessageHelper isUserMe: @"0"];
+    BOOL isCurrentUser = [FCMessageHelper isCurrentUser :@0];
+    XCTAssertTrue(isMe);
+    XCTAssertTrue(isCurrentUser);
+    
+    NSMutableArray *msgArray = [[NSMutableArray alloc] init];
+    for (int i = 0; i <= 4; ++i) {
+        FCMessageData *message = [[FCMessageData alloc]init];
+        if(i % 2 == 0){
+            message.messageType = @1;
+        }else {
+            message.messageType = @7002;
+        }
+        FCMessages *msg = (FCMessages *)message;
+        [msgArray addObject:msg];
+    }
+    XCTAssertEqual(3, [FCMessageHelper getUserAndAgentMsgs  : msgArray].count);
+    
+    FCAgentMessageCell *agentCell = [[FCAgentMessageCell alloc] init];
+    NSString *locAgentName = [agentCell getLocalizedAgentName];
+    XCTAssertTrue((locAgentName.length == 0));// Nil value in localized
+    BOOL isTopFragment = [agentCell isTopFragment:@[@"frag1", @"frag2"] currentIndex:0];
+    XCTAssertTrue(isTopFragment);
+}
+
+- (void) testJsonMsgObj {
+    NSString *str = [FCMessages getJsonStringObjForMessage:@{
+    @"aps": @{@"key1":@"val1"},
+    @"channel_id": @103}
+                                   withKey:@"aps"];
+    XCTAssertTrue([str isEqualToString:@"{\n  \"key1\" : \"val1\"\n}"]);
+    
+    NSDictionary *dict = [FCMessageUtil getInternalMetaForData:str];
+    XCTAssertTrue([dict isEqualToDictionary:@{@"key1":@"val1"}]);
 }
 
 - (void) testLocalNotif {
@@ -652,6 +928,24 @@
 - (void) testReachability {
     FCReachabilityManager *reachMgr = [[FCReachabilityManager sharedInstance] initWithDomain:@"http://www.google.com"];
     XCTAssertTrue(reachMgr.isReachable);
+    if(reachMgr.isReachable){
+        FCReachability *rch = [FCReachability reachabilityWithHostName:@"http://www.google.com"];
+        FCReachability *rch1 = [FCReachability reachabilityForInternetConnection];
+        XCTAssertEqual(rch.isReachable, rch1.isReachable);
+        
+        NSString *appId = @"63d96e60-642f-48cb-b40a-dfbf16306fe8";
+        NSString *path = [NSString stringWithFormat:HOTLINE_API_TYPLICAL_REPLY,appId];
+        
+        FCServiceRequest *request = [[FCServiceRequest alloc]initWithMethod:HTTP_METHOD_GET];
+        [request setRelativePath:path andURLParams:@[@"t=60b7af4d-5729-45e2-b94f-9ea1af8bad20",@"locale=en"]];
+        FCAPIClient *apiClient = [FCAPIClient sharedInstance];
+        [apiClient request:request withHandler:^(FCResponseInfo *responseInfo, NSError *error) {
+            if (!error) {
+                NSInteger statusCode = ((NSHTTPURLResponse *)responseInfo.response).statusCode;
+                XCTAssertTrue(statusCode == 200);
+            }
+        }];
+    }
 }
 
 -(void) testIsTemplateFragment {

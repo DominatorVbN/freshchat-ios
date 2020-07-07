@@ -232,7 +232,10 @@ typedef NS_ENUM(NSInteger, FCNotifType) {
         }
         
     }else{
-        [self presentMessageControllerOn:[FCUtilities topMostController] withChannel:channel];
+        UIViewController *controller = [FCUtilities topMostController];
+        if(controller) {
+            [self presentMessageControllerOn:[FCUtilities topMostController] withChannel:channel];
+        }
     }
 }
 

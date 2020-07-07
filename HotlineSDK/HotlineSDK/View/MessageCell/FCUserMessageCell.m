@@ -208,7 +208,7 @@
                                                                                  constant:0];
             [contentEncloser addConstraint:centerConstraint];
             
-            [veriticalConstraint appendString:[NSString stringWithFormat:@"-(%@)-[%@(<=%@)]",[self isTopFragment:fragmensViewArr currentIndex:i] ? topPadding : internalPadding,str,imageHeight]];
+            [veriticalConstraint appendString:[NSString stringWithFormat:@"-(%@)-[%@(%@@999)]",[self isTopFragment:fragmensViewArr currentIndex:i] ? topPadding : internalPadding,str,imageHeight]];
         } else if([str containsString:@"text_"]) {
             NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(<=%ld)]-%@-|",leftPadding,str,(long)self.maxContentWidth,rightPadding];
             [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];

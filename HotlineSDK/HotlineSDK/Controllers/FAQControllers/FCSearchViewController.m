@@ -108,7 +108,7 @@
     if (sender.state == UIGestureRecognizerStateEnded){
         if (self.searchResults.count == 0) {
             CGPoint location = [sender locationInView:nil]; //Passing nil gives us coordinates in the window
-            UIWindow *window = [FCUtilities getAppWindow];
+            UIWindow *window = [FCUtilities getAppKeyWindow];
             if(!window) {
                 return;
             }
