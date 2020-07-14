@@ -193,7 +193,7 @@
     if (![[NSFileManager defaultManager] fileExistsAtPath:filePath]){
         
         NSError *error = nil;
-        NSDictionary *attr = [NSDictionary dictionaryWithObject:NSFileProtectionComplete
+        NSDictionary *attr = [NSDictionary dictionaryWithObject:NSFileProtectionCompleteUnlessOpen
                                                          forKey:NSFileProtectionKey];
         [[NSFileManager defaultManager] createDirectoryAtPath:filePath
                                   withIntermediateDirectories:YES

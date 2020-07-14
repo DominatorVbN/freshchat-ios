@@ -1618,7 +1618,9 @@ typedef struct {
                     if(self.channel.channelAlias){
                         [eventsDict setObject:self.channel.channelAlias forKey:@(FCPropertyChannelID)];
                     }
-                    [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+                    if(self.channel.name) {
+                        [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+                    }
                     if(self.conversation.conversationAlias){
                         [eventsDict setObject:self.conversation.conversationAlias forKey:@(FCPropertyConversationID)];
                     }
@@ -1699,7 +1701,9 @@ typedef struct {
     if(self.channel.channelAlias) {
         [eventsDict setObject:self.channel.channelAlias forKey:@(FCPropertyChannelID)];
     }
-    [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+    if (self.channel.name){
+        [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+    }
     [eventsDict setObject:self.conversation.conversationAlias forKey:@(FCPropertyConversationID)]; //No nil check, value should be available
     [eventsDict setObject:@(csatHolder.isIssueResolved) forKey:@(FCPropertyResolutionStatus)];
     FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventCSatSubmit
