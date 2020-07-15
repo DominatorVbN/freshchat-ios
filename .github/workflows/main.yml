@@ -1,6 +1,8 @@
 name: iOS SDK unit test
 on:
   pull_request:
+    types: [assigned, opened, synchronize, reopened]
+    branches: [fc_staging, fc_master]
   push:
     branches: 
       - fc_staging
