@@ -14,9 +14,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: Force Xcode 11
       run: sudo xcode-select -switch /Applications/Xcode_11.3.app
-    - name: GO to HotlineSDK
-      run: cd HotlineSDK
-    - name: Current Directory
-      run: ls
     - name: Run tests
       run: xcodebuild test -project "HotlineSDK.xcodeproj" -scheme "FreshchatSDKTest" -destination "platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest"
+      working-directory: HotlineSDK
