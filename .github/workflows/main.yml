@@ -6,6 +6,7 @@ name: iOS SDK unit test
 # events but only for the master branch
 on:
   pull_request:
+  push:
     branches: 
       - fc_staging
 
