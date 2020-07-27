@@ -243,7 +243,7 @@ static FCNotificationHandler *handleUpdateNotification;
         
         NSArray *messages = conversationInfo[@"messages"];
         for (int j=0; j<messages.count; j++) {
-            __block NSDictionary *messageInfo = messages[j];
+            NSDictionary *messageInfo = messages[j];
             FCMessages *message = [FCMessages retriveMessageForMessageId:messageInfo[@"alias"]];
             lastUpdateTime = [FCDateUtil maxDateOfNumber:lastUpdateTime andStr:messageInfo[@"createdMillis"]];
             if (!message) {
@@ -609,6 +609,7 @@ static FCNotificationHandler *handleUpdateNotification;
     data1[@"conversationId"] = conversation.conversationAlias;
     data1[@"channelId"] = channel.channelID;
     data1[@"messageType"] = pMessage.messageType;
+    data1[@"alias"] = pMessage.messageAlias;
     data1[@"source"] = @2;
     if (pMessage.replyToMessage) {
         data1[@"replyTo"] = @{@"originalMessageId": pMessage.replyToMessage};
