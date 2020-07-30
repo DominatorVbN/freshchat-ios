@@ -365,7 +365,7 @@
                 [self showArticleRatingPrompt];
             }
             else{
-                if([self.votingManager isArticleDownvoted:self.articleID]){
+                if([self.votingManager isArticleDownvoted:self.articleID] && self.faqOptions.showContactUsOnFaqNotHelpful){
                     [self showPromptWithContactUsHidden:NO];
                 }
                 else{

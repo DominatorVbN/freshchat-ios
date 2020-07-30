@@ -205,29 +205,37 @@
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
     [picker dismissViewControllerAnimated:NO completion:nil];
-    NSURL * refUrl = [info objectForKey:UIImagePickerControllerReferenceURL];
-    if (refUrl) {
-        PHAsset * asset = [[PHAsset fetchAssetsWithALAssetURLs:@[refUrl] options:nil] lastObject];
-        if (asset) {
-            PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
-            options.synchronous = YES;
-            options.networkAccessAllowed = NO;
-            options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-            [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-                NSNumber * isError = [info objectForKey:PHImageErrorKey];
-                NSNumber * isCloud = [info objectForKey:PHImageResultIsInCloudKey];
-                if ([isError boolValue] || [isCloud boolValue] || ! imageData) {
-                    ALog("Image picking failed, please try later!");
-                } else {
-                    [self presentAttachmentControllerWithData:imageData];
-                }
-            }];
-        }
+    UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    PHAsset * asset;
+    if (@available(iOS 11.0, *)) {
+        asset =  [info objectForKey:UIImagePickerControllerPHAsset];
     } else {
-        UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
-        if (image) {
-            [self presentAttachmentControllerWithData:UIImageJPEGRepresentation(image,0.5)];
+        NSURL * refUrl = [info objectForKey:UIImagePickerControllerReferenceURL];
+        if (refUrl) {
+            asset = [[PHAsset fetchAssetsWithALAssetURLs:@[refUrl] options:nil] lastObject];
         }
+    }
+    if (asset) {
+        PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
+        options.synchronous = YES;
+        options.networkAccessAllowed = NO;
+        options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+            NSNumber * isError = [info objectForKey:PHImageErrorKey];
+            NSNumber * isCloud = [info objectForKey:PHImageResultIsInCloudKey];
+            if ([isError boolValue] || [isCloud boolValue] || ! imageData) {
+                ALog("Image picking failed, please try later!");
+            } else {
+                NSString *contentType = [FCUtilities contentTypeForImageData:imageData];
+                if(contentType && [contentType isEqualToString:@"image/gif"]) {
+                    [self presentAttachmentControllerWithData:imageData];
+                } else {
+                    [self presentAttachmentControllerWithData:UIImageJPEGRepresentation(image,0.5)];
+                }
+            }
+        }];
+    } else if (image) {
+        [self presentAttachmentControllerWithData:UIImageJPEGRepresentation(image,0.5)];
     }
 }
 

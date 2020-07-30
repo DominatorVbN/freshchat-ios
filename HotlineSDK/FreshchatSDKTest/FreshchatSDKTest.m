@@ -23,6 +23,8 @@
 @implementation FreshchatSDKTest
 
 - (void)setUp {
+    NSTimeZone* timeZone = [NSTimeZone timeZoneWithAbbreviation:@"IST"];
+    [NSTimeZone setDefaultTimeZone:timeZone];
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 
@@ -217,12 +219,12 @@
 
 - (void) testDurationConversion {
     NSString *durationVal = [FCUtilities getDurationFromSecs : 1800];
-    XCTAssertEqualObjects(durationVal, @"30 Mins", @"Test Passed for duration conversion");
+    XCTAssertEqualObjects(durationVal, @"30 mins", @"Test Passed for duration conversion");
 }
 
 - (void) testDurationDiff {
     NSString *interval = [FCUtilities intervalStrFromMillis: 0 toMillis:1800000];
-    XCTAssertEqualObjects(interval, @"30 Mins", @"Test Passed for duration conversion");
+    XCTAssertEqualObjects(interval, @"30 mins", @"Test Passed for duration conversion");
 }
 
 -(void) testIsTemplateFragment {

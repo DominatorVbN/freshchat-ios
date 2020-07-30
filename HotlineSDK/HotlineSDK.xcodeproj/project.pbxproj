@@ -38,6 +38,7 @@
 		02C480B72377E07700EDADB2 /* FCEventsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B52377E07700EDADB2 /* FCEventsManager.m */; };
 		02C480BA2377E27200EDADB2 /* FCEventsConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C480B82377E27200EDADB2 /* FCEventsConfig.h */; };
 		02C480BB2377E27200EDADB2 /* FCEventsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B92377E27200EDADB2 /* FCEventsConfig.m */; };
+		32041A6E24C04F6A005FF196 /* FCLocalization.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 32041A6D24C04F69005FF196 /* FCLocalization.bundle */; };
 		321D4EA7248A4F0900034560 /* libOCMock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 321D4EA6248A4F0900034560 /* libOCMock.a */; };
 		32346524242B2721000F4CEB /* FCTemplateSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDD9242A1C5D00B1B71F /* FCTemplateSection.h */; };
 		32346525242B2725000F4CEB /* FCTemplateSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */; };
@@ -281,6 +282,7 @@
 		02C480B52377E07700EDADB2 /* FCEventsManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsManager.m; sourceTree = "<group>"; };
 		02C480B82377E27200EDADB2 /* FCEventsConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsConfig.h; sourceTree = "<group>"; };
 		02C480B92377E27200EDADB2 /* FCEventsConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsConfig.m; sourceTree = "<group>"; };
+		32041A6D24C04F69005FF196 /* FCLocalization.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = FCLocalization.bundle; path = ../Hotline/SDKResources/FCLocalization.bundle; sourceTree = "<group>"; };
 		321D4EA6248A4F0900034560 /* libOCMock.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libOCMock.a; path = FreshchatSDKTest/usr/lib/libOCMock.a; sourceTree = "<group>"; };
 		323DD889247547E900835F59 /* FCCalendarBannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarBannerView.h; sourceTree = "<group>"; };
 		323DD88A247547E900835F59 /* FCCalendarBannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarBannerView.m; sourceTree = "<group>"; };
@@ -1164,6 +1166,7 @@
 		843DD249178594180053E19E = {
 			isa = PBXGroup;
 			children = (
+				32041A6D24C04F69005FF196 /* FCLocalization.bundle */,
 				35B2EEBB1D000E620014867F /* HotlineSDK */,
 				35591B721B9EDCCE00BC0B60 /* HotlineModels */,
 				35591B791B9EDD0700BC0B60 /* Vendor */,
@@ -1466,6 +1469,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				32041A6E24C04F6A005FF196 /* FCLocalization.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
