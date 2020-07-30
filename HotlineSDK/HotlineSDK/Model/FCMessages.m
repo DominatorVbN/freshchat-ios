@@ -319,14 +319,34 @@
     NSArray *matches = channel.messages.allObjects;
     NSArray<FCMessages *> *filteredMessages = [FCMessageHelper getUserAndAgentMsgs:matches];
     BOOL isHideConversationsEnabled = [[FCRemoteConfig sharedInstance].conversationConfig hideResolvedConversation];
-    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval nearestTime = [[NSDate date] timeIntervalSince1970];
-    FCMessageData* messageData;
+    
+    NSComparator comparator = ^(FCMessageData *data1, FCMessageData *data2) {
+        if(data1.createdMillis.longLongValue <= data2.createdMillis.longLongValue) {
+            return NSOrderedAscending;
+        }
+        return NSOrderedDescending;
+    };
         
     for (int i=0; i<filteredMessages.count; i++) {
         FCMessageData *message = [filteredMessages[i] ReturnMessageDataFromManagedObject];
         if (message){
-            BOOL shouldAddMessage = true;
+            if(isHideConversationsEnabled){
+                long long hideConvResolvedMillis = [FCMessageHelper getResolvedConvsHideTimeForChannel:channel.channelID];
+                if(([message.createdMillis longLongValue] > hideConvResolvedMillis) || message.isWelcomeMessage){
+                    [FCMessages insertObject:message inArray:messages usingComparator:comparator];
+                }
+            }
+            else{
+                [FCMessages insertObject:message inArray:messages usingComparator:comparator];
+            }
+        }
+    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        FCMessageData* messageData;
+        NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval nearestTime = [[NSDate date] timeIntervalSince1970];
+        for(int i=0; i< messages.count; i++) {
+            FCMessageData *message = messages[i];
             for(int i=0;i < message.fragments.count; i ++) {
                 FCMessageFragments *messageFragment = message.fragments[i];
                 if(messageFragment && [messageFragment.type isEqualToString: @"7"] && [message.uploadStatus boolValue]) {
@@ -355,24 +375,21 @@
                     }
                 }
             }
-            if (!shouldAddMessage) {
-                continue;
-            }
-            if(isHideConversationsEnabled){
-                long long hideConvResolvedMillis = [FCMessageHelper getResolvedConvsHideTimeForChannel:channel.channelID];
-                if(([message.createdMillis longLongValue] > hideConvResolvedMillis) || message.isWelcomeMessage){
-                    [messages addObject:message];
-                }
-            }
-            else{
-                [messages addObject:message];
-            }
         }
-    }
-    if(messageData) {
-        calendarBlock(messageData);
-    }
+        if(messageData) {
+            calendarBlock(messageData);
+        }
+    });
     return messages;
+}
+
++(void)insertObject:(FCMessageData *)message inArray:(NSMutableArray<FCMessageData*>*)messages usingComparator:(NSComparator) comparator {
+    NSUInteger newIndex = [messages indexOfObject:message
+                                 inSortedRange:(NSRange){0, [messages count]}
+                                       options:NSBinarySearchingInsertionIndex
+                               usingComparator:comparator];
+
+    [messages insertObject:message atIndex:newIndex];
 }
 
 +(FCMessages *)getWelcomeMessageForChannel:(FCChannels *)channel{

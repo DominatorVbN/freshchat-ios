@@ -1,0 +1,30 @@
+name: iOS SDK unit test
+on:
+  pull_request:
+    types: [assigned, opened, synchronize, reopened]
+    branches: [fc_staging, fc_master]
+  push:
+    branches: 
+      - fc_staging
+      - fc_master
+
+jobs:
+  test:
+    name: Unit Testing
+    runs-on: macOS-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Force Xcode 11
+      run: sudo xcode-select -switch /Applications/Xcode_11.3.app
+    - name: Clean project
+      run: xcodebuild clean -project "HotlineSDK.xcodeproj"
+      working-directory: HotlineSDK
+    - name: Run tests
+      run: xcodebuild test -project "HotlineSDK.xcodeproj" -scheme "FreshchatSDKTest" -destination "platform=iOS Simulator,name=iPhone 11 Pro Max,OS=latest" | xcpretty --r html && exit ${PIPESTATUS[0]}
+      working-directory: HotlineSDK
+    - name: Upload reports for failed test run
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: Test results
+        path: HotlineSDK/build/reports/tests.html

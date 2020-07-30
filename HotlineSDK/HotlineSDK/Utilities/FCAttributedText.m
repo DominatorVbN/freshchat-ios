@@ -47,6 +47,12 @@
     NSMutableAttributedString *attributedTitleString = [[NSMutableAttributedString alloc] initWithData:[HTML dataUsingEncoding:NSUnicodeStringEncoding]
                                                                                                options:@{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType }
                                                                                     documentAttributes:nil error:nil];
+    if (attributedTitleString && attributedTitleString.length > 0) {
+        NSAttributedString *last = [attributedTitleString attributedSubstringFromRange:NSMakeRange(attributedTitleString.length - 1, 1)];
+        if ([[last string] isEqualToString:@"\n"]) {
+            attributedTitleString = [[attributedTitleString attributedSubstringFromRange:NSMakeRange(0, attributedTitleString.length - 1)] mutableCopy];
+        }
+    }
     self.data[string] = attributedTitleString;
     return attributedTitleString;
 }

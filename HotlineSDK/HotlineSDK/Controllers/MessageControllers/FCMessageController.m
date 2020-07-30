@@ -111,6 +111,7 @@ typedef struct {
 @property (nonatomic, strong) ConversationOptions *convOptions;
 @property (nonatomic) BOOL fromNotification;
 @property (nonatomic) BOOL initalLoading;
+@property (nonatomic) BOOL scrollingTop;
 
 @property (nonatomic, strong) UILabel *bannerMesagelabel;
 @property (nonatomic, strong) UIView *bannerMessageView;
@@ -687,12 +688,7 @@ typedef struct {
         
         self.audioMessageInputView = [[FCAudioMessageInputView alloc] initWithDelegate:self];
         self.audioMessageInputView.translatesAutoresizingMaskIntoConstraints = NO;
-        FCMessageData *msgData = [self fetchMessages].lastObject;
-        if([self isCalendarMsg:msgData]){
-            self.bottomViewHeightConstraint.constant = 0;
-        }else {
-            [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
-        }
+        [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
     }
     
     if([self.channel.type isEqualToString:CHANNEL_TYPE_AGENT_ONLY]){
@@ -738,6 +734,9 @@ typedef struct {
             if(textView.text.length > 0 && textView.frame.size.height + 10 + textView.frame.origin.y > height) {
                 height = textView.frame.size.height + 10 + textView.frame.origin.y;
             }
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.4 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                [self scrollTableViewToLastCell];
+            });
         }
         [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [self.bottomView addSubview:view];
@@ -752,9 +751,6 @@ typedef struct {
 
 -(void)updateAndScrollToBottomViewWith:(UIView *)view andHeight:(CGFloat) height{
     [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.4 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [self scrollTableViewToLastCell];
-    });
 }
 
 -(void)updateTopViewWith:(UIView *)view andHeight:(CGFloat) height{
@@ -816,17 +812,15 @@ typedef struct {
 
 -(UITableViewCell *) showRefreshCellIfRequired: (NSIndexPath *)index {
     
-    if(index.row == 0 && [[self.tableView indexPathsForVisibleRows] containsObject:index] && self.messagesDisplayedCount < self.messages.count && !self.initalLoading && [self.tableView numberOfRowsInSection:0] == self.messagesDisplayedCount){
+    if(index.row == 0 && [[self.tableView indexPathsForVisibleRows] containsObject:index] && self.messagesDisplayedCount < self.messages.count && !self.initalLoading && [self.tableView numberOfRowsInSection:0] == self.messagesDisplayedCount && !self.scrollingTop){
         UITableViewCell* cell =[self getRefreshStatusCell];
         NSInteger oldnumber = self.messagesDisplayedCount;
         self.messagesDisplayedCount += self.loadmoreCount;
         if(self.messagesDisplayedCount > self.messageCount){
             self.messagesDisplayedCount = self.messageCount;
         }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.4 * NSEC_PER_SEC), dispatch_get_current_queue(), ^{
-            [self refreshView:@(oldnumber) forFirstTime:true];
-        });
-        
+        [self refreshView:@(oldnumber) forFirstTime:true fromDownload:false];
+        self.scrollingTop = true;
         return cell;
     }
     return nil;
@@ -928,7 +922,7 @@ typedef struct {
                 [self rebuildMessages];
             }
             [self updateTitle];
-            [self refreshView:nil forFirstTime:true];
+            [self refreshView:nil forFirstTime:true fromDownload:false];
         }
     }];
 }
@@ -1189,10 +1183,11 @@ typedef struct {
 
 -(void)scrollTableViewToLastCell{
     NSInteger lastSpot = _flags.isLoading ? self.messagesDisplayedCount : (self.messagesDisplayedCount-1);
-    
+
     if(lastSpot<0) return;
-    
+
     NSIndexPath *indexPath=[NSIndexPath indexPathForRow:lastSpot inSection:0];
+    
     @try {
         [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:NO];
     }
@@ -1209,6 +1204,7 @@ typedef struct {
 -(void)scrollTableViewToCell:(int)lastSpot{
     if(lastSpot<0) return;
     NSIndexPath *indexPath=[NSIndexPath indexPathForRow:(self.messagesDisplayedCount-lastSpot) inSection:0];
+
     @try {
         [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:NO];
     }
@@ -1230,12 +1226,8 @@ typedef struct {
 }
 
 - (void) didFinishDownloadingMessages{
-    NSInteger count = [self fetchMessages].count;
-    if( _flags.isLoading || (count > self.messageCountPrevious) ){
-        _flags.isLoading = NO;
-        [self refreshView];
-        [self.messagesPoller reset];
-    }
+    [self refreshView:nil forFirstTime:false fromDownload:true];
+    [self.messagesPoller reset];
     [self processPendingCSAT];
 }
 
@@ -1281,56 +1273,80 @@ typedef struct {
 }
 
 -(void) didEncounterErrorWhileDownloadingConversations{
-    NSInteger count = [self fetchMessages].count;
-    if(( _flags.isLoading )||(count > self.messageCountPrevious)){
-        _flags.isLoading = NO;
-        [self refreshView];
-    }
+    [self fetchMessages:^(NSArray * messages) {
+        NSInteger count = messages.count;
+        if(( _flags.isLoading )||(count > self.messageCountPrevious)){
+            _flags.isLoading = NO;
+            [self refreshView];
+        }
+    }];
 }
 
 -(void)updateMessages{
-    self.messages = [self fetchMessages];
-    self.messageCount=(int)[self.messages count];
-    if((self.messagesDisplayedCount > self.messageCount)||
-       (self.messageCount<=KONOTOR_MESSAGESPERPAGE)||
-       ((self.messageCount - self.messagesDisplayedCount)<3)){
-        
-        self.messagesDisplayedCount = self.messageCount;
-    }
+    [self fetchMessages: ^(NSArray *messages) {
+        self.messages =  messages;
+        self.messageCount=(int)[self.messages count];
+        if((self.messagesDisplayedCount > self.messageCount)||
+           (self.messageCount<=KONOTOR_MESSAGESPERPAGE)||
+           ((self.messageCount - self.messagesDisplayedCount)<3)){
+            
+            self.messagesDisplayedCount = self.messageCount;
+        }
+    }];
+    
 }
 
 - (void) refreshView {
-    [self refreshView:nil forFirstTime:false];
+    [self refreshView:nil forFirstTime:false fromDownload:false];
 }
 
-- (void) refreshView:(id)obj forFirstTime:(BOOL)firstTime{
-    self.messageCountPrevious=(int)self.messages.count;
-    self.messages = [self fetchMessages];
-    self.messageCount=(int)[self.messages count];
-    if((self.messagesDisplayedCount > self.messageCount)||
-       (self.messageCount<=KONOTOR_MESSAGESPERPAGE)||
-       ((self.messageCount - self.messagesDisplayedCount)<3)){
-        self.messagesDisplayedCount = self.messageCount;
-    }
-    
-    [self.tableView reloadData];
-    
-    [self checkForReplyFragmentAfterCSATUpdate:false];
-    
-    [FCMessages markAllMessagesAsReadForChannel:self.channel];
-    if (self.messageCountPrevious < self.messageCount || firstTime) {
-        if(obj==nil)
-            [self scrollTableViewToLastCell];
-        else{
-            [self scrollTableViewToCell:((NSNumber*)obj).intValue];
+- (void) refreshView:(id)obj forFirstTime:(BOOL)firstTime fromDownload:(BOOL)isDownloaded {
+    if(obj != nil) {
+        if(self.scrollingTop){
+            return;
         }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.tableView reloadData];
+            [self scrollTableViewToCell:((NSNumber*)obj).intValue];
+            [self processPendingCSAT];
+            self.scrollingTop = false;
+        });
+        [FCMessages markAllMessagesAsReadForChannel:self.channel];
+        return;
     }
-    if(self.initalLoading) {
-        [self.loadingView stopAnimating];
-        [self.tableView setHidden:false];
-        self.initalLoading = false;
-    }
-    [self processPendingCSAT];
+    [self fetchMessages:^(NSArray * messages) {
+        if(isDownloaded && messages.count <= self.messageCountPrevious) {
+            return;
+        }
+        NSInteger messageCountPrevious=(int)self.messages.count;
+        self.messages = messages;
+        self.messageCount=(int)[self.messages count];
+        if((self.messagesDisplayedCount > self.messageCount)||
+           (self.messageCount<=KONOTOR_MESSAGESPERPAGE)||
+           ((self.messageCount - self.messagesDisplayedCount)<3)){
+            self.messagesDisplayedCount = self.messageCount;
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (messageCountPrevious < self.messageCount || firstTime) {
+                if(obj==nil) {
+                    [self.tableView reloadData];
+                    [self scrollTableViewToLastCell];
+                }
+            } else {
+                [self.tableView reloadData];
+            }
+            [self checkForReplyFragmentAfterCSATUpdate:false];
+            if(self.initalLoading) {
+                [self.loadingView stopAnimating];
+                [self.tableView setHidden:false];
+                self.initalLoading = false;
+            }
+            [self processPendingCSAT];
+        });
+        
+        [FCMessages markAllMessagesAsReadForChannel:self.channel];
+    }];
+    
 }
 
 -(void) checkForReplyFragmentAfterCSATUpdate:(BOOL) csatUpdated {
@@ -1352,7 +1368,7 @@ typedef struct {
             if(replyFragments) {
                 hasReplyFragments = [FCMessageUtil hasReplyFragmentsIn:replyFragments];
                 if (!hasReplyFragments) {
-                    [self updateNonReplyFragments:messageData shouldScroll:YES];
+                    [self updateNonReplyFragments:messageData];
                     return;
                 }
                 self.lastReplyMessageAlias = messageData.messageAlias;
@@ -1406,71 +1422,69 @@ typedef struct {
                     }
                 }
             } else {
-                [self updateNonReplyFragments:messageData shouldScroll:YES];
+                [self updateNonReplyFragments:messageData];
             }
         }
     }
 }
 
--(void) updateNonReplyFragments:(FCMessageData *)messageData shouldScroll:(BOOL)shouldScroll {
+-(void) updateNonReplyFragments:(FCMessageData *)messageData {
     self.lastReplyMessageAlias = messageData.messageAlias;
     if([self isCalendarMsg: messageData]) {
         [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
         self.bottomViewHeightConstraint.constant = 0;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            [self scrollTableViewToLastCell];
-        });
     }else if (_bottomViewHeightConstraint.constant == 0 || !self.inputToolbar.superview) {
         [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            if(shouldScroll) {
-                [self scrollTableViewToLastCell];
-            }
-        });
     }
 }
 
--(NSArray *)fetchMessages{
-    NSSortDescriptor* desc=[[NSSortDescriptor alloc] initWithKey:@"createdMillis" ascending:YES];
-    NSMutableArray *messages = [NSMutableArray arrayWithArray:[[FCMessages getAllMesssageForChannel:self.channel withHandler:^(FCMessageData * messageData) {
-        NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
-        NSData *data = [((FragmentData*)messageData.fragments.firstObject).extraJSON dataUsingEncoding:NSUTF8StringEncoding];
-        NSDictionary *extraJSONdict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        if (extraJSONdict && extraJSONdict[@"extraJSON"]) {
-            data = [extraJSONdict[@"extraJSON"] dataUsingEncoding:NSUTF8StringEncoding];
-            extraJSONdict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        }
-        [dict addEntriesFromDictionary:extraJSONdict];
-        if(dict[@"startMillis"] && [dict[@"startMillis"] isKindOfClass:[NSNumber class]]){
-            NSTimeInterval startMillis = [dict[@"startMillis"] doubleValue];
-            data = [messageData.internalMeta dataUsingEncoding:NSUTF8StringEncoding];
-            NSDictionary *internalDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-            [dict removeAllObjects];
-            [dict addEntriesFromDictionary:internalDict];
-            if(dict[@"calendarMessageMeta"] && dict[@"calendarMessageMeta"][@"calendarEventLink"]){
-                NSURL *calendarLink = [NSURL URLWithString:dict[@"calendarMessageMeta"][@"calendarEventLink"]];
-                if(calendarLink) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if(self.calendarBanner != nil) {
-                            [self.calendarBanner updateViewWithTime:startMillis andURL:calendarLink];
-                        } else {
-                            self.calendarBanner = [[FCCalendarBannerView alloc] initWithURL:calendarLink andTime:startMillis];
-                            self.calendarBanner.delegate = self;
-                            [self updateTopViewWith:self.calendarBanner andHeight:40];
-                        }
-                    });
+-(void)fetchMessages: (void (^) (NSArray *))handler{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        NSManagedObjectContext *context = [FCDataManager sharedInstance].mainObjectContext ;
+        [context performBlock:^{
+        NSMutableArray *messages = [NSMutableArray arrayWithArray:[FCMessages getAllMesssageForChannel:self.channel withHandler:^(FCMessageData * messageData) {
+            NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
+            NSData *data = [((FragmentData*)messageData.fragments.firstObject).extraJSON dataUsingEncoding:NSUTF8StringEncoding];
+            NSDictionary *extraJSONdict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            if (extraJSONdict && extraJSONdict[@"extraJSON"]) {
+                data = [extraJSONdict[@"extraJSON"] dataUsingEncoding:NSUTF8StringEncoding];
+                extraJSONdict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            }
+            [dict addEntriesFromDictionary:extraJSONdict];
+            if(dict[@"startMillis"] && [dict[@"startMillis"] isKindOfClass:[NSNumber class]]){
+                NSTimeInterval startMillis = [dict[@"startMillis"] doubleValue];
+                data = [messageData.internalMeta dataUsingEncoding:NSUTF8StringEncoding];
+                NSDictionary *internalDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                [dict removeAllObjects];
+                [dict addEntriesFromDictionary:internalDict];
+                if(dict[@"calendarMessageMeta"] && dict[@"calendarMessageMeta"][@"calendarEventLink"]){
+                    NSURL *calendarLink = [NSURL URLWithString:dict[@"calendarMessageMeta"][@"calendarEventLink"]];
+                    if(calendarLink) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            if(self.calendarBanner != nil) {
+                                [self.calendarBanner updateViewWithTime:startMillis andURL:calendarLink];
+                            } else {
+                                self.calendarBanner = [[FCCalendarBannerView alloc] initWithURL:calendarLink andTime:startMillis];
+                                self.calendarBanner.delegate = self;
+                                [self updateTopViewWith:self.calendarBanner andHeight:40];
+                            }
+                        });
+                    }
                 }
             }
+        }]];
+        FCMessageData *firstMessage = messages.firstObject;
+        if (firstMessage.isWelcomeMessage && (firstMessage.fragments.count > 0) ) {
+            FCMessageFragments *lastfragment  = firstMessage.fragments.lastObject;
+            if(lastfragment && !lastfragment.content.length) {
+                [messages removeObject:firstMessage];
+            }
         }
-    }] sortedArrayUsingDescriptors:@[desc]]];
-    FCMessageData *firstMessage = messages.firstObject;
-    if (firstMessage.isWelcomeMessage && (firstMessage.fragments.count > 0) ) {
-        FCMessageFragments *lastfragment  = firstMessage.fragments.lastObject;
-        if(lastfragment && !lastfragment.content.length) {
-            [messages removeObject:firstMessage];
-        }
-    }
-    return messages;
+            if (handler) {
+                handler(messages);
+            }
+        }];
+    });
 }
 
 #pragma Scrollview delegates
@@ -1494,7 +1508,7 @@ typedef struct {
     [self showResponseExpectation];
     [self inputToolbar:self.inputToolbar textViewDidChange:self.inputToolbar.textView];
     [self scrollTableViewToLastCell];
-    FCMessageData *msgData = [self fetchMessages].lastObject;
+    FCMessageData *msgData = self.messages.lastObject;
     if([self isCalendarMsg: msgData]) {
         self.bottomViewHeightConstraint.constant = 0;
     }
@@ -1672,7 +1686,7 @@ typedef struct {
 
 -(void)updateBottomViewAfterCSATSubmisssion{
     if ((!self.isOneWayChannel) && self.inputToolbar != nil) {
-        FCMessageData *msgData = [self fetchMessages].lastObject;
+        FCMessageData *msgData = self.messages.lastObject;
         if([self isCalendarMsg:msgData]) {
             //Hide input toolbar
             [self updateBottomViewWith:self.inputToolbar andHeight:0];
@@ -1893,9 +1907,6 @@ typedef struct {
 - (void)dismissAndSendFragment:(NSArray *)fragments inReplyTo:(NSNumber *)messageID {
     [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
     [FCMessageHelper uploadNewMessage:fragments onConversation:self.conversation withMessageType:@1 onChannel:self.channel inReplyTo:messageID];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            [self scrollTableViewToLastCell];
-    });
 }
 
 - (void)updateHeightConstraint:(int)height andShouldScrollTolast:(BOOL) scrollToLast {

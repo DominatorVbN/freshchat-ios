@@ -61,7 +61,11 @@
 
 @interface Freshchat (Test)
 - (NSString *)validateDomain:(NSString*)domain;
--(BOOL)cannotMakeUserCalls;
+- (BOOL)cannotMakeUserCalls;
+- (BOOL)isDeviceTokenUpdated:(NSString *)newToken;
+- (BOOL)hasUpdatedConfig:(FreshchatConfig *)config;
+- (NSDictionary *) getPreviousUserConfig;
+
 @end
 
 @interface FCEventsManager (Test)
@@ -106,6 +110,7 @@
 - (BOOL) isCalendarMsg : (FCMessageData *)msg;
 - (NSString *)emptyText;
 - (NSString *)loadingText;
+- (NSString *)getIdentityForMessage:(FCMessageData *)message;
 @end
 
 @interface FCArticleDetailViewController (Test)
@@ -130,6 +135,8 @@
 @implementation FreshchatSDKTest
 
 - (void)setUp {
+    NSTimeZone* timeZone = [NSTimeZone timeZoneWithAbbreviation:@"IST"];
+    [NSTimeZone setDefaultTimeZone:timeZone];
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [[NSNotificationCenter defaultCenter] addObserver:self
     selector:@selector(userActionEvent:)
@@ -229,6 +236,7 @@
 }
 
 - (void) testLocale{
+    
     NSArray *array = [FCLocaleUtil userLocaleParams:NO];
     XCTAssertTrue([array isEqualToArray:@[@"locale=en"]]);
     NSArray *arrLocale = [FCLocaleUtil channelLocaleParams];
@@ -242,96 +250,88 @@
     OCMStub([userDefaultsMock getStringForKey:HOTLINE_DEFAULTS_CONTENT_LOCALE]).andReturn(@"en_US");
     XCTAssertTrue([[FCDateUtil getDateStringWithFormat:@"yyyy-MM-dd HH:mm" forDate:[NSDate dateWithTimeIntervalSince1970:1591352446]] isEqualToString:@"2020-06-05 15:50"]);
     XCTAssertTrue([[FCDateUtil getDetailedDateStringWithFormat:@"yyyy-MM-dd HH:mm" forDate:[NSDate dateWithTimeIntervalSince1970:1591180412]] isEqualToString:@"Wednesday, 2020-06-03 16:03"]);
-    XCTAssertTrue([[FCDateUtil getDetailedDateStringWithFormat:@"yyyy-MM-dd HH:mm" forDate:[NSDate dateWithTimeInterval:(24*60*60) sinceDate:[NSDate date]]] isEqualToString:@"date_tomorrow"]);
-    XCTAssertTrue([[FCDateUtil getDetailedDateStringWithFormat:@"yyyy-MM-dd HH:mm" forDate:[NSDate date]] isEqualToString:@"date_today"]);
-    NSDate *date = [NSDate dateWithTimeIntervalSince1970:(969696900000 / 1000.0)];
-    NSString *dateStr = [FCDateUtil stringRepresentationForDate:date];
+    XCTAssertTrue([[FCDateUtil getDetailedDateStringWithFormat:@"yyyy-MM-dd HH:mm" forDate:[NSDate dateWithTimeInterval:(24*60*60) sinceDate:[NSDate date]]] isEqualToString:@"Tomorrow"]);
+    XCTAssertTrue([[FCDateUtil getDetailedDateStringWithFormat:@"yyyy-MM-dd HH:mm" forDate:[NSDate date]] isEqualToString:@"Today"]);
 }
 
 -(void)testCalendar {
     NSString *calendarString = @"{\"id\": \"83d31c01-d52e-4c59-88fd-f415db7d257a\",\"calendarTimeSlots\": [{\"id\": 0,\"from\": 1586748600000,\"to\": 1586754900000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586758500000,\"to\": 1586773800000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586835000000,\"to\": 1586841300000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586844900000,\"to\": 1586855700000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586921400000,\"to\": 1586927700000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586931300000,\"to\": 1586956500000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586961000000,\"to\": 1586975340000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1586975400000,\"to\": 1587014100000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587017700000,\"to\": 1587028500000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587033900000,\"to\": 1587042900000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587094200000,\"to\": 1587100500000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587104100000,\"to\": 1587111300000,\"prevTo\": 0}, {\"id\": 0,\"from\": 1587116700000,\"to\": 1587123000000,\"prevTo\": 0}],\"meetingLength\": 1800,\"bufferTime\": 900,\"minNoticeTime\": 1800,\"calendarType\": 1}";
-       NSData *data = [calendarString dataUsingEncoding:NSUTF8StringEncoding];
-       NSError *error;
-       NSDictionary* calendarDic = [NSJSONSerialization JSONObjectWithData:data
-                                                                            options:0
-                                                                              error:&error];
-    FCCalendarViewController *calView = [[FCCalendarViewController alloc] init];
-    calView.slotsResponseDict = calendarDic;
-    float meetingEndMilli = (float)[calView getMeetingEndMillisForStartTime:@1800];
-    XCTAssertEqual(meetingEndMilli, 1801800);
-    NSLog(@"jhj");
-   /*    if (!error){
-           id userDefaultsMock = OCMClassMock([FCUserDefaults class]);
-           OCMStub([userDefaultsMock getStringForKey:HOTLINE_DEFAULTS_CONTENT_LOCALE]).andReturn(@"en_US");
-           FCCalendarModel *model = [[FCCalendarModel alloc]initWith:calendarDic];
-           NSMutableArray<FCCalendarDay*> *array = [FCDateUtil getSlotsFromCalendar:model andTimeZoneIdentifier:@"Asia/Kolkata"];
-           XCTAssert(array.count == 5);
-           XCTAssert([array.firstObject.dateString isEqualToString:@"Monday, 13 Apr 2020"]);
-           XCTAssert(array.firstObject.morningSlots.count == 4);
-           XCTAssert(array.firstObject.afterNoonSlots.count == 7);
-           XCTAssert(array.firstObject.eveningSlots.count == 0);
-           XCTAssert(array.firstObject.nightSlots.count == 0);
-           XCTAssert(array.firstObject.morningSlots.firstObject.session == FCMorningSession);
-           XCTAssert([array.firstObject.morningSlots.firstObject.time isEqualToString:@"9:00 AM"]);
-           XCTAssert(array.firstObject.morningSlots[1].session == FCMorningSession);
-           XCTAssert([array.firstObject.morningSlots[1].time isEqualToString:@"9:30 AM"]);
-           XCTAssert(array.firstObject.morningSlots[2].session == FCMorningSession);
-           XCTAssert([array.firstObject.morningSlots[2].time isEqualToString:@"10:00 AM"]);
-           XCTAssert(array.firstObject.morningSlots[3].session == FCMorningSession);
-           XCTAssert([array.firstObject.morningSlots[3].time isEqualToString:@"11:45 AM"]);
-           XCTAssert(array.firstObject.afterNoonSlots.firstObject.session == FCAfterNoonSession);
-           XCTAssert([array.firstObject.afterNoonSlots.firstObject.time isEqualToString:@"12:15 PM"]);
-           XCTAssert(array.firstObject.afterNoonSlots[1].session == FCAfterNoonSession);
-           XCTAssert([array.firstObject.afterNoonSlots[1].time isEqualToString:@"12:45 PM"]);
-           XCTAssert(array.firstObject.afterNoonSlots[2].session == FCAfterNoonSession);
-           XCTAssert([array.firstObject.afterNoonSlots[2].time isEqualToString:@"1:15 PM"]);
-           XCTAssert(array.firstObject.afterNoonSlots[3].session == FCAfterNoonSession);
-           XCTAssert([array.firstObject.afterNoonSlots[3].time isEqualToString:@"1:45 PM"]);
-           XCTAssert(array.firstObject.afterNoonSlots[4].session == FCAfterNoonSession);
-           XCTAssert([array.firstObject.afterNoonSlots[4].time isEqualToString:@"2:15 PM"]);
-           XCTAssert(array.firstObject.afterNoonSlots[5].session == FCAfterNoonSession);
-           XCTAssert([array.firstObject.afterNoonSlots[5].time isEqualToString:@"2:45 PM"]);
-           XCTAssert(array.firstObject.afterNoonSlots[6].session == FCAfterNoonSession);
-           XCTAssert([array.firstObject.afterNoonSlots[6].time isEqualToString:@"3:15 PM"]);
-           XCTAssert(array[2].morningSlots.count == 4);
-           XCTAssert(array[2].afterNoonSlots.count == 8);
-           XCTAssert(array[2].eveningSlots.count == 5);
-           XCTAssert(array[2].nightSlots.count == 7);
-           XCTAssert(array[2].eveningSlots[0].session == FCEveningSession);
-           XCTAssert([array[2].eveningSlots[0].time isEqualToString:@"4:15 PM"]);
-           XCTAssert(array[2].eveningSlots[1].session == FCEveningSession);
-           XCTAssert([array[2].eveningSlots[1].time isEqualToString:@"4:45 PM"]);
-           XCTAssert(array[2].eveningSlots[2].session == FCEveningSession);
-           XCTAssert([array[2].eveningSlots[2].time isEqualToString:@"5:15 PM"]);
-           XCTAssert(array[2].eveningSlots[3].session == FCEveningSession);
-           XCTAssert([array[2].eveningSlots[3].time isEqualToString:@"5:45 PM"]);
-           XCTAssert(array[2].eveningSlots[4].session == FCEveningSession);
-           XCTAssert([array[2].eveningSlots[4].time isEqualToString:@"6:15 PM"]);
-           XCTAssert(array[2].nightSlots[0].session == FCNightSession);
-           XCTAssert([array[2].nightSlots[0].time isEqualToString:@"8:00 PM"]);
-           XCTAssert(array[2].nightSlots[1].session == FCNightSession);
-           XCTAssert([array[2].nightSlots[1].time isEqualToString:@"8:30 PM"]);
-           XCTAssert(array[2].nightSlots[2].session == FCNightSession);
-           XCTAssert([array[2].nightSlots[2].time isEqualToString:@"9:00 PM"]);
-           XCTAssert(array[2].nightSlots[3].session == FCNightSession);
-           XCTAssert([array[2].nightSlots[3].time isEqualToString:@"9:30 PM"]);
-           XCTAssert(array[2].nightSlots[4].session == FCNightSession);
-           XCTAssert([array[2].nightSlots[4].time isEqualToString:@"10:00 PM"]);
-           XCTAssert(array[2].nightSlots[5].session == FCNightSession);
-           XCTAssert([array[2].nightSlots[5].time isEqualToString:@"10:30 PM"]);
-           XCTAssert(array[2].nightSlots[6].session == FCNightSession);
-           XCTAssert([array[2].nightSlots[6].time isEqualToString:@"11:00 PM"]);
-           XCTAssert([[array.firstObject getSessionsIn:0] count] == 4);
-           XCTAssert([[[array.firstObject getSessionsIn:0].firstObject getSessionTitle] isEqualToString: @"calendar_slots_session_morning"]);
-           XCTAssert([[array.firstObject getSessionsIn:1] count] == 7);
-           XCTAssert([[[array.firstObject getSessionsIn:1].firstObject getSessionTitle] isEqualToString: @"calendar_slots_session_afternoon"]);
-           XCTAssert([[[array[2] getSessionsIn:2].firstObject getSessionTitle] isEqualToString: @"calendar_slots_session_evening"]);
-           XCTAssert([[[array[2] getSessionsIn:3].firstObject getSessionTitle] isEqualToString: @"calendar_slots_session_night"]);
-           XCTAssert([[array.firstObject getSessionsIn:2] count] == 0);
-           [array.firstObject.morningSlots removeAllObjects];
-           XCTAssert([[array.firstObject getSessionsIn:0] count] == 7);
-       }
-    */
+    NSData *data = [calendarString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *error;
+    NSDictionary* calendarDic = [NSJSONSerialization JSONObjectWithData:data
+                                                                         options:0
+                                                                           error:&error];
+    if (!error){
+        id userDefaultsMock = OCMClassMock([FCUserDefaults class]);
+        OCMStub([userDefaultsMock getStringForKey:HOTLINE_DEFAULTS_CONTENT_LOCALE]).andReturn(@"en_US");
+        FCCalendarModel *model = [[FCCalendarModel alloc]initWith:calendarDic];
+        NSMutableArray<FCCalendarDay*> *array = [FCDateUtil getSlotsFromCalendar:model andTimeZoneIdentifier:@"Asia/Kolkata"];
+        XCTAssert(array.count == 5);
+        XCTAssert([array.firstObject.dateString isEqualToString:@"Monday, 13 Apr 2020"]);
+        XCTAssert(array.firstObject.morningSlots.count == 4);
+        XCTAssert(array.firstObject.afterNoonSlots.count == 7);
+        XCTAssert(array.firstObject.eveningSlots.count == 0);
+        XCTAssert(array.firstObject.nightSlots.count == 0);
+        XCTAssert(array.firstObject.morningSlots.firstObject.session == FCMorningSession);
+        XCTAssert([array.firstObject.morningSlots.firstObject.time isEqualToString:@"9:00 AM"]);
+        XCTAssert(array.firstObject.morningSlots[1].session == FCMorningSession);
+        XCTAssert([array.firstObject.morningSlots[1].time isEqualToString:@"9:30 AM"]);
+        XCTAssert(array.firstObject.morningSlots[2].session == FCMorningSession);
+        XCTAssert([array.firstObject.morningSlots[2].time isEqualToString:@"10:00 AM"]);
+        XCTAssert(array.firstObject.morningSlots[3].session == FCMorningSession);
+        XCTAssert([array.firstObject.morningSlots[3].time isEqualToString:@"11:45 AM"]);
+        XCTAssert(array.firstObject.afterNoonSlots.firstObject.session == FCAfterNoonSession);
+        XCTAssert([array.firstObject.afterNoonSlots.firstObject.time isEqualToString:@"12:15 PM"]);
+        XCTAssert(array.firstObject.afterNoonSlots[1].session == FCAfterNoonSession);
+        XCTAssert([array.firstObject.afterNoonSlots[1].time isEqualToString:@"12:45 PM"]);
+        XCTAssert(array.firstObject.afterNoonSlots[2].session == FCAfterNoonSession);
+        XCTAssert([array.firstObject.afterNoonSlots[2].time isEqualToString:@"1:15 PM"]);
+        XCTAssert(array.firstObject.afterNoonSlots[3].session == FCAfterNoonSession);
+        XCTAssert([array.firstObject.afterNoonSlots[3].time isEqualToString:@"1:45 PM"]);
+        XCTAssert(array.firstObject.afterNoonSlots[4].session == FCAfterNoonSession);
+        XCTAssert([array.firstObject.afterNoonSlots[4].time isEqualToString:@"2:15 PM"]);
+        XCTAssert(array.firstObject.afterNoonSlots[5].session == FCAfterNoonSession);
+        XCTAssert([array.firstObject.afterNoonSlots[5].time isEqualToString:@"2:45 PM"]);
+        XCTAssert(array.firstObject.afterNoonSlots[6].session == FCAfterNoonSession);
+        XCTAssert([array.firstObject.afterNoonSlots[6].time isEqualToString:@"3:15 PM"]);
+        XCTAssert(array[2].morningSlots.count == 4);
+        XCTAssert(array[2].afterNoonSlots.count == 8);
+        XCTAssert(array[2].eveningSlots.count == 5);
+        XCTAssert(array[2].nightSlots.count == 7);
+        XCTAssert(array[2].eveningSlots[0].session == FCEveningSession);
+        XCTAssert([array[2].eveningSlots[0].time isEqualToString:@"4:15 PM"]);
+        XCTAssert(array[2].eveningSlots[1].session == FCEveningSession);
+        XCTAssert([array[2].eveningSlots[1].time isEqualToString:@"4:45 PM"]);
+        XCTAssert(array[2].eveningSlots[2].session == FCEveningSession);
+        XCTAssert([array[2].eveningSlots[2].time isEqualToString:@"5:15 PM"]);
+        XCTAssert(array[2].eveningSlots[3].session == FCEveningSession);
+        XCTAssert([array[2].eveningSlots[3].time isEqualToString:@"5:45 PM"]);
+        XCTAssert(array[2].eveningSlots[4].session == FCEveningSession);
+        XCTAssert([array[2].eveningSlots[4].time isEqualToString:@"6:15 PM"]);
+        XCTAssert(array[2].nightSlots[0].session == FCNightSession);
+        XCTAssert([array[2].nightSlots[0].time isEqualToString:@"8:00 PM"]);
+        XCTAssert(array[2].nightSlots[1].session == FCNightSession);
+        XCTAssert([array[2].nightSlots[1].time isEqualToString:@"8:30 PM"]);
+        XCTAssert(array[2].nightSlots[2].session == FCNightSession);
+        XCTAssert([array[2].nightSlots[2].time isEqualToString:@"9:00 PM"]);
+        XCTAssert(array[2].nightSlots[3].session == FCNightSession);
+        XCTAssert([array[2].nightSlots[3].time isEqualToString:@"9:30 PM"]);
+        XCTAssert(array[2].nightSlots[4].session == FCNightSession);
+        XCTAssert([array[2].nightSlots[4].time isEqualToString:@"10:00 PM"]);
+        XCTAssert(array[2].nightSlots[5].session == FCNightSession);
+        XCTAssert([array[2].nightSlots[5].time isEqualToString:@"10:30 PM"]);
+        XCTAssert(array[2].nightSlots[6].session == FCNightSession);
+        XCTAssert([array[2].nightSlots[6].time isEqualToString:@"11:00 PM"]);
+        XCTAssert([[array.firstObject getSessionsIn:0] count] == 4);
+        XCTAssert([[[array.firstObject getSessionsIn:0].firstObject getSessionTitle] isEqualToString: @"Morning"]);
+        XCTAssert([[array.firstObject getSessionsIn:1] count] == 7);
+        XCTAssert([[[array.firstObject getSessionsIn:1].firstObject getSessionTitle] isEqualToString: @"Afternoon"]);
+        XCTAssert([[[array[2] getSessionsIn:2].firstObject getSessionTitle] isEqualToString: @"Evening"]);
+        XCTAssert([[[array[2] getSessionsIn:3].firstObject getSessionTitle] isEqualToString: @"Night"]);
+        XCTAssert([[array.firstObject getSessionsIn:2] count] == 0);
+        [array.firstObject.morningSlots removeAllObjects];
+        XCTAssert([[array.firstObject getSessionsIn:0] count] == 7);
+    }
 }
 
 
@@ -491,6 +491,9 @@
 
 - (void) testIsFreshchatNotification {
     
+    id userSecureStoreMock = OCMClassMock([FCSecureStore class]);
+    OCMStub([userSecureStoreMock objectForKey:HOTLINE_DEFAULTS_PUSH_TOKEN]).andReturn(@"7f3f0bc4-d23a-11ea-87d0-0242ac130003");
+    XCTAssertTrue([[Freshchat sharedInstance] isDeviceTokenUpdated: @"7f3f0bc4-d23a-11ea-87d0-0242ac130004"]);
     
     BOOL isFreshchatNotif = [[Freshchat sharedInstance] isFreshchatNotification: @{
     @"aps": @{
@@ -522,6 +525,12 @@
     XCTAssertEqual(config.eventsUploadEnabled, true);
     XCTAssertEqual(config.themeName, @"FCTheme");
     XCTAssertEqual(config.stringsBundle, @"FCLocalization");
+    
+    id userSecureStoreMock = OCMClassMock([FCSecureStore class]);
+    OCMStub([userSecureStoreMock objectForKey:HOTLINE_DEFAULTS_DEVICE_UUID ]).andReturn(@"7f3f0bc4d23a11ea87d00242ac130003");
+    OCMStub([userSecureStoreMock objectForKey:HOTLINE_DEFAULTS_APP_ID ]).andReturn(config.appID);
+    OCMStub([userSecureStoreMock objectForKey:HOTLINE_DEFAULTS_APP_KEY ]).andReturn(config.appKey);
+    OCMStub([userSecureStoreMock objectForKey:HOTLINE_DEFAULTS_DOMAIN ]).andReturn(@"web.freshchat.com");
 }
 
 - (void) testFreshchaUser {
@@ -600,6 +609,7 @@
                         };
     FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventFAQCategoryListOpen withParams:optionsDict];
     [FCEventsHelper postNotificationForEvent:outEvent];
+    
 }
 
 - (void) userActionEvent:(NSNotification *)notif {
@@ -726,7 +736,7 @@
 
 - (void) testReplyResponseTime {
     NSString *responseTime = [FCUtilities getReplyResponseForTime:57 andType:LAST_WEEK_AVG];
-    XCTAssertEqualObjects(responseTime, @"typically_replies_within_a_minute");
+    XCTAssertEqualObjects(responseTime, @"Typically replies within a minute");
 }
 
 - (void) testValidUUID {
@@ -752,12 +762,12 @@
 
 - (void) testDurationConversion {
     NSString *durationVal = [FCUtilities getDurationFromSecs : 1800];
-    XCTAssertEqualObjects(durationVal, @"30 calendar_duration_mins", @"Test Passed for duration conversion");
+    XCTAssertEqualObjects(durationVal, @"30 mins", @"Test Passed for duration conversion");
 }
 
 - (void) testDurationDiff {
     NSString *interval = [FCUtilities intervalStrFromMillis: 0 toMillis:1800000];
-    XCTAssertEqualObjects(interval, @"30 calendar_duration_mins", @"Test Passed for duration conversion");
+    XCTAssertEqualObjects(interval, @"30 mins", @"Test Passed for duration conversion");
 }
 
 - (void) testDateStringFromTime {
@@ -830,6 +840,7 @@
         XCTAssertTrue(message.hasActiveCalInvite);
         FCMessageController *msgCtr = [[FCMessageController alloc] init];
         XCTAssertTrue([msgCtr isCalendarMsg : message]);
+        XCTAssertEqualObjects([msgCtr getIdentityForMessage:message], @368863015109157);
     }
 }
 
@@ -896,7 +907,7 @@
     
     FCAgentMessageCell *agentCell = [[FCAgentMessageCell alloc] init];
     NSString *locAgentName = [agentCell getLocalizedAgentName];
-    XCTAssertTrue((locAgentName.length == 0));// Nil value in localized
+    XCTAssertEqualObjects(locAgentName, @"Support");
     BOOL isTopFragment = [agentCell isTopFragment:@[@"frag1", @"frag2"] currentIndex:0];
     XCTAssertTrue(isTopFragment);
 }
@@ -953,6 +964,140 @@
     NSString *replyFragmentInValid = @"";
     XCTAssertEqual([replyFragmentValid isTemplateFragment], true);
     XCTAssertEqual([replyFragmentInValid isTemplateFragment], false);
+}
+
+- (void) testSDKDefaultTheme {
+    FCTheme *theme = [FCTheme sharedInstance];
+    XCTAssertTrue([[theme getBannerTextColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme getBannerBackgroundColor] isEqual:[FCTheme colorWithHex:@"4F5F78"]]);
+    XCTAssertEqualObjects([theme getBannerTextFont], [UIFont systemFontOfSize:12.0]);
+    XCTAssertTrue([theme getCssFileContent:[theme getArticleDetailCSSFileName]].length > 0);
+    XCTAssertTrue([theme isTeamMemberAvatarVisibile]);
+    XCTAssertEqual([theme userMessageTextAlignment],[theme agentMessageTextAlignment]);
+    
+    XCTAssertTrue([[theme getInvitationStatusTextColor] isEqual:[FCTheme colorWithHex:@"293A5A"]]);
+    XCTAssertEqualObjects([theme getInvitationStatusTextFont], [UIFont boldSystemFontOfSize:14.0]);
+    XCTAssertTrue([[theme getInvitationDurationTextColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getInvitationDurationTextFont], [UIFont systemFontOfSize:12.0]);
+    XCTAssertTrue([[theme getInvitationTimeTextColor] isEqual:[FCTheme colorWithHex:@"293A5A"]]);
+    XCTAssertEqualObjects([theme getInvitationTimeTextFont], [UIFont boldSystemFontOfSize:14.0]);
+    XCTAssertTrue([[theme getInvitationDescriptionTextColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getInvitationDescriptionTextFont], [UIFont systemFontOfSize:12.0]);
+    XCTAssertTrue([[theme getInvitationDateTextColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getInvitationDateTextFont], [UIFont systemFontOfSize:12.0]);
+    XCTAssertTrue([[theme getInvitationAvatarsBorderColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme getInvitationBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    
+    XCTAssertTrue([[theme getFindSlotButtonTitleColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertEqualObjects([theme getFindSlotButtonTitleFont], [UIFont systemFontOfSize:15.0]);
+    XCTAssertTrue([[theme getFindSlotButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"0053BF"]]);
+    XCTAssertTrue([[theme getNotInterestedButtonColor] isEqual:[FCTheme colorWithHex:@"687D99"]]);
+    XCTAssertEqualObjects([theme getNotInterestedButtonFont], [UIFont systemFontOfSize:15.0]);
+    
+    XCTAssertTrue([[theme getCarouselTitleColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertEqualObjects([theme getCarouselTitleFont], [UIFont boldSystemFontOfSize:17.0]);
+    XCTAssertTrue([[theme getCarouselDescriptionColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertEqualObjects([theme getCarouselDescriptionFont], [UIFont systemFontOfSize:15.0]);
+    XCTAssertTrue([[theme getCarouselSelectedTextColor] isEqual:[FCTheme colorWithHex:@"808080"]]);
+    XCTAssertEqualObjects([theme getCarouselSelectedTextFont], [UIFont systemFontOfSize:15.0]);
+    XCTAssertTrue([[theme getCarouselActionButtonColor] isEqual:[FCTheme colorWithHex:@"0079FF"]]);
+    XCTAssertEqualObjects([theme getCarouselActionButtonFont], [UIFont systemFontOfSize:15.0]);
+    XCTAssertTrue([[theme getCarouselSelectedCardBackground] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    
+    XCTAssertTrue([[theme getDropDownBarBorderColor] isEqual:[FCTheme colorWithHex:@"45A4EC"]]);
+    XCTAssertEqualObjects([theme getDropDownBarFont], [UIFont systemFontOfSize:15.0]);
+    XCTAssertEqualObjects([theme getDropDownPickerOptionFont], [UIFont systemFontOfSize:15.0]);
+    XCTAssertEqual([theme getDropDownPickerOptionHeight], 44.0);
+    XCTAssertEqual([theme getDropDownPickerViewPortraitHeight], 220.0);
+    XCTAssertEqual([theme getDropDownPickerViewLandScapeHeight], 132.0);
+    
+    XCTAssertEqualObjects([theme getQuickReplyMessageFont], [UIFont fontWithName:@"Arial" size:15]);
+    XCTAssertTrue([[theme getQuickReplyBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme getQuickReplyCellBackgroundColor] isEqual:[FCTheme colorWithHex:@"0380fc"]]);
+    XCTAssertTrue([[theme getQuickReplyMessageColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertEqual([theme getQuickReplyCellPadding], 10.0);
+    XCTAssertEqual([theme getQuickReplyRowPadding], 10.0);
+    XCTAssertEqual([theme getQuickReplyMessageCornerRadius], 10.0);
+    XCTAssertEqual([theme getQuickReplyHeightPercentage], 35.0);
+    
+    XCTAssertEqualObjects([theme unsupportedMsgFragmentFont], [UIFont systemFontOfSize:15]);
+    XCTAssertTrue([[theme unsupportedMsgFragmentFontColor] isEqual:[FCTheme colorWithHex:@"8D96A5"]]);
+    XCTAssertTrue([[theme unsupportedMsgFragmentBorderColor] isEqual:[FCTheme colorWithHex:@"F2F3F5"]]);
+    XCTAssertTrue([[theme unsupportedMsgFragmentBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    
+    XCTAssertTrue([[theme conversationOverlayBackgroundColor] isEqual:[FCTheme colorWithHex:@"34AADC"]]);
+    XCTAssertEqualObjects([theme conversationOverlayTextFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme conversationOverlayTextColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    
+    XCTAssertEqualObjects([theme imgAttachBackButtonFont], [UIFont systemFontOfSize:16]);
+    XCTAssertTrue([[theme imgAttachBackButtonFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    
+    XCTAssertTrue([[theme custSatDialogueYesButtonTextColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertEqualObjects([theme custSatDialogueYesButtonFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme custSatDialogueYesButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"007AFF"]]);
+    XCTAssertTrue([[theme custSatDialogueYesButtonBorderColor] isEqual:[FCTheme colorWithHex:@"808285"]]);
+    
+    XCTAssertTrue([[theme custSatDialogueNoButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"F6F6F5"]]);
+    XCTAssertTrue([[theme custSatDialogueNoButtonTextColor] isEqual:[FCTheme colorWithHex:@"535353"]]);
+    XCTAssertEqualObjects([theme custSatDialogueNoButtonFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme custSatDialogueNoButtonBorderColor] isEqual:[FCTheme colorWithHex:@"808285"]]);
+    
+    XCTAssertTrue([[theme custSatDialogueBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    
+    XCTAssertTrue([[theme custSatDialogueTitleTextColor] isEqual:[FCTheme colorWithHex:@"1D2129"]]);
+    XCTAssertEqualObjects([theme custSatDialogueTitleFont], [UIFont systemFontOfSize:15]);
+    
+    XCTAssertTrue([[theme csatPromptSubmitButtonColor] isEqual:[FCTheme colorWithHex:@"378CF8"]]);
+    XCTAssertEqualObjects([theme csatPromptSubmitButtonTitleFont], [UIFont systemFontOfSize:15]);
+    XCTAssertTrue([[theme csatPromptSubmitButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"F7F7F7"]]);
+    
+    XCTAssertTrue([[theme csatPromptInputTextFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertEqualObjects([theme csatPromptInputTextFont], [UIFont systemFontOfSize:13]);
+    XCTAssertTrue([[theme csatPromptInputTextBorderColor] isEqual:[FCTheme colorWithHex:@"808285"]]);
+    
+    XCTAssertEqualObjects([theme csatPromptInputTextFont], [UIFont systemFontOfSize:13]);
+    XCTAssertTrue([[theme csatPromptInputTextBorderColor] isEqual:[FCTheme colorWithHex:@"808285"]]);
+    
+    XCTAssertTrue([[theme csatPromptRatingBarColor] isEqual:[FCTheme colorWithHex:@"0BA4DB"]]);
+    
+    XCTAssertTrue([[theme csatPromptHorizontalLineColor] isEqual:[FCTheme colorWithHex:@"B3B3B3"]]);
+    XCTAssertTrue([[theme csatDialogBackgroundColor] isEqual:[FCTheme colorWithHex:@"F7F7F7"]]);
+    
+    XCTAssertTrue([[theme inputToolbarBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme inputToolbarDividerColor] isEqual:[FCTheme colorWithHex:@"B3B3B3"]]);
+    
+    XCTAssertTrue([[theme inputTextFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertEqualObjects([theme inputTextFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme inputTextfieldBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme inputTextCursorColor] isEqual:[FCTheme colorWithHex:@"808285"]]);
+    XCTAssertTrue([[theme inputTextBorderColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme inputTextPlaceholderFontColor] isEqual:[FCTheme colorWithHex:@"D3D3D3"]]);
+    XCTAssertTrue([[theme sendButtonColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    
+    XCTAssertTrue([[theme actionButtonTextColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertEqualObjects([theme actionButtonFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme actionButtonSelectedColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertTrue([[theme actionButtonColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme actionButtonBorderColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    
+    XCTAssertEqualObjects([theme getUserMessageTimeFont], [UIFont systemFontOfSize:11]);
+    XCTAssertTrue([[theme getUserMessageTimeFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    
+    XCTAssertTrue([[theme userHyperlinkColor] isEqual:[FCTheme colorWithHex:@"2283F6"]]);
+    XCTAssertEqualObjects([theme userMessageFont], [UIFont fontWithName:@"Arial" size:15]);
+    XCTAssertTrue([[theme userMessageFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertTrue([theme userMessageTextAlignment] == NSTextAlignmentNatural);
+    
+    XCTAssertEqualObjects([theme agentMessageTimeFont], [UIFont systemFontOfSize:11]);
+    XCTAssertTrue([[theme agentMessageTimeFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    
+    XCTAssertTrue([[theme agentMessageFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertTrue([theme agentMessageTextAlignment] == NSTextAlignmentNatural);
+    XCTAssertTrue([[theme agentHyperlinkColor] isEqual:[FCTheme colorWithHex:@"2283F6"]]);
+    XCTAssertEqualObjects([theme agentMessageFont], [UIFont fontWithName:@"Arial" size:15]);
+    
+    XCTAssertTrue([[theme agentNameFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertEqualObjects([theme agentNameFont], [UIFont systemFontOfSize:13]);
 }
 
 @end

@@ -25,6 +25,8 @@
 		021DA7CD23E1814F00CA7F02 /* FCAnimatedImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = 021DA7C923E1814F00CA7F02 /* FCAnimatedImageView.h */; };
 		021DA7CE23E1814F00CA7F02 /* FCAnimatedImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 021DA7CA23E1814F00CA7F02 /* FCAnimatedImageView.m */; };
 		021DA7D423E1902E00CA7F02 /* FCAnimatedImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 021DA7D323E1902D00CA7F02 /* FCAnimatedImage.m */; };
+		022F8E5424D2CD34005046D0 /* FCResources.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 022F8E5324D2CD34005046D0 /* FCResources.bundle */; };
+		022F8E5624D2FE5B005046D0 /* FreshchatModels.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 022F8E5524D2FE5B005046D0 /* FreshchatModels.bundle */; };
 		024529482386E62C0018FC38 /* FCEventsConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 024529472386E62C0018FC38 /* FCEventsConstants.h */; };
 		0257E210247569F300E3A8E3 /* FCCalendarSlotConfirmationView.h in Headers */ = {isa = PBXBuildFile; fileRef = 0257E20E247569F300E3A8E3 /* FCCalendarSlotConfirmationView.h */; };
 		0257E211247569F300E3A8E3 /* FCCalendarSlotConfirmationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0257E20F247569F300E3A8E3 /* FCCalendarSlotConfirmationView.m */; };
@@ -38,6 +40,7 @@
 		02C480B72377E07700EDADB2 /* FCEventsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B52377E07700EDADB2 /* FCEventsManager.m */; };
 		02C480BA2377E27200EDADB2 /* FCEventsConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C480B82377E27200EDADB2 /* FCEventsConfig.h */; };
 		02C480BB2377E27200EDADB2 /* FCEventsConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 02C480B92377E27200EDADB2 /* FCEventsConfig.m */; };
+		32041A6E24C04F6A005FF196 /* FCLocalization.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 32041A6D24C04F69005FF196 /* FCLocalization.bundle */; };
 		321D4EA7248A4F0900034560 /* libOCMock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 321D4EA6248A4F0900034560 /* libOCMock.a */; };
 		32346524242B2721000F4CEB /* FCTemplateSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 328ABDD9242A1C5D00B1B71F /* FCTemplateSection.h */; };
 		32346525242B2725000F4CEB /* FCTemplateSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 328ABDDA242A1C5D00B1B71F /* FCTemplateSection.m */; };
@@ -267,6 +270,8 @@
 		021DA7C923E1814F00CA7F02 /* FCAnimatedImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FCAnimatedImageView.h; sourceTree = "<group>"; };
 		021DA7CA23E1814F00CA7F02 /* FCAnimatedImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCAnimatedImageView.m; sourceTree = "<group>"; };
 		021DA7D323E1902D00CA7F02 /* FCAnimatedImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FCAnimatedImage.m; sourceTree = "<group>"; };
+		022F8E5324D2CD34005046D0 /* FCResources.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = FCResources.bundle; path = ../Hotline/SDKResources/FCResources.bundle; sourceTree = "<group>"; };
+		022F8E5524D2FE5B005046D0 /* FreshchatModels.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = FreshchatModels.bundle; path = ../Hotline/SDKResources/FreshchatModels.bundle; sourceTree = "<group>"; };
 		024529472386E62C0018FC38 /* FCEventsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsConstants.h; sourceTree = "<group>"; };
 		0257E20E247569F300E3A8E3 /* FCCalendarSlotConfirmationView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarSlotConfirmationView.h; sourceTree = "<group>"; };
 		0257E20F247569F300E3A8E3 /* FCCalendarSlotConfirmationView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarSlotConfirmationView.m; sourceTree = "<group>"; };
@@ -281,6 +286,7 @@
 		02C480B52377E07700EDADB2 /* FCEventsManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsManager.m; sourceTree = "<group>"; };
 		02C480B82377E27200EDADB2 /* FCEventsConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCEventsConfig.h; sourceTree = "<group>"; };
 		02C480B92377E27200EDADB2 /* FCEventsConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCEventsConfig.m; sourceTree = "<group>"; };
+		32041A6D24C04F69005FF196 /* FCLocalization.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = FCLocalization.bundle; path = ../Hotline/SDKResources/FCLocalization.bundle; sourceTree = "<group>"; };
 		321D4EA6248A4F0900034560 /* libOCMock.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libOCMock.a; path = FreshchatSDKTest/usr/lib/libOCMock.a; sourceTree = "<group>"; };
 		323DD889247547E900835F59 /* FCCalendarBannerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FCCalendarBannerView.h; sourceTree = "<group>"; };
 		323DD88A247547E900835F59 /* FCCalendarBannerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FCCalendarBannerView.m; sourceTree = "<group>"; };
@@ -1164,6 +1170,9 @@
 		843DD249178594180053E19E = {
 			isa = PBXGroup;
 			children = (
+				022F8E5524D2FE5B005046D0 /* FreshchatModels.bundle */,
+				022F8E5324D2CD34005046D0 /* FCResources.bundle */,
+				32041A6D24C04F69005FF196 /* FCLocalization.bundle */,
 				35B2EEBB1D000E620014867F /* HotlineSDK */,
 				35591B721B9EDCCE00BC0B60 /* HotlineModels */,
 				35591B791B9EDD0700BC0B60 /* Vendor */,
@@ -1466,6 +1475,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				32041A6E24C04F6A005FF196 /* FCLocalization.bundle in Resources */,
+				022F8E5424D2CD34005046D0 /* FCResources.bundle in Resources */,
+				022F8E5624D2FE5B005046D0 /* FreshchatModels.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
