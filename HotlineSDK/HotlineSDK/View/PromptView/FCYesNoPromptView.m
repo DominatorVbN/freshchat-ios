@@ -52,7 +52,8 @@
     CGFloat button1DesiredWidth = [self getDesiredWidthFor:self.YesButton];
     CGFloat button2DesiredWidth = [self getDesiredWidthFor:self.NoButton];
     
-    self.metrics = @{ @"desiredWidth1" : @(button1DesiredWidth),@"desiredWidth2" : @(button2DesiredWidth) , @"buttonSpacing" : @(BUTTON_SPACING) };
+    self.metrics = @{ @"desiredWidth1" : @(button1DesiredWidth),
+                      @"desiredWidth2" : @(button2DesiredWidth)};
     self.views = @{@"Button1" : self.YesButton, @"Button2" : self.NoButton, @"promptLabel" : self.promptLabel, @"leftSpacer" : self.leftSpacer, @"rightSpacer" : self.rightSpacer };
     
     //Constraints for label
@@ -62,8 +63,8 @@
 
     [self addConstraintWithBaseLine:@"H:|[leftSpacer][Button2(desiredWidth1)]-15-[Button1(desiredWidth2)][rightSpacer(leftSpacer)]|" inView:self];
 
-    [self addConstraint:@"V:[promptLabel]-16-[Button1]-10-|" InView:self];
-    [self addConstraint:@"V:[promptLabel]-16-[Button2]-10-|" InView:self];
+    [self addConstraint:@"V:[promptLabel]-(<=16)-[Button1]-10-|" InView:self];
+    [self addConstraint:@"V:[promptLabel]-(<=16)-[Button2]-10-|" InView:self];
     
     [super layoutSubviews];
 }
