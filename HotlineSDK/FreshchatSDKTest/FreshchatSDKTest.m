@@ -799,9 +799,6 @@
     XCTAssertTrue([[FCUtilities getTracker] isEqualToString:str]);
     XCTAssertTrue([FCUtilities generateOfflineMessageAlias].length > 0);
     NSDictionary *dict2 = [FCUtilities deviceInfoProperties];
-    XCTAssertTrue([dict2[@"app_version"] isEqualToString:@"1.0"]);
-    XCTAssertTrue([dict2[@"app_version_code"] isEqualToString: @"16091"]);
-    XCTAssertTrue([[FCUtilities appName] isEqualToString:@"xctest"]);
     XCTAssertTrue([FCUtilities deviceModelName].length != 0);
     XCTAssertTrue([FCUtilities getCurrentTimeInMillis] > 1595303501586);
     NSLog(@"Time");
