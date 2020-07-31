@@ -135,7 +135,6 @@
             [updater resetTime];
         }
         else {
-            //[updater useInterval:SOLUTIONS_FETCH_INTERVAL_ON_SCREEN_LAUNCH];
             FCRefreshIntervals *remoteIntervals = [FCRemoteConfig sharedInstance].refreshIntervals;
             [updater useInterval:remoteIntervals.faqFetchIntervalNormal];
         }
