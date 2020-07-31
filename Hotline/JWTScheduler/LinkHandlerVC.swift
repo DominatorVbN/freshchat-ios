@@ -24,7 +24,7 @@ class LinkHandlerVC: UIViewController {
     
     @IBAction func tapLink(_ sender: Any) {
         if(self.deeplinkSpace.text.count > 0) {
-            Freshchat.sharedInstance()?.openDeeplink(self.deeplinkSpace.text, viewController: self)
+            Freshchat.sharedInstance().openDeeplink(self.deeplinkSpace.text, viewController: self)
         }
     }
     
@@ -33,29 +33,30 @@ class LinkHandlerVC: UIViewController {
     }
     
     @IBAction func showConversations(_ sender: Any) {
-        Freshchat.sharedInstance()?.showConversations(self)
+        Freshchat.sharedInstance().showConversations(self)
     }
     
     @IBAction func showFAQs(_ sender: Any) {
-        Freshchat.sharedInstance()?.showFAQs(self)
+        Freshchat.sharedInstance().showFAQs(self)
     }
     
     
     @IBAction func interceptNotificationChanged(_ sender: Any) {
         if(self.interceptNotification.isOn) {
-            Freshchat.sharedInstance()?.onNotificationClicked =  ({ (url) in
+            Freshchat.sharedInstance().onNotificationClicked =  ({ (url) in
                     self.interceptNotificationTxtView.text = url
                         return false
                 })
         } else {
-            Freshchat.sharedInstance()?.onNotificationClicked =  ({ (url) in
+            Freshchat.sharedInstance().onNotificationClicked =  ({ (url) in
                 self.interceptNotificationTxtView.text = url
                 return true
             })
         }
     }
     @IBAction func clearData(_ sender: Any) {
-        Freshchat.sharedInstance()?.resetUser(completion: nil)
+        Freshchat.sharedInstance().resetUser {
+        }
     }
         
     @IBAction func valueChanged(_ sender: Any) {
@@ -65,7 +66,7 @@ class LinkHandlerVC: UIViewController {
     func checkInAppHandlingState() {
         if(self.browserHandling.isOn) {
             let storyboard = UIStoryboard(name: IN_APP_BROWSER_STORYBOARD_CONTROLLER, bundle: nil)
-            Freshchat.sharedInstance()?.customLinkHandler = ({ (url) in
+            Freshchat.sharedInstance().customLinkHandler = ({ (url) in
                 if let inAppBrowser = storyboard.instantiateViewController(withIdentifier: IN_APP_BROWSER_STORYBOARD_CONTROLLER) as? InAppBrowser {
                     inAppBrowser.url = url
                     if let viewController = self.navigationController?.visibleViewController {
@@ -75,7 +76,7 @@ class LinkHandlerVC: UIViewController {
                 return true
             })
         } else {
-            Freshchat.sharedInstance()?.customLinkHandler = ({ (url) in
+            Freshchat.sharedInstance().customLinkHandler = ({ (url) in
                 return false
             })
         }

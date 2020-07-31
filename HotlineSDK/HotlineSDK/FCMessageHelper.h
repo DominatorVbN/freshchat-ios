@@ -48,13 +48,14 @@
 +(double) getCurrentPlayingAudioTime;
 +(NSString *)getCurrentPlayingMessageID;
 
-+(void) uploadMessageWithImage:(UIImage *)image textFeed:(NSString *)textFeedback onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel;
++(void) uploadMessageWithImageData:(NSData *)imageData textFeed:(NSString *)textFeedback messageType:(NSNumber *)msgType onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel;
 +(void)uploadImage:(UIImage *)image onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel;
 +(void)uploadImage:(UIImage *)image withCaption:(NSString *)caption onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel;
 
-+(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel;
-+(void)uploadNewMsgWithImage:(UIImage *)image textFeed:(NSString *)caption onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel;
++(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation withMessageType:(NSNumber *)msgType onChannel:(FCChannels *)channel inReplyTo:(NSNumber*)messageId;
++(void)uploadNewMsgWithImageData:(NSData*)imageData textFeed:(NSString *)caption messageType:(NSNumber *)msgType withInfo:(NSDictionary *)info onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel;
 +(void) uploadVoiceRecordingWithMessageID: (NSString *)MessageID toConversationID: (NSString *)ConversationID onChannel:(FCChannels*)channel;
++(void) uploadCarouselMessage:(NSDictionary *)msgFragments onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel;
 
 //TODO: The following are indirectly called by KonotorDelegate and need to be removed.
 +(void) MediaDownloadFailedNotification:(NSString *) messageID;

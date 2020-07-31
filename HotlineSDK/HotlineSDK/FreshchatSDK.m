@@ -53,11 +53,14 @@
 #import "FCJWTAuthValidator.h"
 #import "FCJWTUtilities.h"
 #import "FCJWTAuthValidator.h"
+#import "FCEventsManager.h"
+#import "FCEventsConstants.h"
 
 static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
 #define FD_IMAGE_CACHE_DURATION 60 * 60 * 24 * 365
 #define MAX_SOL_FILTER_TAGS 25
 #define FILTER_TAGS_EXCEED_MSG @"Limit exceeded - Maximum number of filter tag(s) allowed is 25."
+#define FRESHCHATSDK_NOT_INITIALIZED_MSG @"FreshchatSDK is not initialized, Please check the documentation."
 
 @interface FCNotificationBanner ()
 
@@ -71,6 +74,7 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
 @property (nonatomic, assign) BOOL showChannelThumbnail;
 @property (nonatomic, strong) FCNotificationHandler *notificationHandler;
 @property (nonatomic, strong) FCMessagePoller *messagePoller;
+@property (atomic, strong) NSMutableArray<NSOperation*> *queue;
 
 -(void)resetUserWithCompletion:(void (^)())completion init:(BOOL)doInit andOldUser:(NSDictionary*) previousUser;
 
@@ -123,7 +127,10 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
         [[FCReachabilityManager sharedInstance] start];
         [self registerAppNotificationListeners];
         self.messagePoller = [[FCMessagePoller alloc] initWithPollType:OffScreenPollFetch];
+        self.queue = [[NSMutableArray alloc]init];
         [FCUtilities removeResponseTimeFetchInterval];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(restoreStateChanged:)
+        name:FRESHCHAT_USER_RESTORE_STATE object:nil];
     }
     return self;
 }
@@ -131,6 +138,8 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
 -(void)networkReachable{
     [FCUtilities initiatePendingTasks];
 }
+
+static BOOL MAKE_API_WAIT = NO;
 
 -(void)initWithConfig:(FreshchatConfig *)config{
     @try {
@@ -158,6 +167,7 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
         }];
     }
     else {
+        MAKE_API_WAIT = YES;
         [self updateConfig:processedConfig andRegisterUser:completion];
     }
 }
@@ -202,6 +212,7 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
             [store setBoolValue:config.showNotificationBanner forKey:HOTLINE_DEFAULTS_SHOW_NOTIFICATION_BANNER];
             [store setObject:config.themeName forKey:HOTLINE_DEFAULTS_THEME_NAME];
             [store setBoolValue:config.responseExpectationVisible forKey:FRESHCHAT_DEFAULTS_RESPONSE_EXPECTATION_VISIBLE];
+            [store setBoolValue:config.eventsUploadEnabled forKey:FRESHCHAT_DEFAULTS_EVENTS_UPLOAD_ENABLED];
             [[FCTheme sharedInstance]setThemeWithName:config.themeName];
         }
         
@@ -364,6 +375,22 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
         ALog(@"Freshchat API : JWT is Enabled for thisb please use setUserWithIdToken!");
         return;
     }
+    if ([self cannotMakeUserCalls]) {
+        __block FreshchatUser * blockUser = [[FreshchatUser alloc] init];
+        blockUser.firstName =  (user.firstName != nil && ![user.firstName isEqualToString:@""]) ? user.firstName : [FreshchatUser sharedInstance].firstName;
+        blockUser.lastName =  (user.lastName != nil && ![user.lastName isEqualToString:@""]) ? user.lastName : [FreshchatUser sharedInstance].lastName;
+        blockUser.email =  (user.email != nil && ![user.email isEqualToString:@""]) ? user.email : [FreshchatUser sharedInstance].email;
+        blockUser.phoneNumber =  (user.phoneNumber != nil && ![user.phoneNumber isEqualToString:@""]) ? user.phoneNumber : [FreshchatUser sharedInstance].phoneNumber;
+        blockUser.phoneCountryCode =  (user.phoneCountryCode != nil && ![user.phoneCountryCode isEqualToString:@""]) ? user.phoneCountryCode : [FreshchatUser sharedInstance].phoneCountryCode;
+        NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+            blockUser.externalID =  [FreshchatUser sharedInstance].externalID;
+            blockUser.restoreID =  [FreshchatUser sharedInstance].restoreID;
+            blockUser.jwtToken =  [FreshchatUser sharedInstance].jwtToken;
+            [self setUser:blockUser];
+        }];
+        [self.queue addObject:operation];
+        return;
+    }
     [FCUsers storeUserInfo:user];
     [FCCoreServices uploadUnuploadedProperties];
 }
@@ -448,6 +475,16 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
     if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
         ALog(@"Freshchat : identifyUserWithExternalID is not allowed in auth strict mode");
     }
+    if ([self cannotMakeUserCalls]) {
+        __block NSString* blockExternalID = externalID;
+        __block NSString* blockRestoreID = restoreID;
+        NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+            [self identifyUserWithExternalID:blockExternalID restoreID:blockRestoreID];
+        }];
+        [operation setName: restoreID != nil ? @"restore" : @"new session"];
+        [self.queue addObject:operation];
+        return;
+    }
     if(externalID == nil) { //Safety check
         return;
     }
@@ -463,6 +500,7 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
             // E0 R0 -> E1 -> R1
             //Flush and restore
             FDLog(@"E0 R0 -> E1 -> R1");
+            MAKE_API_WAIT = YES;
             [FCUtilities resetDataAndRestoreWithExternalID:externalID withRestoreID:restoreID withCompletion:nil];
         } else  if (([externalID length] > 0) && ([restoreID length] == 0)) {
             // E0 R0 -> E1 -> R0
@@ -484,6 +522,7 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
                  FDLog(@"EX RX -> EY -> RY Same E Different R");
             }
             if( ![oldRestoreID isEqualToString:restoreID] || ![oldExternalID isEqualToString:externalID]) {
+                MAKE_API_WAIT = YES;
                 [FCUtilities resetDataAndRestoreWithExternalID:externalID withRestoreID:restoreID withCompletion:nil];
             }
          } else if (([externalID length] > 0) && ([restoreID length] == 0)) { // EY R0
@@ -504,13 +543,22 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
          // E1 R0 -> E1 -> R1
          //Flush and restore
          FDLog(@"E1 R0 -> E1 -> R1");
+         MAKE_API_WAIT = YES;
          [FCUtilities resetDataAndRestoreWithExternalID:externalID withRestoreID:restoreID withCompletion:nil];
      }
 }
 
--(void)setUserProperties:(NSDictionary*)props{
+-(void)setUserProperties:(NSDictionary<NSString *, NSString*> *)props{
     if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
         ALog(@"Freshchat API : JWT is Enabled.");
+        return;
+    }
+    if ([self cannotMakeUserCalls]) {
+        __block NSDictionary* blockProps = props;
+        NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+            [self setUserProperties: blockProps];
+        }];
+        [self.queue addObject:operation];
         return;
     }
     [[FCDataManager sharedInstance].mainObjectContext performBlock:^{
@@ -654,28 +702,39 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
 #pragma mark - Route controllers
 
 -(void)showFAQs:(UIViewController *)controller{
+    
+    if (![FCUtilities isSDKInitialized]){ //Adding check again as its firsts check if SDK is initialized
+        ALog(FRESHCHATSDK_NOT_INITIALIZED_MSG);
+        return;
+    }
+    
     if([[FCRemoteConfig sharedInstance] isActiveFAQAndAccount]){
         [self showFAQs:controller withOptions:[FAQOptions new]];
     }
     else{
         [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_FAQ_FEATURE_DISABLED_TEXT) message:nil
-                              andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL)];
+                              andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL) inController:controller];
     }
 }
 
 -(void)showConversations:(UIViewController *)controller{
+    if (![FCUtilities isSDKInitialized]){
+        ALog(FRESHCHATSDK_NOT_INITIALIZED_MSG);
+        return;
+    }
+    
     if([[FCRemoteConfig sharedInstance] isActiveInboxAndAccount]){
         [self showConversations:controller withOptions:[ConversationOptions new]];
     }
     else{
         [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_CHANNELS_FEATURE_DISABLED_TEXT) message:nil
-                              andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL)];
+                              andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL) inController:controller];
     }
 }
 
 -(void)showFAQs:(UIViewController *)controller withOptions:(FAQOptions *)options{
     if([FCUtilities isAccountDeleted]){
-        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_TEXT) message:nil andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL)];
+        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_TEXT) message:nil andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL) inController:controller];
         return;
     }
     if(options.tags.count > MAX_SOL_FILTER_TAGS) {
@@ -687,7 +746,7 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
 
 - (void) showConversations:(UIViewController *)controller withOptions :(ConversationOptions *)options {
     if([FCUtilities isAccountDeleted]){
-        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_TEXT) message:nil andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL)];
+        [FCUtilities showAlertViewWithTitle:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_TEXT) message:nil andCancelText:HLLocalizedString(LOC_ERROR_MESSAGE_ACCOUNT_NOT_ACTIVE_CANCEL) inController:controller];
         return;
     }
     if(options.tags.count > MAX_SOL_FILTER_TAGS) {
@@ -706,6 +765,11 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
 }
 
 -(UIViewController*) getConversationsControllerForEmbedWithOptions:(ConversationOptions *) convOptions{
+    if (![FCUtilities isSDKInitialized]){
+        ALog(FRESHCHATSDK_NOT_INITIALIZED_MSG)
+        return [[FCInterstitialViewController alloc]init];;
+    }
+    
     if(convOptions.tags.count > MAX_SOL_FILTER_TAGS) {
         ALog(FILTER_TAGS_EXCEED_MSG)
         return [[FCInterstitialViewController alloc]init];
@@ -714,11 +778,52 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
 }
 
 -(UIViewController*) getFAQsControllerForEmbedWithOptions:(FAQOptions *) faqOptions{
+    if (![FCUtilities isSDKInitialized]){
+        ALog(FRESHCHATSDK_NOT_INITIALIZED_MSG)
+        return [[FCInterstitialViewController alloc]init];;
+    }
+    
     if(faqOptions.tags.count > MAX_SOL_FILTER_TAGS) {
         ALog(FILTER_TAGS_EXCEED_MSG)
         return [[FCInterstitialViewController alloc]init];
     }
+    
     return [FCControllerUtils getEmbedded:faqOptions];
+}
+
+#pragma mark InEvents
+
+- (void) trackEvent : (NSString *) name withProperties : (NSDictionary<NSString*, id> *) properties{
+    if ([[FCRemoteConfig sharedInstance] isUserAuthEnabled] && [FCJWTUtilities hasInvalidTokenState]) {
+        return;
+    }
+    if ([self cannotMakeUserCalls]) {
+        __block NSString *blockName = name;
+        __block NSDictionary<NSString*, id> *blockProperties = properties;
+        NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+            [self trackEvent:blockName withProperties:blockProperties];
+        }];
+        [self.queue addObject:operation];
+        return;
+    }
+    if([FCStringUtil isEmptyString:name]){
+        ALog(FRESHCHAT_ERROR_EVENT_NAME_EMPTY);
+        return;
+    }
+    if(![FCEventsHelper hasValidEventNameLength:name]){
+        ALog(FRESHCHAT_ERROR_EVENT_NAME_EXCEEDS_LIMIT, [FCRemoteConfig sharedInstance].eventsConfig.maxCharsPerEventName, [name substringToIndex: [FCRemoteConfig sharedInstance].eventsConfig.maxCharsPerEventName]);
+        return;
+    }
+    
+    BOOL canUploadEvents = [[FCSecureStore sharedInstance] boolValueForKey:FRESHCHAT_DEFAULTS_EVENTS_UPLOAD_ENABLED];
+    if(canUploadEvents && [FCEventsHelper canUploadEventWithCount]) {
+        NSDictionary *validatedProperties = [FCEventsHelper getValidatedEventsProps : properties];
+        NSMutableDictionary *event = [NSMutableDictionary new];
+        [event setValue:name forKey:@"eventName"];
+        [event setObject:validatedProperties forKey:@"properties"];
+        [event setValue:@([FCUtilities getCurrentTimeInMillis]) forKey:@"occTime"];
+        [[FCEventsManager sharedInstance] submitSDKEventWithInfo:event];
+    }
 }
 
 #pragma mark Push notifications
@@ -781,9 +886,9 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
     }
 }
 
--(void)openFreshchatDeeplink:(NSString *)linkStr
-     viewController:(UIViewController *) viewController {
-    BOOL hasProcessed = [FCUtilities handleLink:[[NSURL alloc]initWithString:linkStr] faqOptions:nil navigationController:viewController handleFreshchatLinks:YES];
+-(void)openFreshchatDeeplink:(NSString *)linkStr viewController:(UIViewController *) viewController {
+    if (!viewController || [FCStringUtil isEmptyString:linkStr]) return;
+    BOOL hasProcessed = [FCUtilities handleLink:[[NSURL alloc]initWithString:linkStr] faqOptions:nil navigationController:viewController handleFreshchatLinks:YES postOutboundEvent:YES];
     if(!hasProcessed) {
         NSLog(@"Freshchat Error: Link not processed.");
     }
@@ -824,11 +929,17 @@ static BOOL FC_POLL_WHEN_APP_ACTIVE = NO;
 static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 
 -(void)resetUserWithCompletion:(void (^)())completion init:(BOOL)doInit andOldUser:(NSDictionary*) previousUser {
+    if (![FCUtilities isSDKInitialized]) {
+        ALog(@"Warning! Freshchat SDK has not been initialized and resetUser has been called");
+        return;
+    }
     if (CLEAR_DATA_IN_PROGRESS == NO) {
         CLEAR_DATA_IN_PROGRESS = YES;
         [self processClearUserData:^{
             CLEAR_DATA_IN_PROGRESS = NO;
             if(completion){
+                NSNotification *notification = [[NSNotification alloc]initWithName:@"resetFinished" object:nil userInfo:@{@"state":@1}];
+                [self restoreStateChanged:notification];
                 completion();
             }
             ALog(@"Clear user data completed");
@@ -852,6 +963,7 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
     config.cameraCaptureEnabled = [store boolValueForKey:HOTLINE_DEFAULTS_CAMERA_CAPTURE_ENABLED];
     config.showNotificationBanner = [store boolValueForKey:HOTLINE_DEFAULTS_SHOW_NOTIFICATION_BANNER];
     config.responseExpectationVisible = [store boolValueForKey:FRESHCHAT_DEFAULTS_RESPONSE_EXPECTATION_VISIBLE];
+    config.eventsUploadEnabled = [store boolValueForKey:FRESHCHAT_DEFAULTS_EVENTS_UPLOAD_ENABLED];
     if([store objectForKey:HOTLINE_DEFAULTS_THEME_NAME]){
         config.themeName = [store objectForKey:HOTLINE_DEFAULTS_THEME_NAME];
     } else {
@@ -875,8 +987,12 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
     [[FreshchatUser sharedInstance]resetUser]; // This clear Sercure Store data as well.
     
     //Clear secure store
+    NSDate *lastFetchDateForNonRegisteredUser = [[FCSecureStore sharedInstance] objectForKey:HOTLINE_DEFAULTS_DAU_LAST_UPDATED_TIME_UNKNOWN_USER];
     [[FCSecureStore sharedInstance]clearStoreData];
     [[FCSecureStore persistedStoreInstance]clearStoreData];
+    if(lastFetchDateForNonRegisteredUser){
+        [[FCSecureStore sharedInstance] setObject:lastFetchDateForNonRegisteredUser forKey:HOTLINE_DEFAULTS_DAU_LAST_UPDATED_TIME_UNKNOWN_USER];
+    }
     [[FCVotingManager sharedInstance].votedArticlesDictionary removeAllObjects];
     [FCUserDefaults clearUserDefaults];
     [store setBoolValue:isAccountDeleted forKey:FRESHCHAT_DEFAULTS_IS_ACCOUNT_DELETED];
@@ -887,22 +1003,29 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
     }
     [self markPreviousUserUninstalledIfPresent];
     [[FCDataManager sharedInstance] cleanUpUser:^(NSError *error) {
+        BOOL blockExecuted = false;
         if(![FCUtilities isAccountDeleted]){
             if(doInit){
                 if(!config.appID || !config.appKey){
                     ALog(@"Warning! Freshchat SDK has not been initialized and resetUser has been called");
                 }
                 else{
-                    [self initWithConfig:config completion:completion];
+                    blockExecuted = true;
+                    [self initWithConfig:config completion:^(NSError *error) {
+                        [FCUtilities initiatePendingTasks];
+                        completion();
+                    }];
                 }
             }
             if (deviceToken) {
                 [self storeDeviceToken:deviceToken];
             }
             [FCLocalNotification post:FRESHCHAT_USER_RESTORE_ID_GENERATED info:@{}];
-            [FCUtilities initiatePendingTasks];
+            if(!blockExecuted) {
+                [FCUtilities initiatePendingTasks];
+            }
         }
-        if (completion) {
+        if (completion && !blockExecuted) {
             completion();
         }
         [FCUtilities postUnreadCountNotification];
@@ -911,6 +1034,7 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 
 -(void)resetUserWithCompletion:(void (^)())completion{
     [self resetUserWithCompletion:completion init:true andOldUser:nil];
+    [[FCEventsManager sharedInstance] reset];
 }
 
 -(void)unreadCountWithCompletion:(void (^)(NSInteger count))completion{
@@ -963,6 +1087,14 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
     if(messageObject.message.length == 0 || messageObject.tag.length == 0){
         return;
     }
+    if ([self cannotMakeUserCalls]) {
+        __block FreshchatMessage *msg = messageObject;
+        NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+            [self sendMessage:msg];
+        }];
+        [self.queue addObject:operation];
+        return;
+    }
     NSManagedObjectContext *mainContext = [[FCDataManager sharedInstance] mainObjectContext];
     [mainContext performBlock:^{
         [[FCTagManager sharedInstance] getChannelsForTags:@[messageObject.tag] inContext:mainContext withCompletion:^(NSArray<FCChannels *> *channels, NSError *error){
@@ -984,7 +1116,7 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
                     ALog(@"Freshchat Error : Please Validate the user first.");
                     return;
                 }
-                [FCMessageHelper uploadMessageWithImage:nil textFeed:messageObject.message onConversation:conversation andChannel:channel];
+                [FCMessageHelper uploadMessageWithImageData:nil textFeed:messageObject.message messageType:@1 onConversation:conversation andChannel:channel];
             }
         }];
     }];
@@ -1045,7 +1177,11 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 }
 
 -(void) dismissEmbededFreshchatViews {
-    UIViewController *rootController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIWindow *window = [FCUtilities getAppKeyWindow];
+    if(!window) {
+        return;
+    }
+    UIViewController *rootController = [window rootViewController];
     [self dismissHotlineViewInController:rootController withCompletion:nil];
     if(!rootController.isBeingPresented) { // Embeded case
         UITabBarController *tabBar = (UITabBarController*) rootController;
@@ -1072,8 +1208,39 @@ static BOOL CLEAR_DATA_IN_PROGRESS = NO;
 }
 
 -(void) dismissFreshchatViews {
-    UIViewController *rootController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIWindow *window = [FCUtilities getAppKeyWindow];
+    if(!window) {
+        return;
+    }
+    UIViewController *rootController = [window rootViewController];
     [self dismissHotlineViewInController:rootController withCompletion:nil];
+}
+
+-(void)restoreStateChanged:(NSNotification *)notification {
+    if([notification.userInfo[@"state"] intValue] == 1 ) {
+        MAKE_API_WAIT = NO;
+        NSOperationQueue *operationQueue = [[NSOperationQueue alloc] init];
+        operationQueue.maxConcurrentOperationCount = 1;
+        @synchronized (self.queue) {
+            for (int i=0; i< [self.queue count]; i++) {
+                NSOperation *operation = [self.queue objectAtIndex:i];
+                @try {
+                    [operationQueue addOperation: operation];
+                }@catch (NSException *exception) {
+                    FDLog(@"Operation already ran");
+                }
+                if (operation.name != nil && [operation.name isEqualToString:@"restore"]) {
+                    [self.queue removeObjectAtIndex:i];
+                    return;
+                }
+            }
+            [self.queue removeAllObjects];
+        }
+    }
+}
+
+-(BOOL)cannotMakeUserCalls {
+    return CLEAR_DATA_IN_PROGRESS || MAKE_API_WAIT;
 }
 
 @end

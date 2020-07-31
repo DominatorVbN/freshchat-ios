@@ -8,6 +8,10 @@
 
 #import "FCTheme.h"
 #import "FCImagePreviewController.h"
+#import "FCUtilities.h"
+#import "FCAnimatedImage.h"
+#import "FCAnimatedImageView.h"
+
 #define CLOSE_BTN_INSET 3
 #define CLOSE_BTN_DIMENSION 25
 
@@ -16,8 +20,8 @@
     CGFloat scrollZoomScale;
 }
 
-@property (nonatomic, strong) UIImage *image;
-@property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, strong) NSData *imageData;
+@property (nonatomic, strong) FCAnimatedImageView *imageView;
 @property (nonatomic, assign) CGPoint originalCenter;
 @property (nonatomic, assign) CGSize originalBounds;
 
@@ -32,10 +36,10 @@ static const CGFloat THROWING_THRESHOLD = 1600;
 
 @synthesize scrollView = _scrollView, imageView = _imageView;
 
--(instancetype)initWithImage:(UIImage *)image{
+-(instancetype)initWithImageData:(NSData *)imageData{
     self = [super init];
     if (self) {
-        self.image = image;
+        self.imageData = imageData;
     }
     return self;
 }
@@ -50,8 +54,8 @@ static const CGFloat THROWING_THRESHOLD = 1600;
     
     self.view.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5f];
     
-    UIImage *image = self.image;
-    self.imageView = [[UIImageView alloc]initWithImage:image];
+    UIImage *image = [UIImage imageWithData:self.imageData];
+    self.imageView = [[FCAnimatedImageView alloc]initWithImage:image];
     self.imageView.frame = (CGRect){.origin=CGPointMake(0.0f, 0.0f), .size=image.size};
     
     [self.scrollView addSubview:self.imageView];
@@ -61,6 +65,11 @@ static const CGFloat THROWING_THRESHOLD = 1600;
     self.scrollView.clipsToBounds = YES;
     
     self.scrollView.contentSize = image.size;
+    
+    if ([[FCUtilities contentTypeForImageData:self.imageData] isEqualToString:@"image/gif"]){
+        FCAnimatedImage *animImage = [FCAnimatedImage animatedImageWithGIFData:self.imageData];
+        self.imageView.animatedImage = animImage;
+    }
     
     UITapGestureRecognizer *doubleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrollViewDoubleTapped:)];
     doubleTapRecognizer.numberOfTapsRequired = 2;

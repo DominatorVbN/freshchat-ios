@@ -102,12 +102,15 @@
 }
 
 +(UIViewController *)getEmbedded:(id)option{
-    return [[FCInterstitialViewController alloc] initViewControllerWithOptions:option andIsEmbed:YES];
+    FCInterstitialViewController* interstitialCtr = [[FCInterstitialViewController alloc] initViewControllerWithOptions:option andIsEmbed:YES];
+    interstitialCtr.isStartingControllerInStack = true;
+    return interstitialCtr;
 }
 
 +(void)presentOn:(UIViewController *)controller option:(id)options{
     FCInterstitialViewController *interstitialCtr = [[FCInterstitialViewController alloc]
                                                    initViewControllerWithOptions:options andIsEmbed:NO];
+    interstitialCtr.isStartingControllerInStack = true;
     UINavigationController *navigationController = [[UINavigationController alloc]initWithRootViewController:interstitialCtr];
     [navigationController setModalPresentationStyle:UIModalPresentationFullScreen];
     [controller presentViewController:navigationController animated:YES completion:nil];

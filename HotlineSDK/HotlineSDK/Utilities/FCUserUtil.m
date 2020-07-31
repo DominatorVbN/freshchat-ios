@@ -13,6 +13,7 @@
 #import "FCSecureStore.h"
 #import "FCJWTUtilities.h"
 #import "FCRemoteConfig.h"
+#import "FCEventsManager.h"
 
 @implementation FCUserUtil
 
@@ -20,6 +21,9 @@ static bool IS_USER_REGISTRATION_IN_PROGRESS = NO;
 
 +(void)registerUser:(void(^)(NSError *error))completion{
     if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] && ![FreshchatUser sharedInstance].jwtToken){
+        if (completion) {
+            completion(nil);
+        }
         return;
     }
     @synchronized ([FCUserUtil class]) {
@@ -33,6 +37,8 @@ static bool IS_USER_REGISTRATION_IN_PROGRESS = NO;
                     [[[FCCoreServices alloc]init] registerUser:^(NSError *error) {
                         if (!error) {
                             [FCUtilities initiatePendingTasks];
+                            //After finishing all user related data's, perform events upload if any
+                            [[FCEventsManager sharedInstance] processEventBatch];
                         }
                         dispatch_async(dispatch_get_main_queue(), ^ {
                             IS_USER_REGISTRATION_IN_PROGRESS = NO;

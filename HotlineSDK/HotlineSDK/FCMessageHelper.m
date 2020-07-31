@@ -83,23 +83,23 @@ __weak static id <KonotorDelegate> _delegate;
     return [FCAudioPlayer currentPlaying:nil set:NO ];
 }
 
-+(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation onChannel:(FCChannels *)channel{
-    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo onConversation:conversation];
++(void)uploadNewMessage:(NSArray *)fragmentsInfo onConversation:(FCConversations *)conversation withMessageType:(NSNumber *)msgType onChannel:(FCChannels *)channel inReplyTo:(NSNumber*)messageId{
+    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo forMessageType:msgType  withInfo :@{} onConversation:conversation inReplyTo:messageId];
     [channel addMessagesObject:message];
     [[FCDataManager sharedInstance]save];
     [FCMessageServices uploadNewMessage:message toConversation:conversation onChannel:channel];    
     [[FCMessageHelper delegate] didStartUploadingNewMessage];
-    
+    [self postOutBoundEventsForChannel:channel onConversation:conversation];
 }
 
-+(void)uploadNewMsgWithImage:(UIImage *)image textFeed:(NSString *)caption onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
++(void)uploadNewMsgWithImageData:(NSData*)imageData textFeed:(NSString *)caption messageType:(NSNumber *)msgType withInfo:(NSDictionary *)info onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
     //Upload the image with caption first then upload the message
     NSMutableArray *fragmentsInfo = [[NSMutableArray alloc] init];
-    if(image){
-        NSData *imageData, *thumbnailData;
+    UIImage *image = [UIImage imageWithData:imageData];
+    if(imageData){
+        NSData *thumbnailData;
         float imageWidth,imageHeight,imageThumbHeight,imageThumbWidth;
         
-        imageData = UIImageJPEGRepresentation(image, 0.5);
         CGImageSourceRef src = CGImageSourceCreateWithData( (__bridge CFDataRef)(imageData), NULL);
         NSDictionary *osptions = [[NSDictionary alloc] initWithObjectsAndKeys:(id)kCFBooleanTrue, kCGImageSourceCreateThumbnailWithTransform, kCFBooleanTrue, kCGImageSourceCreateThumbnailFromImageAlways, [NSNumber numberWithDouble:300], kCGImageSourceThumbnailMaxPixelSize, nil];
 #if KONOTOR_IMG_COMPRESSION
@@ -133,16 +133,16 @@ __weak static id <KonotorDelegate> _delegate;
         
         CFRelease(src);
         CFRelease(thumbnail);
-        
+        NSString *contentType = [FCUtilities contentTypeForImageData:imageData];
         NSDictionary *thumbnailInfo = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                       @"image/png",@"contentType",
+                                       contentType,@"contentType",
                                        @"",@"content",
                                        [NSNumber numberWithFloat:imageThumbWidth],@"width",
                                        [NSNumber numberWithFloat:imageThumbHeight],@"height",
                                        nil];
         
         NSDictionary *imageFragmentInfo = [[NSDictionary alloc] initWithObjectsAndKeys:  @2, @"fragmentType",
-                                           @"image/png",@"contentType",
+                                           contentType,@"contentType",
                                            @"",@"content", //Populate with empty url
                                            [NSNumber numberWithFloat:imageWidth],@"width",
                                            [NSNumber numberWithFloat:imageHeight],@"height",
@@ -160,9 +160,14 @@ __weak static id <KonotorDelegate> _delegate;
                                           caption,@"content",
                                           (image != nil) ? @1 : @0 ,@"position",nil];
         [fragmentsInfo addObject:textFragmentInfo];
+    }else if(([info count] > 0) && !(imageData)){
+        NSDictionary *calFragmentInfo = [[NSDictionary alloc] initWithObjectsAndKeys:  @7, @"fragmentType",
+                                         [FCMessages getJsonStringObjForMessage:info withKey:@"extraJSON"], @"extraJSON",
+                                         nil];
+        [fragmentsInfo addObject:calFragmentInfo];
     }
     
-    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo onConversation:conversation];
+    FCMessages *message = [FCMessages saveMessageInCoreData:fragmentsInfo forMessageType:msgType withInfo:info onConversation:conversation inReplyTo:nil];
     [channel addMessagesObject:message];
     [[FCDataManager sharedInstance]save];
     
@@ -175,13 +180,13 @@ __weak static id <KonotorDelegate> _delegate;
     if(![FCUserUtil isUserRegistered]) {
         [FCUserUtil registerUser:nil];
     } else {
-        [self uploadMessage:message withImage:image inChannel:channel andConversation:conversation];
+        [self uploadMessage:message withImageData:imageData inChannel:channel andConversation:conversation];
     }
 }
 
-+ (void) uploadMessage :(FCMessages *) message withImage:(UIImage*)image inChannel:(FCChannels *) channel andConversation : (FCConversations *)conversation {
++ (void) uploadMessage :(FCMessages *) message withImageData:(NSData*)imageData inChannel:(FCChannels *) channel andConversation : (FCConversations *)conversation {
     [FCMessageHelper performSelector:@selector(UploadFinishedNotification:) withObject:message.messageAlias];
-    if(image){
+    if(imageData){
         [FCMessageServices uploadPictureMessage:message toConversation:conversation withCompletion:^{
             [FCMessageServices uploadNewMessage:message toConversation:conversation onChannel:channel];
             [[FCMessageHelper delegate] didStartUploadingNewMessage];
@@ -192,14 +197,16 @@ __weak static id <KonotorDelegate> _delegate;
         [[FCMessageHelper delegate] didStartUploadingNewMessage];
     }
 }
-
-
-+(void) uploadMessageWithImage:(UIImage *)image textFeed:(NSString *)textFeedback onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
+    
++(void) uploadMessageWithImageData:(NSData *)imageData textFeed:(NSString *)textFeedback messageType:(NSNumber *)msgType onConversation:(FCConversations *)conversation andChannel:(FCChannels *)channel{
     [FCUserUtil setUserMessageInitiated];
     NSArray *freshchatRegexArray = [FCUserDefaults getObjectForKey:FRESTCHAT_DEFAULTS_MESSAGE_MASK];
     textFeedback = freshchatRegexArray.count > 0 ? [FCUtilities applyRegexForInputText:textFeedback] : textFeedback;
-    [self uploadNewMsgWithImage:image textFeed:textFeedback onConversation:conversation andChannel:channel];
-    
+    [self uploadNewMsgWithImageData:imageData textFeed:textFeedback messageType:msgType withInfo : @{} onConversation:conversation andChannel:channel];
+    [self postOutBoundEventsForChannel:channel onConversation:conversation];
+}
+
++(void) postOutBoundEventsForChannel:(FCChannels *)channel onConversation:(FCConversations *)conversation {
     NSMutableDictionary *eventsDict = [[NSMutableDictionary alloc] init];
     if(channel.channelAlias){
         [eventsDict setObject:channel.channelAlias forKey:@(FCPropertyChannelID)];
@@ -258,7 +265,7 @@ __weak static id <KonotorDelegate> _delegate;
 + (NSArray *) getUserAndAgentMsgs: (NSArray *) allMessages{
     //Added to avoid disply empty staus messages if remote config fails
     // is added if any chance for old message(s) type value is 0
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageType < 1000"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(messageType < 1000) OR (messageType == 9001 OR messageType == 9002 OR messageType == 9003 OR messageType == 9004)"];
     return [allMessages filteredArrayUsingPredicate:predicate];
 }
 

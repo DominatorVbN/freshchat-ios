@@ -40,6 +40,7 @@
 @property (nonatomic, assign) BOOL isEmbedView;
 @property (nonatomic) BOOL restoring;
 @property (nonatomic, strong) FCLoadingViewBehaviour *loadingViewBehaviour;
+@property (nonatomic, strong) UINavigationBar *navBar;
 
 @end
 
@@ -109,6 +110,7 @@
     [self.loadingViewBehaviour load:0];
     [self localNotificationSubscription];
     [self checkRestoreStateChanged];
+    NSLog(@"color %@", self.navigationController.navigationBar.tintColor);
 }
 
 -(void) checkRestoreStateChanged {
@@ -122,6 +124,27 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.navBar = [[UINavigationBar alloc]init];
+    self.navBar.translucent = self.navigationController.navigationBar.translucent;
+    if (self.isStartingControllerInStack) {
+        self.navBar.barTintColor = self.navigationController.navigationBar.barTintColor;
+        self.navBar.tintColor = self.navigationController.navigationBar.tintColor;
+        self.navBar.backgroundColor = self.navigationController.navigationBar.backgroundColor;
+        self.navBar.titleTextAttributes = self.navigationController.navigationBar.titleTextAttributes;
+        self.navBar.translucent = self.navigationController.navigationBar.translucent;
+        
+        if (@available(iOS 13.0, *)) {
+            self.navBar.standardAppearance = self.navigationController.navigationBar.standardAppearance;
+            self.navBar.compactAppearance = self.navigationController.navigationBar.compactAppearance;
+            self.navBar.scrollEdgeAppearance = self.navigationController.navigationBar.scrollEdgeAppearance;
+        }
+        if (@available(iOS 11.0, *)) {
+            self.navBar.prefersLargeTitles = self.navigationController.navigationBar.prefersLargeTitles;
+            self.navBar.largeTitleTextAttributes = self.navigationController.navigationBar.largeTitleTextAttributes;
+        }
+        
+        [FCUtilities setNavigationPropertyForBar: self.navigationController.navigationBar];
+    }
     self.navigationController.navigationBar.barTintColor = [[FCTheme sharedInstance ]navigationBarBackgroundColor];
     self.view.backgroundColor = ([self.freshchatOptions isKindOfClass:[ConversationOptions class]]) ? [[FCTheme sharedInstance] channelListBackgroundColor] : [[FCTheme sharedInstance] faqCategoryBackgroundColor] ;
     [self setNavigationItem];
@@ -164,6 +187,7 @@
 -(void) handleFAQs:(UIViewController *)controller withOptions:(FAQOptions *)options andEmbed : (BOOL)isEmbed {
     [self selectFAQController:options withCompletion:^(FCViewController *preferredController) {
         FCContainerController *containerController = [[FCContainerController alloc]initWithController:preferredController andEmbed:isEmbed];
+        containerController.navBar = self.navBar;
         [self resetNavigationStackWithController:containerController];
     }];
 }
@@ -220,6 +244,7 @@
 }
 
 -(void) handleConversations:(UIViewController *)controller andEmbed:(BOOL) isEmbed{
+    __weak __block FCInterstitialViewController* weakSelf = self;
     [[FCDataManager sharedInstance] fetchAllVisibleChannelsWithCompletion:^(NSArray *channelInfos, NSError *error) {
         FCContainerController *preferredController = nil;
         if (!error) {
@@ -233,10 +258,11 @@
         //default with or without error
         if(!preferredController) {
             FCChannelViewController *channelViewController = [[FCChannelViewController alloc]init];
-            [channelViewController setConversationOptions:self.freshchatOptions];
+            [channelViewController setConversationOptions:weakSelf.freshchatOptions];
             preferredController = [[FCContainerController alloc]initWithController:channelViewController andEmbed:isEmbed];
         }
         
+        preferredController.navBar = self.navBar;
         [self resetNavigationStackWithController:preferredController];
     }];
 }
@@ -247,6 +273,7 @@
     if(options.tags.count > 0 || options.channelID != nil ){
         [self selectConversationController:options withCompletion:^(FCViewController *preferredController) {
             FCContainerController *containerController = [[FCContainerController alloc]initWithController:preferredController andEmbed:isEmbed];
+            containerController.navBar = self.navBar;
             [self resetNavigationStackWithController:containerController];
         }];
     }

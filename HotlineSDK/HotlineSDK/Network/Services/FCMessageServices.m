@@ -243,7 +243,7 @@ static FCNotificationHandler *handleUpdateNotification;
         
         NSArray *messages = conversationInfo[@"messages"];
         for (int j=0; j<messages.count; j++) {
-            __block NSDictionary *messageInfo = messages[j];
+            NSDictionary *messageInfo = messages[j];
             FCMessages *message = [FCMessages retriveMessageForMessageId:messageInfo[@"alias"]];
             lastUpdateTime = [FCDateUtil maxDateOfNumber:lastUpdateTime andStr:messageInfo[@"createdMillis"]];
             if (!message) {
@@ -274,6 +274,13 @@ static FCNotificationHandler *handleUpdateNotification;
                     FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventMessageReceive
                                                                                 withParams:nil];
                     [FCEventsHelper postNotificationForEvent:outEvent];
+                }
+                if(([newMessage.messageType isEqualToNumber:FC_CALENDAR_CANCEL_MSG] || [newMessage.messageType isEqualToNumber:USER_TYPE_OWNER])
+                   && ([[messageInfo valueForKeyPath:@"internalMeta.calendarMessageMeta"] count] > 0)){
+                    NSString *inviteId = [messageInfo valueForKeyPath:@"internalMeta.calendarMessageMeta.calendarInviteId"];
+                    if ([FCStringUtil isNotEmptyString:inviteId]){
+                        [FCMessages updateCalInviteStatusForId:inviteId forChannel:newMessage.belongsToChannel completionHandler:nil];
+                    }
                 }
             }
         }
@@ -547,6 +554,7 @@ static FCNotificationHandler *handleUpdateNotification;
                 
                 pMessage.uploadStatus = @(MESSAGE_UPLOADED);
                 pMessage.messageAlias = messageInfo[@"alias"];
+                pMessage.messageId = messageInfo[@"id"];
                 pMessage.createdMillis = messageInfo[@"createdMillis"];
                 [channel addMessagesObject:pMessage];
                 [[FCDataManager sharedInstance]save];
@@ -600,7 +608,22 @@ static FCNotificationHandler *handleUpdateNotification;
     NSMutableDictionary *data1 = [pMessage convertMessageToDictionary];
     data1[@"conversationId"] = conversation.conversationAlias;
     data1[@"channelId"] = channel.channelID;
+    data1[@"messageType"] = pMessage.messageType;
+    data1[@"alias"] = pMessage.messageAlias;
     data1[@"source"] = @2;
+    if (pMessage.replyToMessage) {
+        data1[@"replyTo"] = @{@"originalMessageId": pMessage.replyToMessage};
+    }
+    if([FCStringUtil isNotEmptyString: pMessage.internalMeta]){
+        data1[@"internalMeta"] = [FCMessageUtil getInternalMetaForData: pMessage.internalMeta];
+    }
+    
+    if(data1[@"internalMeta"] && [FCStringUtil isNotEmptyString:[data1 valueForKeyPath:@"internalMeta.calendarMessageMeta.calendarBookingEmail"]] && ([data1[@"messageFragments"] firstObject][@"extraJSON"])){
+        NSMutableArray *fragmentInfo = [[FCMessageUtil getReplyFragmentsIn: [data1[@"messageFragments"] firstObject][@"extraJSON"]] mutableCopy];
+        NSMutableArray * arr = [[NSMutableArray alloc] init];
+        [arr addObject:fragmentInfo];
+        data1[@"messageFragments"] = arr;
+    }
     
     FCServiceRequest *request = [[FCServiceRequest alloc]initWithMethod:HTTP_METHOD_POST];
     NSData *userData = [NSJSONSerialization dataWithJSONObject:data1 options:NSJSONWritingPrettyPrinted error:nil];
@@ -640,8 +663,37 @@ static FCNotificationHandler *handleUpdateNotification;
                 
                 pMessage.uploadStatus = @(MESSAGE_UPLOADED);
                 pMessage.messageAlias = messageInfo[@"alias"];
+                pMessage.messageId = messageInfo[@"id"];
                 pMessage.createdMillis = messageInfo[@"createdMillis"];
                 pMessage.isMarkedForUpload = NO;
+                if (messageInfo[@"internalMeta"] != nil ) {
+                    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:messageInfo[@"internalMeta"]
+                                                                       options:NSJSONWritingPrettyPrinted
+                                                                         error:nil];
+                    NSString *jsonString = @"";
+                    if (jsonData) {
+                        jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                        pMessage.internalMeta = jsonString;
+                    }
+                    NSString *inviteId = [messageInfo[@"internalMeta"] valueForKeyPath:@"calendarMessageMeta.calendarInviteId"];
+                    if([FCStringUtil isNotEmptyString:inviteId]){
+                        FCEvent eventName = -1;
+                        NSString *eventLink = [messageInfo[@"internalMeta"] valueForKeyPath:@"calendarMessageMeta.calendarEventLink"];
+                        BOOL canRetry = [[messageInfo[@"internalMeta"] valueForKeyPath:@"calendarMessageMeta.retryCalendarEvent"] boolValue];
+                        if (!canRetry){
+                            if([FCStringUtil isNotEmptyString:eventLink]){
+                                eventName = FCEventCalendarBookingSuccess;
+                            }else {
+                                eventName = FCEventCalendarBookingFailure;
+                            }
+                        }else{
+                            eventName = FCEventCalendarBookingRetry;
+                        }
+                        FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:eventName
+                                                                                    withParams:@{@(FCPropertyInviteId) : inviteId}];
+                        [FCEventsHelper postNotificationForEvent:outEvent];
+                    }
+                }
                 [[FCDataManager sharedInstance]save];
                 [FCMessageHelper performSelector:@selector(UploadFinishedNotification:) withObject:messageAlias];
             }else{
@@ -713,8 +765,9 @@ static FCNotificationHandler *handleUpdateNotification;
     NSString *token = [NSString stringWithFormat:HOTLINE_REQUEST_PARAMS,appKey];
     
     FCServiceRequest *request = [[FCServiceRequest alloc]initMultipartFormRequestWithBody:^(id<HLMultipartFormData> formData) {
-        [formData addFilePart:fragment.binaryData1 name:@"pic" fileName:@".jpg" mimeType:@"image/jpeg"];
-        [formData addTextPart:[NSString stringWithFormat:@"pic_%@.jpg",fragment.index] name:@"name"];
+        NSString *contentType = [FCUtilities contentTypeForImageData:fragment.binaryData1];
+        [formData addFilePart:fragment.binaryData1 name:@"pic" fileName:[NSString stringWithFormat:@".%@",contentType] mimeType:contentType];
+        [formData addTextPart:[NSString stringWithFormat:@"pic_%@.%@",fragment.index, contentType] name:@"name"];
     }];
     
     NSString *path = [NSString stringWithFormat:HOTLINE_API_UPLOAD_IMAGE, appID,userAlias];

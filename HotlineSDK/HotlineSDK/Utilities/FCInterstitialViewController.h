@@ -16,6 +16,7 @@
 @interface FCInterstitialViewController : UIViewController
 
 @property (nonatomic, strong) id delegate;
+@property (nonatomic) BOOL isStartingControllerInStack;
 
 -(instancetype) initViewControllerWithOptions:(FreshchatOptions *) options andIsEmbed:(BOOL) isEmbed;
 

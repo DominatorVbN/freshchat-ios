@@ -1,3 +1,107 @@
+Freshchat iOS SDK - Powered by Freshdesk
+Documentation   : https://support.freshchat.com
+Support Email   : support@freshchat.com
+Version         : 3.7.3
+
+Ver 3.7.3 
+__________________________
+Enhancement:
+- Minor improvements on message loading.
+Bug Fixes:
+- Fixed FAQ not helpful bug.
+- Fixed attaching HEIC/TIFF images.
+
+Ver 3.7.2 
+__________________________
+Bug fix :
+- UI Bugs fixes
+
+Ver 3.7.1 
+__________________________
+Enhancement : 
+- Support for multiline placeholder text in feedback view
+
+Ver 3.7.0 
+__________________________
+Feature :
+- Support to book meetings
+Enhancement:
+- Optimisation for iOS 13
+Bug fix :
+- Minor bug fixes
+
+Ver 3.6.2 
+__________________________
+Enhancement:
+- Removed deprecated UIAlertViews.
+Ver 3.6.1 
+__________________________
+Enhancements:
+- Allow Navigation Bar customisation overriding UIAppearance settings.
+- Display only Team member's first name.
+Bug fixes :
+- Fixed Attachment issues in iOS13.
+- Fixed Read Receipts bug.
+
+Ver 3.6.0 
+__________________________
+Feature :
+- Support for messages with Carousel options.
+
+Ver 3.5.0 
+__________________________
+Feature :
+- Support multi choice question with Picker list.
+
+Ver 3.4.0 
+__________________________
+Feature :
+- GIF image support in messages.
+
+Ver 3.3.3 
+__________________________
+Enhancements :
+- Added Nullability check to API's.
+Bug fixes :
+- Rendering custom font in Article.
+- Statusbar being overlapped by inapp notification from iOS 13+ devices.
+
+Ver 3.3.2 
+__________________________
+Bug fix :
+- Fixed Text alignments in Messages.
+
+Ver 3.3.1 
+__________________________
+Bug Fix :
+Optimize user updates.
+
+Ver 3.3.0 
+__________________________
+Enhancement :
+- Performance improvements.
+
+Ver 3.2.2 
+__________________________
+Bug fix :
+- Coredata improvements.
+
+Ver 3.2.1 
+__________________________
+Bug Fix :
+- Fixed handling non-string type properties in user events
+
+Ver 3.2.0 
+__________________________
+Enhancement:
+- Introducing changes in MUV calculation to take care of cases where customer's SDK implementation is not optimised. This would bring down the unique visitors count.
+
+Ver 3.1.0 
+__________________________
+Feature :
+- Add user events from your app to Freshchat Timeline to give your agents context on user's journey and problems.
+Enhancement :
+- New device models added to track user devices.
 
 Ver 2.9.0 
 __________________________

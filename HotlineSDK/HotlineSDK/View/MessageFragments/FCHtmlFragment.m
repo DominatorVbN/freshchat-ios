@@ -11,6 +11,7 @@
 #import "FCTheme.h"
 #import "FCAttributedText.h"
 #import "FCUtilities.h"
+#import "FCConstants.h"
 
 @implementation FCHtmlFragment
 
@@ -28,10 +29,21 @@
                 [self setScrollEnabled:NO];
                 self.delegate = self;
                 self.font = font;
-                if([FCUtilities containsHTMLContent:fragment.content]) {
-                    self.attributedText = [FCUtilities getAttributedContentForString:fragment.content withFont:self.font];
+                NSString *content;
+                if ([fragment.type isEqualToString: [@(FRESHCHAT_QUICK_REPLY_FRAGMENT) stringValue]]) {
+                    NSDictionary *jsonDict = fragment.dictionaryValue;
+                    content = jsonDict[@"customReplyText"];
+                    if (!content || trimString(content).length == 0) {
+                        content = jsonDict[@"label"];
+                    }
+                }
+                if (!content) {
+                    content = fragment.content != nil ? fragment.content : @"";
+                }
+                if([FCUtilities containsHTMLContent:content]) {
+                    self.attributedText = [FCUtilities getAttributedContentForString:content withFont:self.font];
                 } else {
-                    self.text = fragment.content;
+                    self.text = content;
                 }
                 //Req. color values here, else color property will not apply for html content as attributedtext default color (black) will over-ride for message
                 if(type == AGENT){

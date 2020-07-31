@@ -16,6 +16,7 @@
 #import "FCUserUtil.h"
 #import "FCUsers.h"
 #import "FCReachabilityManager.h"
+#import "FCStringUtil.h"
 
 @implementation FCJWTUtilities
 
@@ -182,23 +183,28 @@
 
 + (void) performPendingJWTTasks {
     if(![[FCReachabilityManager sharedInstance] isReachable]) return;
-    
-    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] &&
-       [FCJWTUtilities getPendingJWTToken]) {
-        [[Freshchat sharedInstance] setUserWithIdToken : [FCJWTUtilities getPendingJWTToken]];
+    NSString *pendingJWT = [FCJWTUtilities getPendingJWTToken];
+    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] && (![FCStringUtil isEmptyString:pendingJWT])) {
+        [[Freshchat sharedInstance] setUserWithIdToken : pendingJWT];
         return;
     }
-    
-    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] &&
-       [FCJWTUtilities getPendingRestoreJWTToken]) {
-        [[Freshchat sharedInstance] restoreUserWithIdToken:[FCJWTUtilities getPendingRestoreJWTToken]];
+    NSString *pendingRestoreJWT = [FCJWTUtilities getPendingRestoreJWTToken];
+    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled] && (![FCStringUtil isEmptyString:pendingRestoreJWT])) {
+        [[Freshchat sharedInstance] restoreUserWithIdToken:pendingRestoreJWT];
         return;
     }
 }
 
 + (BOOL) isJWTTokenInvalid {
-    return ([[FCRemoteConfig sharedInstance] isUserAuthEnabled]
-            && !([[FCJWTAuthValidator sharedInstance] getDefaultJWTState] == TOKEN_VALID)) ? TRUE : FALSE;
+    return ([[FCRemoteConfig sharedInstance] isUserAuthEnabled] && ![self hasValidTokenState]) ? TRUE : FALSE;
+}
+
++ (BOOL) hasInvalidTokenState {
+    return ([[FCJWTAuthValidator sharedInstance] getDefaultJWTState] == TOKEN_INVALID);
+}
+
++ (BOOL) hasValidTokenState {
+    return ([[FCJWTAuthValidator sharedInstance] getDefaultJWTState] == TOKEN_VALID);
 }
 
 + (BOOL) compareAlias:(NSString *)str1 str2:(NSString *)str2 {

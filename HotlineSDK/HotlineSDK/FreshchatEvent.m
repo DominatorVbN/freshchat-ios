@@ -56,7 +56,18 @@
              @(FCEventScreenView)          : @"FCEventScreenView",
              @(FCEventMessageReceive)      : @"FCEventMessageReceive",
              @(FCEventNotificationReceive) : @"FCEventNotificationReceive",
-             @(FCEventIdTokenStatusChange) : @"FCEventIdTokenStatusChange"
+             @(FCEventIdTokenStatusChange) : @"FCEventIdTokenStatusChange",
+             @(FCEventDropDownSelect)      : @"FCEventDropDownSelect",
+             @(FCEventDropDownReceive)     : @"FCEventDropDownReceive",
+             @(FCEventCarouselShow)        : @"FCEventCarouselShow",
+             @(FCEventCarouselSelect)      : @"FCEventCarouselSelect",
+             @(FCEventCarouselView)        : @"FCEventCarouselView",
+             @(FCEventCalendarFindTimeSlotClick)   : @"FCEventCalendarFindTimeSlotClick",
+             @(FCEventCalendarInviteCancel)        : @"FCEventCalendarInviteCancel",
+             @(FCEventCalendarNoTimeSlotFound)     : @"FCEventCalendarNoTimeSlotFound",
+             @(FCEventCalendarBookingSuccess)      : @"FCEventCalendarBookingSuccess",
+             @(FCEventCalendarBookingRetry)        : @"FCEventCalendarBookingRetry",
+             @(FCEventCalendarBookingFailure)      : @"FCEventCalendarBookingFailure"
              };
 }
 

@@ -17,6 +17,9 @@
 #import "FCMessageServices.h"
 #import "FCLocalNotification.h"
 #import "FCCoreServices.h"
+#import "FCConstants.h"
+#import "FCUserDefaults.h"
+#import "FCEventsHelper.h"
 
 #define KONOTOR_IMG_COMPRESSION YES
 
@@ -364,69 +367,11 @@ static BOOL messageTimeDirty = YES;
     return newMessage;
 }
 
--(KonotorMessageData *) ReturnMessageDataFromManagedObject{
-    KonotorMessageData *message = [[KonotorMessageData alloc]init];
-    message.articleID = self.articleID;
-    message.messageType = [self messageType];
-    message.messageUserId = [self messageUserId];
-    message.messageId =[self messageAlias];
-    message.durationInSecs = [self durationInSecs];
-    message.read = [self read];
-    message.uploadStatus = [self uploadStatus];
-    message.createdMillis = [self createdMillis];
-    message.text = [self text];
-    message.messageRead = [self messageRead];
-    message.actionURL = [self actionURL];
-    message.actionLabel = [self actionLabel];
-    message.isMarketingMessage = [self isMarketingMessage];
-    message.marketingId = self.marketingId;
-    message.isWelcomeMessage = self.isWelcomeMessage;
-    
-    if([message.messageType isEqualToNumber:[NSNumber numberWithInt:2]]){
-        FCMessageBinaries *pMessageBinary = (FCMessageBinaries*)[self valueForKeyPath:@"hasMessageBinary"];
-        message.audioData = [pMessageBinary binaryAudio];
-    }
-    
-    if(([message.messageType isEqualToNumber:[NSNumber numberWithInt:KonotorMessageTypePicture]])||([message.messageType isEqualToNumber:[NSNumber numberWithInt:KonotorMessageTypePictureV2]])){
-        message.picHeight = [self picHeight];
-        message.picWidth = [self picWidth];
-        message.picThumbHeight = [self picThumbHeight];
-        message.picThumbWidth = [self picThumbWidth];
-        
-        if([self picUrl])  message.picUrl = [self picUrl];
-        
-        if([self picThumbUrl]) message.picThumbUrl = [self picThumbUrl];
-        
-        if([self picCaption])message.picCaption = [self picCaption];
-        
-        FCMessageBinaries *pMessageBinary = (FCMessageBinaries*)[self valueForKeyPath:@"hasMessageBinary"];
-        if(pMessageBinary){
-            message.picData = [pMessageBinary binaryImage];
-            message.picThumbData = [pMessageBinary binaryThumbnail];
-        }
-
-    }
-    return message;
-}
-
-
 - (BOOL) isMarketingMessage{
     if(([[self marketingId] intValue]<=0)||(![self marketingId]))
         return NO;
     else
         return YES;
-}
-
-+(NSArray *)getAllMesssageForChannel:(FCChannels *)channel{
-    NSMutableArray *messages = [[NSMutableArray alloc]init];
-    NSArray *matches = channel.messages.allObjects;
-    for (int i=0; i<matches.count; i++) {
-        KonotorMessageData *message = [matches[i] ReturnMessageDataFromManagedObject];
-        if (message) {
-            [messages addObject:message];
-        }        
-    }
-    return messages;
 }
 
 +(FCMessageUtil *)getWelcomeMessageForChannel:(FCChannels *)channel{
@@ -484,6 +429,101 @@ static BOOL messageTimeDirty = YES;
 +(long) daysSinceLastMessageInContext:(NSManagedObjectContext *)context{
     long long lastMessageTime = [FCMessageUtil lastMessageTimeInContext:context];
     return ([[NSDate date] timeIntervalSince1970] - (lastMessageTime/1000))/86400;
+}
+
+
++(BOOL)hasReplyFragmentsIn:(NSString*)data {
+    NSArray<NSDictionary *>* fragments = [self getReplyFragmentsIn:data];
+    if (fragments) {
+        NSSet<NSNumber *> *validFragments = [[NSSet alloc] initWithArray:@[@(FRESHCHAT_TEMPLATE_FRAGMENT), @(FRESHCHAT_COLLECTION_FRAGMENT)]];
+        for(int i=0; i< fragments.count; i++) {
+            NSDictionary *fragmentDictionary = fragments[i];
+            NSNumber *fragmentType = fragmentDictionary[@"fragmentType"];
+            if(fragmentType && [validFragments containsObject:fragmentType]) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
++ (NSDictionary *) getInternalMetaForData : (NSString *)data {
+    if(data){
+        NSError *error;
+        NSDictionary *metaDict = [self objectFromStringData:data withError:error];
+        if (!error) {
+            return metaDict;
+        }
+    }
+    return nil;
+}
+
++(NSArray<NSDictionary *> *)getReplyFragmentsIn:(NSString*)data {
+    if (data) {
+        NSError *error;
+        NSArray<NSDictionary *> *fragments =[self objectFromStringData:data withError:error];
+        if (!error) {
+            return fragments;
+        }
+    }
+    return nil;
+}
+
++ (id) objectFromStringData : (NSString *)data withError:(NSError *)error {
+    NSData *extraJSONData = [data dataUsingEncoding:NSUTF8StringEncoding];
+    return [NSJSONSerialization JSONObjectWithData:extraJSONData
+                                           options:0
+                                             error:&error];
+}
+
++ (void) cancelCalendarInviteForMsg : (FCMessageData *)message andConv :(FCConversations *) conv {
+    NSDictionary *info = @{@"hasActiveCalInvite" : @NO, @"internalMeta" :[FCStringUtil isNotEmptyString: message.internalMeta] ? message.internalMeta : @""};
+    NSDictionary *jsonDict = [FCMessageUtil getInternalMetaForData:message.internalMeta];
+    
+    NSString *inviteId = [jsonDict valueForKeyPath:@"calendarMessageMeta.calendarInviteId"];
+    if([FCStringUtil isNotEmptyString:inviteId]){
+        
+        FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventCalendarInviteCancel
+                                                                    withParams:@{@(FCPropertyInviteId) : inviteId}];
+        [FCEventsHelper postNotificationForEvent:outEvent];
+        
+        [FCMessages updateCalInviteStatusForId:[jsonDict valueForKeyPath:@"calendarMessageMeta.calendarInviteId"] forChannel:conv.belongsToChannel completionHandler:^{
+            [FCMessageHelper uploadNewMsgWithImageData:nil textFeed:@"Cancelled the invite" messageType:FC_CALENDAR_CANCEL_MSG withInfo:info onConversation:conv andChannel:conv.belongsToChannel];
+        }];
+    }
+}
+
++ (void) sendCalendarInviteForMsg : (FCMessageData *)message withSlotInfo :(NSDictionary*)slotInfo andConv :(FCConversations *) conv {
+    NSDictionary *info = [FCMessageUtil getInternalMetaForData:message.internalMeta];
+    if ([info count] > 0){
+        //update active status flag
+        [FCMessages updateCalInviteStatusForId:[info valueForKeyPath:@"calendarMessageMeta.calendarInviteId"] forChannel:conv.belongsToChannel completionHandler:^{
+            NSMutableDictionary *jsonDict = [[NSMutableDictionary alloc] initWithDictionary:info];
+                
+                NSMutableDictionary *infoDict = [[NSMutableDictionary alloc] init];
+                NSMutableDictionary *extraJsonInfo = [[NSMutableDictionary alloc]init];
+                extraJsonInfo[@"endMillis"] = [slotInfo valueForKey:@"endMillis"];
+                extraJsonInfo[@"eventProviderType"] = @1;
+                extraJsonInfo[@"fragmentType"] = @7;
+                extraJsonInfo[@"isPendingCreation"] = @"true";
+                extraJsonInfo[@"startMillis"] = [slotInfo valueForKey:@"startMillis"];
+                extraJsonInfo[@"userTimeZone"] = [slotInfo valueForKey:@"userTimeZone"];
+                infoDict[@"extraJSON"] = extraJsonInfo;
+                
+                NSMutableDictionary *calendarMeta = [jsonDict mutableCopy];
+                
+                NSMutableDictionary *innerDict = [jsonDict[@"calendarMessageMeta"] mutableCopy];
+                innerDict[@"calendarBookingEmail"] = [FCUserDefaults getStringForKey:FRESHCHAT_DEFAULTS_CALENDAR_INVITE_EMAILID];
+                calendarMeta[@"calendarMessageMeta"] = innerDict;
+                
+                NSMutableDictionary *internalMeta = [[NSMutableDictionary alloc] init];
+                internalMeta[@"internalMeta"] = [calendarMeta mutableCopy];
+                infoDict[@"internalMeta"] = [FCMessages getJsonStringObjForMessage:internalMeta withKey:@"internalMeta"];// convert to string
+            
+                [FCMessageHelper uploadNewMsgWithImageData:nil textFeed:@"" messageType:@1 withInfo:infoDict onConversation:conv andChannel:conv.belongsToChannel];
+        }];
+    }
 }
 
 @end

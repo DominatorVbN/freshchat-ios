@@ -8,6 +8,9 @@
 
 #import "FCImageFragment.h"
 #import "FCImagePreviewController.h"
+#import "FCAnimatedImage.h"
+#import "FDImageView.h"
+#import "FCUtilities.h"
 
 #define DEFAULT_THUMBNAIL_HEIGHT 225
 #define DEFAULT_THUMBNAIL_WIDTH 225
@@ -30,20 +33,23 @@
             NSData *extraJSONData = [fragment.extraJSON dataUsingEncoding:NSUTF8StringEncoding];
             NSDictionary *extraJSONDict = [NSJSONSerialization JSONObjectWithData:extraJSONData options:0 error:nil];
             __block BOOL imageToBeDownloaded = true;
-            if ( !fragment.binaryData1 || !fragment.binaryData2) { //Data needed to be downloaded
+            int thumbnailHeight = DEFAULT_THUMBNAIL_HEIGHT;
+            int thumbnailWidth =  DEFAULT_THUMBNAIL_WIDTH ;
+            self.imgFrame = CGRectMake(0, 0, thumbnailWidth, thumbnailHeight);
+            BOOL isThumbnail = extraJSONDict[@"thumbnail"] != nil;
+            if ( (!fragment.binaryData1 && !isThumbnail) || (!fragment.binaryData2 && isThumbnail)) { //Data needed to be downloaded
                 [fragment storeImageDataOfMessage:message withCompletion:^{
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        UIImage *sampleImage = [UIImage imageWithData:fragment.binaryData2];
-                        self.image = sampleImage;
                         imageToBeDownloaded = false;
+                        [self setImageFromFragmentData:fragment ifAvailable:imageToBeDownloaded andIsThumbnail:isThumbnail];
                     });
                 }];
             } else {
                 imageToBeDownloaded = false;
             }
-            int thumbnailHeight = DEFAULT_THUMBNAIL_HEIGHT;
-            int thumbnailWidth =  DEFAULT_THUMBNAIL_WIDTH ;
-            if(extraJSONDict[@"thumbnail"]) {
+            [self setImageFromFragmentData:fragment ifAvailable:imageToBeDownloaded andIsThumbnail:isThumbnail];
+            
+            if(isThumbnail) {
                 NSDictionary *thumbnailDict = extraJSONDict[@"thumbnail"];
                 
                 if(thumbnailDict[@"height"] && thumbnailDict[@"width"]) {
@@ -59,30 +65,29 @@
                     }
                     if([thumbnailDict[@"width"] intValue] <= MIN_THUMBNAIL_WIDTH) {
                         thumbnailWidth = MIN_THUMBNAIL_WIDTH;
-                    }                    
-                    
+                    }
+                    self.imgFrame = CGRectMake(0, 0, thumbnailWidth, thumbnailHeight);
                 }
-                if (imageToBeDownloaded) {
-                    [self setImage:[[FCTheme sharedInstance ] getImageWithKey:IMAGE_PLACEHOLDER]];
-                    //NSLog(@"FRAGMENT::Setting the PLACEHOLDER::::");
-                } else {
-                    [self setImage:[UIImage imageWithData:fragment.binaryData2]];
-                    //NSLog(@"FRAGMENT:: Setting the thumbnail image::::");
-                }
-                self.imgFrame = CGRectMake(0, 0, thumbnailWidth, thumbnailHeight);
-            } else {
-                if (imageToBeDownloaded) {
-                    [self setImage:[[FCTheme sharedInstance ] getImageWithKey:IMAGE_PLACEHOLDER]];
-                } else {
-                    //NSLog(@"FRAGMENT::Setting the original image::::");
-                    [self setImage:[UIImage imageWithData:fragment.binaryData1]]; //Set the original image
-                }
-                self.imgFrame = CGRectMake(0, 0, thumbnailWidth, thumbnailHeight);
             }
             [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self  action:@selector(showImagePreview:)]];
         }
         return self;
     }
+
+- (void) setImageFromFragmentData : (FragmentData*) data ifAvailable :(BOOL)isAvail andIsThumbnail: (BOOL) isThumbnail  {
+    if (isAvail) {
+        [self setImage:[[FCTheme sharedInstance ] getImageWithKey:IMAGE_PLACEHOLDER]];
+        //NSLog(@"FRAGMENT::Setting the PLACEHOLDER::::");
+    } else {
+        NSData * imageData = isThumbnail ? data.binaryData2 : data.binaryData1;
+        if ([[FCUtilities contentTypeForImageData:imageData] isEqualToString:@"image/gif"] || [data.contentType isEqualToString: @"image/gif"]) {
+            self.animatedImage = [FCAnimatedImage animatedImageWithGIFData:data.binaryData1];
+        }
+        else{
+            [self setImage:[UIImage imageWithData: imageData]];
+        }
+    }
+}
 
     -(void) showImagePreview:(id) sender {
         if (self.delegate != nil) {

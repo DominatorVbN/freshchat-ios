@@ -20,10 +20,19 @@
 #import "FCFileFragment.h"
 #import "FCDateUtil.h"
 #import "FCUnsupportedFragment.h"
+#import "FCCarouselCard.h"
+#import "FCConstants.h"
+#import "FCCalendarInvitationFragment.h"
+
+@interface  FCUserMessageCell()
+
+@property (nonatomic, assign) NSInteger maxContentWidth;
+
+@end
 
 @implementation FCUserMessageCell
 
-@synthesize messageSentTimeLabel,contentEncloser,maxcontentWidth,customFontName,
+@synthesize messageSentTimeLabel,contentEncloser,maxContentWidth,customFontName,
             showsTimeStamp,showsUploadStatus,sentImage,sendingImage,
             chatBubbleImageView,uploadStatusImageView,
             senderNameLabel,messageTextFont;
@@ -83,6 +92,7 @@
 - (void) drawMessageViewForMessage:(FCMessageData*)currentMessage parentView:(UIView*)parentView {
     
     [self clearAllSubviews];
+    maxContentWidth = (NSInteger) self.messageViewBounds.size.width - ((self.messageViewBounds.size.width/100)*20);
     contentEncloser = [[UIView alloc] init];
     contentEncloser.translatesAutoresizingMaskIntoConstraints = NO;
     [contentEncloser setLayoutMargins:UIEdgeInsetsMake(0,0,0,0)];
@@ -117,12 +127,15 @@
     [self.contentView addSubview:contentEncloser];
     
     
-    
+    [self.chatBubbleImageView setHidden:NO];
     for(int i=0; i<currentMessage.fragments.count; i++) {
         FragmentData *fragment = currentMessage.fragments[i];
-        if ([fragment.type isEqualToString:@"1"]) {
+        if ([fragment.type isEqualToString:@"1"] || [fragment.type isEqualToString: [@(FRESHCHAT_QUICK_REPLY_FRAGMENT) stringValue]]) {
             //HTML
             FCHtmlFragment *htmlFragment = [[FCHtmlFragment alloc]initFragment:fragment withFont:[[FCTheme sharedInstance] userMessageFont] andType:2];
+            if([currentMessage.messageType isEqualToNumber:FC_CALENDAR_CANCEL_MSG]){
+                htmlFragment.attributedText = [self appendImage:[[FCTheme sharedInstance] getImageWithKey:IMAGE_CALENDAR_CANCELLED_ICON] withText: htmlFragment.attributedText];
+            }
             htmlFragment.mcDelegate = self.delegate;
             [views setObject:htmlFragment forKey:[@"text_" stringByAppendingFormat:@"%d",i]];
             [contentEncloser addSubview:htmlFragment];
@@ -143,7 +156,21 @@
             fileFragment.delegate = self.delegate;
             [fragmensViewArr addObject:[@"button_" stringByAppendingFormat:@"%d",i]];
             //NSLog(@"Button");
-        } else if(![fragment isQuickReplyFragment]) {
+        }else if([fragment.type isEqualToString:@"7"]) {
+            //calender confirmation fragment
+            FCCalendarInvitationFragment *invitationFragment = [[FCCalendarInvitationFragment alloc] initWithFragment:fragment uploadStatus: [currentMessage uploadStatus].integerValue==2 andInternalMeta:currentMessage.internalMeta];
+            [views setObject:invitationFragment forKey:@"calendarInvitationView"];
+            [contentEncloser addSubview:invitationFragment];
+            [fragmensViewArr addObject:@"calendarInvitationView"];
+            [self.chatBubbleImageView setHidden:YES];
+        } else if ([fragment.type integerValue] == FRESHCHAT_TEMPLATE_FRAGMENT) {
+            TemplateFragmentData *templateFragment = [[TemplateFragmentData alloc]initWith:fragment.dictionaryValue];
+            FCCarouselCard *carouselFragment = [[FCCarouselCard alloc] initWithTemplateFragmentData:templateFragment isCardSelected:YES inReplyTo:currentMessage.messageId withDelegate:nil];
+            [views setObject:carouselFragment forKey:[@"carousel_" stringByAppendingFormat:@"%d",i]];
+            [contentEncloser addSubview:carouselFragment];
+            [fragmensViewArr addObject:[@"carousel_" stringByAppendingFormat:@"%d",i]];            
+            [self.chatBubbleImageView setHidden:YES];
+        } else {
             //For Unknown fragment
             FCUnsupportedFragment *unknownFragment = [[FCUnsupportedFragment alloc] initWithFragment:fragment];
             [views setObject:unknownFragment forKey:[@"button_" stringByAppendingFormat:@"%d",i]];
@@ -154,7 +181,7 @@
     
     //All details are in contentview but no constrains set
     
-    [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"H:[contentEncloser(<=%ld)]-8-|",(long)self.maxcontentWidth] options:0 metrics:nil views: views]];
+    [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"H:[contentEncloser(<=%ld)]-8-|",(long)self.maxContentWidth] options:0 metrics:nil views: views]];
     [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-2-[contentEncloser(>=50)]-2-|" options:0 metrics:nil views:views]];
     //Constraints for profileview and contentEncloser are done.
     
@@ -181,13 +208,22 @@
                                                                                  constant:0];
             [contentEncloser addConstraint:centerConstraint];
             
-            [veriticalConstraint appendString:[NSString stringWithFormat:@"-(%@)-[%@(<=%@)]",[self isTopFragment:fragmensViewArr currentIndex:i] ? topPadding : internalPadding,str,imageHeight]];
+            [veriticalConstraint appendString:[NSString stringWithFormat:@"-(%@)-[%@(%@@999)]",[self isTopFragment:fragmensViewArr currentIndex:i] ? topPadding : internalPadding,str,imageHeight]];
         } else if([str containsString:@"text_"]) {
-            NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(<=%ld)]-%@-|",leftPadding,str,(long)self.maxcontentWidth,rightPadding];
+            NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(<=%ld)]-%@-|",leftPadding,str,(long)self.maxContentWidth,rightPadding];
             [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
             [veriticalConstraint appendString:[NSString stringWithFormat:@"-(%@)-[%@(>=0)]",[self isTopFragment:fragmensViewArr currentIndex:i] ? topPadding : internalPadding,str]];
         } else if([str containsString:@"button_"]) {
             NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(>=75)]-(>=%@)-|",leftPadding,str,rightPadding];
+            [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
+            [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[%@]",[self isTopFragment:fragmensViewArr currentIndex:i]? topPadding : internalPadding, str]];
+        }else if([str containsString:@"calendarInvitationView"]) {
+            int width = [FCUtilities calendarMsgWidthInBounds:self.messageViewBounds] - ([rightPadding floatValue] + [leftPadding floatValue]);
+            NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(%d)]-(>=%@)-|",leftPadding,str,width,rightPadding];
+            [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
+            [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[calendarInvitationView]",topPadding]];
+        } else if([str containsString:@"carousel_"]) {
+            NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(212@999)]-(>=%@)-|",leftPadding,str,rightPadding];
             [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
             [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[%@]",[self isTopFragment:fragmensViewArr currentIndex:i]? topPadding : internalPadding, str]];
         }
@@ -205,6 +241,27 @@
         [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : veriticalConstraint options:0 metrics:nil views:views]];
     }
     self.tag=[currentMessage.messageId hash];
+}
+
+-(NSAttributedString *) appendImage :(UIImage *) image withText :(NSAttributedString *) content {
+    NSTextAttachment *imageAttachment = [[NSTextAttachment alloc] init];
+    imageAttachment.image = image;
+    CGFloat aspect = image.size.width / image.size.height;
+    CGSize newSize;
+    CGFloat maxDim = [[FCTheme sharedInstance] userMessageFont].pointSize;
+    if (image.size.width > image.size.height) {
+        newSize = CGSizeMake(maxDim, [[FCTheme sharedInstance] userMessageFont].pointSize / aspect);
+    } else {
+        newSize = CGSizeMake(maxDim * aspect, maxDim);
+    }
+    CGFloat imageOffsetY = -2.0;
+    imageAttachment.bounds = CGRectMake(0, imageOffsetY, newSize.width, newSize.height);
+    NSAttributedString *attachmentString = [NSAttributedString attributedStringWithAttachment:imageAttachment];
+    NSMutableAttributedString *completeText = [[NSMutableAttributedString alloc] initWithString:@""];
+    [completeText appendAttributedString:attachmentString];
+    [completeText appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];// To add extra space
+    [completeText appendAttributedString:content];
+    return  completeText;
 }
 
 -(BOOL) isTopFragment :(NSArray *)array currentIndex:(int)currentIndex {

@@ -16,24 +16,29 @@
 #import "FCLocalNotification.h"
 #import "FCUtilities.h"
 #import "FCFooterView.h"
+#import "FCAnimatedImageView.h"
+#import "FCAnimatedImage.h"
 
 @interface FCAttachmentImageController (){
     int footerViewHeight;
 }
 
 @property (nonatomic, strong) UIImage *image;
-@property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, strong) NSData *imageData;
+@property (nonatomic, strong) FCAnimatedImageView *imageView;
 @property (nonatomic, strong) FCInputToolbarView *inputToolbar;
 @property (nonatomic) CGFloat keyboardHeight;
 @property (nonatomic) CGRect viewFrame;
+@property (nonatomic, strong) UINavigationBar *navBar;
+@property (nonatomic) BOOL prefersLargeTitles;
 @end
 
 @implementation FCAttachmentImageController
 
--(instancetype)initWithImage:(UIImage *)image{
+-(instancetype)initWithImageData:(NSData *)imageData{
     self = [super init];
     if (self) {
-        self.image = image;
+        self.imageData = imageData;
     }
     return self;
 }
@@ -43,7 +48,13 @@
     [self setNavigationItem];
     self.navigationItem.title = HLLocalizedString(LOC_PIC_MSG_ATTACHMENT_TITLE_TEXT);
     self.view.backgroundColor = [UIColor whiteColor];
-    self.imageView = [[UIImageView alloc]initWithImage:self.image];
+    self.imageView =[[FCAnimatedImageView alloc]initWithImage:[UIImage imageWithData:self.imageData]];
+    
+    if ([[FCUtilities contentTypeForImageData:self.imageData] isEqualToString:@"image/gif"]){
+        FCAnimatedImage *animImage = [FCAnimatedImage animatedImageWithGIFData:self.imageData];
+        self.imageView.animatedImage = animImage;
+    }
+
     self.imageView.translatesAutoresizingMaskIntoConstraints = NO;
     self.imageView.contentMode = UIViewContentModeScaleAspectFit;
     self.keyboardHeight = 0;
@@ -85,6 +96,22 @@
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:|-10-[imageView(>=0)]-10-[inputToolbar(==%d)][footerView(%d)]-0-|",(int)messageHeight + 10, footerViewHeight]  options:0 metrics:nil views:views]];
     
     [self localNotificationSubscription];
+    self.navBar = [[UINavigationBar alloc]init];
+    
+    if (@available(iOS 11.0, *)) {
+        self.prefersLargeTitles = self.navigationController.navigationBar.prefersLargeTitles;
+    }
+    
+    if (@available(iOS 13.0, *)) {
+        self.navBar.standardAppearance = self.navigationController.navigationBar.standardAppearance;
+        self.navBar.compactAppearance = self.navigationController.navigationBar.compactAppearance;
+        self.navBar.scrollEdgeAppearance = self.navigationController.navigationBar.scrollEdgeAppearance;
+    } else {
+        self.navBar.backgroundColor = self.navigationController.navigationBar.backgroundColor;
+        self.navBar.barTintColor = self.navigationController.navigationBar.barTintColor;
+        self.navBar.titleTextAttributes = self.navigationController.navigationBar.titleTextAttributes;
+    }
+    [FCUtilities setNavigationPropertyForBar: self.navigationController.navigationBar];
 }
 
 -(void)inputToolbar:(FCInputToolbarView *)toolbar attachmentButtonPressed:(id)sender {
@@ -184,7 +211,7 @@
         if (([toSend isEqualToString:@""]) || ([toSend isEqualToString:HLLocalizedString(LOC_MESSAGE_PLACEHOLDER_TEXT)])) {
             toSend = @"";
         }
-        [self.delegate attachmentController:self didFinishSelectingImage:self.image withCaption:toSend];
+        [self.delegate attachmentController:self didFinishImgWithCaption:toSend];
     }
 }
 

@@ -23,7 +23,7 @@
 @property (nonatomic, strong) NSPersistentStoreCoordinator *psc;
 @property (nonatomic, strong) NSPersistentStore *persistentStore;
 @property (nonatomic, strong) NSManagedObjectModel *objectModel;
-@property (nonatomic, strong) FCMemLogger *logger;
+@property (atomic, strong) FCMemLogger *logger;
 
 @end
 
@@ -106,6 +106,12 @@
 -(NSManagedObjectModel *)loadKonotorDataModel{
     NSString *bundlePath = [[NSBundle bundleForClass:[self class]] pathForResource:@"FreshchatModels" ofType:@"bundle"];
     NSURL *modelURL = [[NSBundle bundleWithPath:bundlePath] URLForResource:@"FreshchatModel" withExtension:@"momd"];
+    //getting Exact model file url to avoid warning
+    NSDictionary *versionDict = [NSDictionary dictionaryWithContentsOfURL: [modelURL URLByAppendingPathComponent:@"VersionInfo.plist"]];
+    NSString  *modelVal = [versionDict objectForKey: @"NSManagedObjectModel_CurrentVersionName"];
+    if ([FCStringUtil isNotEmptyString: modelVal]){
+        modelURL = [modelURL URLByAppendingPathComponent:[modelVal stringByAppendingFormat:@".mom"]];
+    }
     NSManagedObjectModel *obj =  [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
     return obj;
 }
@@ -139,9 +145,10 @@
 
 -(void)preparePSC{
     NSURL *SQLiteURL = [self konotorSQLiteURL];
-    BOOL requiresMigration = [self isMigrationRequired:self.psc storeURL:SQLiteURL];
+    
     self.psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self loadKonotorDataModel]];
     
+    BOOL requiresMigration = [self isMigrationRequired:self.psc storeURL:SQLiteURL];
     self.persistentStore = [self linkPSC:self.psc URL:SQLiteURL mode:[self configWithJournalWALMode]
                                              errorInfo:@{@"FAILURE_POINT" : @"Link PSC with Journal-WAL mode failed"}];
     

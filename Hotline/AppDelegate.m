@@ -12,7 +12,7 @@
 #import <Crashlytics/Crashlytics.h>
 #import "InAppBrowser.h"
 #import "Hotline_Demo-Swift.h"
-
+#import <UserNotifications/UserNotifications.h>
 
 @interface AppDelegate ()
 
@@ -174,27 +174,14 @@
     
     FreshchatConfig *config = [[FreshchatConfig alloc]initWithAppID:HOTLINE_APP_ID andAppKey:HOTLINE_APP_KEY];
     config.domain = HOTLINE_DOMAIN;
-    //config.voiceMessagingEnabled = NO;
-//       config.appID = @"7baba8ff-d18e-4e20-a096-3ea5be53ba67";
-//       config.appKey = @"72645c38-b738-491e-94b4-0eb0b9e98e2f";
-//       config.domain = @"mobihelp.ngrok.io";
-//    
-//      config.domain = @"satheeshjm.pagekite.me";
-//      config.appID = @"0e611e03-572a-4c49-82a9-e63ae6a3758e";
-//      config.appKey = @"be346b63-59d7-4cbc-9a47-f3a01e35f093";
-    
-//    config.domain = @"mr.white.konotor.com";
-//    config.appID = @"92124c8f-bd1a-4362-a390-72e76b8c55644-f128-4389-888f-716b3f628f67ef7125c";
-//    config.appKey = @"c4cdef27-ff3d-4d01-a0af-7e3c4cde4fc6";
 
     config.teamMemberInfoVisible = YES;
-    //config.pictureMessagingEnabled = YES;
     config.cameraCaptureEnabled = YES;
     config.responseExpectationVisible = YES;
+    config.eventsUploadEnabled = YES;
     if(![FreshchatUser sharedInstance].firstName){
         //[[Freshchat sharedInstance] setUser:[AppDelegate createFreshchatUser]];
     }
-    config.teamMemberInfoVisible = FALSE;
     config.cameraCaptureEnabled = YES;
     config.gallerySelectionEnabled = YES;
     NSLog(@"Current User :Name  %@ %@", [FreshchatUser sharedInstance].firstName,[FreshchatUser sharedInstance].lastName);
@@ -205,9 +192,6 @@
         //[[Freshchat sharedInstance] setUser:[AppDelegate createFreshchatUser]];
     //}
     
-    
-    
-
     [[Freshchat sharedInstance]unreadCountWithCompletion:^(NSInteger count) {
         NSLog(@"Unread count (Async) : %d", (int)count);
     }];
@@ -226,12 +210,15 @@
 }
 
 -(void)registerAppForNotifications {
-    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
-        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
-        [[UIApplication sharedApplication] registerForRemoteNotifications];
+    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"10.0")) {
+        UNUserNotificationCenter *notifcenter = [UNUserNotificationCenter currentNotificationCenter];
+        [notifcenter requestAuthorizationWithOptions:(UNAuthorizationOptionBadge | UNAuthorizationOptionAlert |UNAuthorizationOptionSound) completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            NSLog(@"Succes %d", granted);
+        }];
     }else{
-        [[UIApplication sharedApplication] registerForRemoteNotificationTypes: (UIRemoteNotificationTypeNewsstandContentAvailability| UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
     }
+    [[UIApplication sharedApplication] registerForRemoteNotifications];
 }
 
 - (void)application:(UIApplication *)app didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)devToken {

@@ -17,6 +17,7 @@
 #import "FCResponseInfo.h"
 #import "FCAttributedText.h"
 #import "FCBarButtonItem.h"
+#import "FCAnimatedImageView.h"
 
 #define FRESHCHAT_USER_RESTORE_STATE @"com.freshworks.freshchat_user_restore_state"
 
@@ -30,10 +31,14 @@
 
 @interface FCUtilities : NSObject
 
+
++(UIWindow*)getAppKeyWindow;
+
 +(NSString *)currentUserAlias;
 +(void) removeUUIDWithAppID:(NSString *)appID;
 +(void) removeUUID;
 +(void) resetAlias;
++ (BOOL) isSDKInitialized;
 +(NSString *)getUserAliasWithCreate;
 +(NSString *)generateUserAlias;
 +(void) resetDataAndRestoreWithExternalID: (NSString *) externalID withRestoreID: (NSString *)restoreID withCompletion:(void (^)())completion;
@@ -65,7 +70,7 @@
 + (void)initiatePendingTasks;
 + (BOOL)hasInitConfig;
 + (void)unreadCountInternalHandler:(void (^)(NSInteger count))completion;
-+ (void) showAlertViewWithTitle : (NSString *)title message : (NSString *)message andCancelText : (NSString *) cancelText;
++ (void) showAlertViewWithTitle : (NSString *)title message : (NSString *)message andCancelText : (NSString *) cancelText inController:(UIViewController*) viewController;
 + (BOOL) containsHTMLContent: (NSString *)content;
 + (BOOL) containsString: (NSString *)original andTarget:(NSString *)target;
 + (BOOL) canMakeSessionCall;
@@ -96,7 +101,7 @@
 + (void) addFlagToDisableUserPropUpdate;
 + (void) removeFlagToDisableUserPropUpdate;
 + (BOOL) canUpdateUserProperties;
-+ (BOOL) handleLink : (NSURL *)url faqOptions: (FAQOptions *)faqOptions navigationController:(UIViewController *) navController handleFreshchatLinks:(BOOL) handleFreshchatLinks;
++ (BOOL) handleLink : (NSURL *)url faqOptions: (FAQOptions *)faqOptions navigationController:(UIViewController *) navController handleFreshchatLinks:(BOOL) handleFreshchatLinks postOutboundEvent:(BOOL) postOutboundEvent;
 + (BOOL) canMakeConversationFetchCall;
 + (void) updateCurrentTimeForKey : (NSString *) keyName;
 + (NSString *) getSDKThemeName;
@@ -105,6 +110,25 @@
 + (NSArray *) getReopenedMsgTypes;
 + (NSArray *) getResolvedReopenedMsgTypes;
 
++ (BOOL) isTodaySameAsDate : (NSDate *) date;
+
++ (NSString *)contentTypeForImageData:(NSData *)data;
++ (float) calendarMsgWidthInBounds : (CGRect)bound;
++ (NSString *) intervalStrFromMillis : (long)fromMillis toMillis: (long) toMillis;
++ (NSString *) getDurationFromSecs : (int) interval ;
+
++(void) loadImageFromURL:(NSString  * _Nonnull)imageURL withCache:(void (^ _Nullable)())cacheBlock withError:(void (^ _Nullable)())errorBlock withCompletion:(void (^_Nullable)(UIImage * _Nonnull))completionBlock;
++(void) loadImageWithUrl : (NSString *) url forView : (UIImageView *) imgView andErrorImage:(UIImage *)errorImage;
++ (void) setAgentImage : (FCAnimatedImageView *)imageView forAlias : (NSString *)alias;
+
++ (void) setNavigationPropertyForBar:(UINavigationBar *)bar;
++ (void) replaceNavigationPropertyForBar:(UINavigationBar *)bar withCurrentBar:(UINavigationBar *)originalbar;
+@end
+
+
+@interface NSString (UtilMethods)
+-(BOOL) isTemplateFragment;
+-(NSDictionary *)dictionaryValue;
 @end
 
 #endif

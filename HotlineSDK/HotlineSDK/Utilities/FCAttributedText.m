@@ -42,11 +42,17 @@
 -(NSMutableAttributedString *) addAttributedString:(NSString *)string withFont:(UIFont*) font   {
     NSString *stringCheck = (string == nil) ? @"" : string;
     NSString *HTML = [NSString stringWithFormat:@"<span style=\"font-family:'%@'; font-size:%i\">%@</span>",font.fontName,(int)font.pointSize,stringCheck];
+    HTML = [HTML stringByReplacingOccurrencesOfString:@"\n" withString:@"<br>" options:NSLiteralSearch range:NSMakeRange(0, stringCheck.length)];
+    
     NSMutableAttributedString *attributedTitleString = [[NSMutableAttributedString alloc] initWithData:[HTML dataUsingEncoding:NSUnicodeStringEncoding]
                                                                                                options:@{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType }
                                                                                     documentAttributes:nil error:nil];
-    NSRange range = NSMakeRange(0, attributedTitleString.length);
-    [attributedTitleString.mutableString replaceOccurrencesOfString:@"\n" withString:@"" options:NSCaseInsensitiveSearch range:range];
+    if (attributedTitleString && attributedTitleString.length > 0) {
+        NSAttributedString *last = [attributedTitleString attributedSubstringFromRange:NSMakeRange(attributedTitleString.length - 1, 1)];
+        if ([[last string] isEqualToString:@"\n"]) {
+            attributedTitleString = [[attributedTitleString attributedSubstringFromRange:NSMakeRange(0, attributedTitleString.length - 1)] mutableCopy];
+        }
+    }
     self.data[string] = attributedTitleString;
     return attributedTitleString;
 }

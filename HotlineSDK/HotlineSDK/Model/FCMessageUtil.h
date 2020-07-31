@@ -14,6 +14,7 @@
 #import <ImageIO/ImageIO.h>
 #import <UIKit/UIImage.h>
 #import "FCMessageHelper.h"
+#import "FCMessageData.h"
 
 #define MESSAGE_NOT_UPLOADED 0
 #define MESSAGE_UPLOADING 1
@@ -89,10 +90,14 @@ NS_ASSUME_NONNULL_BEGIN
 +(BOOL) setBinaryImage:(NSData *)imageData forMessageId:(NSString *)messageId;
 +(BOOL) setBinaryImageThumbnail:(NSData *)imageData forMessageId:(NSString *)messageId;
 -(BOOL) isMarketingMessage;
-+(NSArray *)getAllMesssageForChannel:(FCChannels *)channel;
 +(bool) hasUserMessageInContext:(NSManagedObjectContext *)context;
 +(long long) lastMessageTimeInContext:(NSManagedObjectContext *)context;
 +(long) daysSinceLastMessageInContext:(NSManagedObjectContext *)context;
++(BOOL)hasReplyFragmentsIn:(NSString*)data;
++(NSArray<NSDictionary *> *)getReplyFragmentsIn:(NSString*)data;
++ (NSDictionary *) getInternalMetaForData : (NSString *)data;
++ (void) cancelCalendarInviteForMsg : (FCMessageData *)message andConv :(FCConversations *) conv;
++ (void) sendCalendarInviteForMsg : (FCMessageData *)message withSlotInfo :(NSDictionary*)slotInfo andConv :(FCConversations *) conv;
 
 @end
 

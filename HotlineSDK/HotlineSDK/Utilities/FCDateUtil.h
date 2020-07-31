@@ -7,11 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FCCalendarModel.h"
 
 @interface FCDateUtil : NSObject
 
 +(NSString*) stringRepresentationForDate:(NSDate*) dateToDisplay;
 +(NSString*) stringRepresentationForDate:(NSDate*) dateToDisplay includeTimeForCurrentYear : (BOOL)includeTimeForCurrentYear;
 +(NSNumber *) maxDateOfNumber:(NSNumber *) lastUpdatedTime andStr:(NSString*) lastUpdatedStr;
-
++(NSMutableArray<FCCalendarDay*> *) getSlotsFromCalendar:(FCCalendarModel*) calendarModel;
++(NSMutableArray<FCCalendarDay*> *) getSlotsFromCalendar:(FCCalendarModel*) calendarModel andTimeZoneIdentifier:(NSString*) timeZoneID;
++(NSString *)getDateStringWithFormat:(NSString *)format forDate:(NSDate *)date;
++(NSString *)getDetailedDateStringWithFormat:(NSString *)format forDate:(NSDate *)date;
 @end

@@ -52,6 +52,12 @@
 #import "FCLoadingViewBehaviour.h"
 #import "FCReplyCollectionCell.h"
 #import "FCReplyFlowLayout.h"
+#import "FCEventsManager.h"
+#import "FCTemplateFactory.h"
+#import "FCCalendarViewController.h"
+#import "FCTemplateSection.h"
+#import "FCCarouselCardsList.h"
+#import "FCCalendarBannerView.h"
 
 typedef struct {
     BOOL isLoading;
@@ -65,7 +71,7 @@ typedef struct {
     @property (nonatomic, strong) NSNumber *channelID;
 @end
 
-@interface FCMessageController () <UITableViewDelegate, UITableViewDataSource, HLMessageCellDelegate, HLMessageCellDelegate, FDAudioInputDelegate, KonotorDelegate, HLLoadingViewBehaviourDelegate,UIAlertViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, FCReplyDelegate>
+@interface FCMessageController () <UITableViewDelegate, UITableViewDataSource, HLMessageCellDelegate, HLMessageCellDelegate, FDAudioInputDelegate, KonotorDelegate, HLLoadingViewBehaviourDelegate, UICollectionViewDelegate, UICollectionViewDataSource, FCReplyDelegate, FCTemplateDelegate>
 
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingView;
@@ -77,6 +83,8 @@ typedef struct {
 @property (nonatomic, strong) NSLayoutConstraint *bottomViewBottomConstraint;
 @property (nonatomic, strong) NSLayoutConstraint *collectionViewDynamicConstraint;
 @property (nonatomic, strong) UIView *bottomView;
+@property (nonatomic, strong) NSLayoutConstraint *topViewHeightConstraint;
+@property (nonatomic, strong) UIView *topView;
 @property (nonatomic, strong) UIImage *sentImage;
 @property (nonatomic, strong) FCConversations *conversation;
 @property (nonatomic, strong) FCImageInput *imageInput;
@@ -86,6 +94,8 @@ typedef struct {
 @property (nonatomic, assign) FDMessageControllerFlags flags;
 @property (strong, nonatomic) NSString *appAudioCategory;
 @property (nonatomic,strong) NSNumber *channelID;
+@property (nonatomic,strong) FCCalendarBannerView *calendarBanner;
+@property (nonatomic,strong) NSMutableDictionary *heightAtIndexPath;
 
 @property (nonatomic, strong) FCMessagePoller *messagesPoller;
 
@@ -101,6 +111,7 @@ typedef struct {
 @property (nonatomic, strong) ConversationOptions *convOptions;
 @property (nonatomic) BOOL fromNotification;
 @property (nonatomic) BOOL initalLoading;
+@property (nonatomic) BOOL scrollingTop;
 
 @property (nonatomic, strong) UILabel *bannerMesagelabel;
 @property (nonatomic, strong) UIView *bannerMessageView;
@@ -116,6 +127,7 @@ typedef struct {
 @property (nonatomic) BOOL isJWTAlertShown;
 @property (nonatomic) UICollectionView* collectionView;
 @property (nonnull, nonatomic, strong) NSMutableArray* replyTexts;
+@property (nonnull, nonatomic, strong) NSString* lastReplyMessageAlias;
 
 @end
 
@@ -148,6 +160,7 @@ typedef struct {
         self.messageCountPrevious = 0;
         self.messagesDisplayedCount=20;
         self.loadmoreCount=20;
+        self.lastReplyMessageAlias = @"";
         self.channelID = channelID;        
         self.channel = [FCChannels getWithID:channelID inContext:[FCDataManager sharedInstance].mainObjectContext];
         self.imageInput = [[FCImageInput alloc]initWithConversation:self.conversation onChannel:self.channel];
@@ -180,6 +193,8 @@ typedef struct {
 }
 
 -(void)willMoveToParentViewController:(UIViewController *)parent{
+    self.view.accessibilityIdentifier = @"FreshchatMessageView";
+    self.heightAtIndexPath = [[NSMutableDictionary alloc]init];
     parent.navigationItem.title = self.channel.name;
     self.messagesDisplayedCount = 20;
     self.replyTexts = [[NSMutableArray alloc] init];
@@ -189,7 +204,6 @@ typedef struct {
     [self updateMessages];
     [self setNavigationItem];
     [self setNavigationTitle:parent];
-    [self scrollTableViewToLastCell];
     [self.tableView setHidden:true];
     [FCMessageServices fetchChannelsAndMessagesWithFetchType:ScreenLaunchFetch source:ChatScreen andHandler:nil];
     [FCMessages markAllMessagesAsReadForChannel:self.channel];
@@ -199,7 +213,9 @@ typedef struct {
     if(self.channel.channelAlias){
         [eventsDict setObject:self.channel.channelAlias forKey:@(FCPropertyChannelID)];
     }
-    [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+    if(self.channel.name){
+        [eventsDict setObject:self.channel.name forKey:@(FCPropertyChannelName)];
+    }
     if(self.convOptions.tags.count > 0){
         [eventsDict setObject:self.convOptions.tags forKey:@(FCPropertyInputTags)];
     }
@@ -209,6 +225,8 @@ typedef struct {
     FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventConversationOpen
                                                               withParams:eventsDict];
     [FCEventsHelper postNotificationForEvent:outEvent];
+    //Upload events every time user comes to conv. screen to give latest events update before chat
+    [[FCEventsManager sharedInstance] processEventBatch];
 }
 
 -(void) setNavigationTitle:(UIViewController *)parent {
@@ -342,6 +360,7 @@ typedef struct {
         [self addJWTObservers];
         [self jwtStateChange];
     }
+    [FCMessageHelper setDelegate:self];
 }
 
 //TODO:checkRestoreStateChanged is duplicated in HLChannelViewController HLInterstitialViewController ~Sanjith
@@ -429,7 +448,8 @@ typedef struct {
 }
 
 - (void)storeTheResponseFrom: (NSDictionary *)channelsInfo ofResponseKey: (NSString *) responseKey inLocalKey: (NSString *) localKey {
-    if(!([channelsInfo[responseKey] count] == 0)) { //If the array is nil, it will be 0 as well, as nil maps to 0; therefore checking whether the array exists is unnecessary
+    //Added typecast to fix error with new XCode
+    if(!([(NSArray *)channelsInfo[responseKey] count] == 0)) { //If the array is nil, it will be 0 as well, as nil maps to 0; therefore checking whether the array exists is unnecessary
         [FCUserDefaults setDictionary:[self getChannelReplyTimeForResponse:channelsInfo[responseKey]] forKey:localKey];
     } else {
         [FCUserDefaults removeObjectForKey:localKey];
@@ -470,6 +490,11 @@ typedef struct {
     }
     if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
         [self removeJWTObservers];
+    }
+    
+    if ([self isMovingFromParentViewController])
+    {
+        [FCMessageHelper setDelegate:nil];
     }
 }
 
@@ -598,6 +623,11 @@ typedef struct {
     self.bottomView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.messageDetailView addSubview:self.bottomView];
     
+    //TopView
+    self.topView = [[UIView alloc]init];
+    self.topView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.messageDetailView addSubview:self.topView];
+    
     //LoadingActivityIndicator
     self.loadingView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.loadingView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -612,10 +642,13 @@ typedef struct {
     self.bottomViewHeightConstraint = [FCAutolayoutHelper setHeight:0 forView:self.bottomView inView:self.messageDetailView];
     self.bottomViewBottomConstraint = [FCAutolayoutHelper bottomAlign:self.bottomView toView:self.messageDetailView];
     
+    self.topViewHeightConstraint = [FCAutolayoutHelper setHeight:0 forView:self.topView inView:self.messageDetailView];
+    
     self.yesNoPrompt = [[FCCSATYesNoPrompt alloc]initWithDelegate:self andKey:LOC_CSAT_PROMPT_PARTIAL];
     self.yesNoPrompt.translatesAutoresizingMaskIntoConstraints = NO;
 
      self.views = @{@"tableView" : self.tableView,
+                    @"topView" : self.topView,
                     @"bottomView" : self.bottomView,
                     @"messageOverlayView": self.bannerMessageView,
                     @"overlayText" : self.bannerMesagelabel,
@@ -630,6 +663,8 @@ typedef struct {
     [self setViewVerticalConstraint:overlayText];
     
     [self.messageDetailView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[bottomView]|" options:0 metrics:nil views:self.views]];
+    
+    [self.messageDetailView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topView]|" options:0 metrics:nil views:self.views]];
     
     [self.messageDetailView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[tableView]|" options:0 metrics:nil views:self.views]];
     
@@ -653,7 +688,6 @@ typedef struct {
         
         self.audioMessageInputView = [[FCAudioMessageInputView alloc] initWithDelegate:self];
         self.audioMessageInputView.translatesAutoresizingMaskIntoConstraints = NO;
-        
         [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
     }
     
@@ -665,7 +699,6 @@ typedef struct {
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[messageDetailView]|" options:0 metrics:nil views:@{@"messageDetailView":self.messageDetailView}]];
     
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[messageDetailView]|" options:0 metrics:nil views:@{@"messageDetailView":self.messageDetailView}]];
-    
 }
 
 - (void) setBackgroundForView : (UIView *)view{
@@ -694,14 +727,40 @@ typedef struct {
 }
 
 -(void)updateBottomViewWith:(UIView *)view andHeight:(CGFloat) height{
-    [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    [self.bottomView addSubview:view];
-    self.bottomViewHeightConstraint.constant = height;
-    self.bottomViewHeightConstraint.active = ![view isKindOfClass:[FCYesNoPromptView class]];
+    if(view) {
+        if([view isKindOfClass:[FCInputToolbarView class]]) {
+            FCInputToolbarView *inputView = (FCInputToolbarView *)view;
+            UITextView *textView = inputView.textView;
+            if(textView.text.length > 0 && textView.frame.size.height + 10 + textView.frame.origin.y > height) {
+                height = textView.frame.size.height + 10 + textView.frame.origin.y;
+            }
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.4 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                [self scrollTableViewToLastCell];
+            });
+        }
+        [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+        [self.bottomView addSubview:view];
+        self.bottomViewHeightConstraint.constant = height;
+        self.bottomViewHeightConstraint.active = ![view isKindOfClass:[FCYesNoPromptView class]];
+        
+        NSDictionary *views = @{ @"bottomInputView" : view };
+        [self.bottomView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[bottomInputView]|" options:0 metrics:nil views:views]];
+        [self.bottomView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[bottomInputView]|" options:0 metrics:nil views:views]];
+    }
+}
+
+-(void)updateAndScrollToBottomViewWith:(UIView *)view andHeight:(CGFloat) height{
+    [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+}
+
+-(void)updateTopViewWith:(UIView *)view andHeight:(CGFloat) height{
+    [[self.topView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    [self.topView addSubview:view];
+    self.topViewHeightConstraint.constant = height;
     
-    NSDictionary *views = @{ @"bottomInputView" : view };
-    [self.bottomView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[bottomInputView]|" options:0 metrics:nil views:views]];
-    [self.bottomView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[bottomInputView]|" options:0 metrics:nil views:views]];
+    NSDictionary *views = @{ @"topInputView" : view };
+    [self.topView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[topInputView]|" options:0 metrics:nil views:views]];
+    [self.topView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[topInputView]|" options:0 metrics:nil views:views]];
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -720,6 +779,8 @@ typedef struct {
             if (!agentCell) {
                 agentCell = [[FCAgentMessageCell alloc] initWithReuseIdentifier:agentCellIdentifier andDelegate:self];
             }
+            agentCell.isLastMessage = (message.messageAlias == ((FCMessageData *)[self.messages lastObject]).messageAlias);
+            agentCell.templateDelegate = self;
             agentCell.tagVal = indexPath.row;
             agentCell.maxcontentWidth = (NSInteger) screenRect.size.width - ((screenRect.size.width/100)*20);
             agentCell.messageData = message;
@@ -729,7 +790,7 @@ typedef struct {
             if (!userCell) {
                 userCell = [[FCUserMessageCell alloc] initWithReuseIdentifier:userCellIdentifier andDelegate:self];
             }
-            userCell.maxcontentWidth = (NSInteger) screenRect.size.width - ((screenRect.size.width/100)*20);
+            userCell.messageViewBounds = screenRect;
             userCell.messageData = message;
             [userCell drawMessageViewForMessage:message parentView:self.messageDetailView];
         }
@@ -751,14 +812,15 @@ typedef struct {
 
 -(UITableViewCell *) showRefreshCellIfRequired: (NSIndexPath *)index {
     
-    if(index.row == 0 && [[self.tableView indexPathsForVisibleRows] containsObject:index] && self.messagesDisplayedCount < self.messages.count && !self.initalLoading){
+    if(index.row == 0 && [[self.tableView indexPathsForVisibleRows] containsObject:index] && self.messagesDisplayedCount < self.messages.count && !self.initalLoading && [self.tableView numberOfRowsInSection:0] == self.messagesDisplayedCount && !self.scrollingTop){
         UITableViewCell* cell =[self getRefreshStatusCell];
         NSInteger oldnumber = self.messagesDisplayedCount;
         self.messagesDisplayedCount += self.loadmoreCount;
         if(self.messagesDisplayedCount > self.messageCount){
             self.messagesDisplayedCount = self.messageCount;
         }
-        [self performSelector:@selector(refreshView:) withObject:@(oldnumber) afterDelay:0];
+        [self refreshView:@(oldnumber) forFirstTime:true fromDownload:false];
+        self.scrollingTop = true;
         return cell;
     }
     return nil;
@@ -826,20 +888,14 @@ typedef struct {
 }
 
 -(void)showAlertWithTitle:(NSString *)title andMessage:(NSString *)message{
-    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:title
-                                                  message:message
-                                                 delegate:self
-                                        cancelButtonTitle:@"OK"
-                                        otherButtonTitles: nil];
-    [alert show];
-    
-}
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-    if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
-        if (buttonIndex == [alertView cancelButtonIndex]){
-            self.isJWTAlertShown = FALSE;
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    __block __weak FCMessageController *weakSelf = self;
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        if([[FCRemoteConfig sharedInstance] isUserAuthEnabled]){
+            weakSelf.isJWTAlertShown = FALSE;
         }
-    }
+    }]];
+    [self presentViewController:alert animated:true completion:nil];
 }
 
 -(void)inputToolbar:(FCInputToolbarView *)toolbar sendButtonPressed:(id)sender{
@@ -851,10 +907,9 @@ typedef struct {
         [self inputToolbar:toolbar textViewDidChange:toolbar.textView];
         return;
     }//Condition added later to avoid inconsistancy with failed/incorrect config or inactive account
-    [FCMessageHelper uploadMessageWithImage:nil textFeed:toSend onConversation:self.conversation andChannel:self.channel];
+    [FCMessageHelper uploadMessageWithImageData:nil textFeed:toSend messageType:@1 onConversation:self.conversation andChannel:self.channel];
     [self checkPushNotificationState];
     [self inputToolbar:toolbar textViewDidChange:toolbar.textView];
-    [self refreshView];
     [self.messagesPoller reset];
 }
 
@@ -867,7 +922,7 @@ typedef struct {
                 [self rebuildMessages];
             }
             [self updateTitle];
-            [self refreshView];
+            [self refreshView:nil forFirstTime:true fromDownload:false];
         }
     }];
 }
@@ -930,7 +985,7 @@ typedef struct {
         overlayViewHeight= (MIN([self lineCountForLabel:self.bannerMesagelabel],3.0) *self.bannerMesagelabel.font.pointSize)+15;
     }
     NSDictionary *overlayHeightmetrics = @{@"overlayHeight":[NSNumber numberWithFloat:overlayViewHeight]};
-    self.viewVerticalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[messageOverlayView(overlayHeight)][tableView][parentCollectionView][bottomView]" options:0 metrics:overlayHeightmetrics views:self.views];
+    self.viewVerticalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[messageOverlayView(overlayHeight)][topView][tableView][parentCollectionView][bottomView]" options:0 metrics:overlayHeightmetrics views:self.views];
     [self.messageDetailView addConstraints:self.viewVerticalConstraints];
 }
 
@@ -1087,7 +1142,6 @@ typedef struct {
     self.keyboardHeight = 0.0;
     self.bottomViewBottomConstraint.constant = 0.0;
     self.CSATView.CSATPromptCenterYConstraint.constant = 0;
-    [self.messageDetailView layoutIfNeeded];
     [UIView animateWithDuration:animationDuration animations:^{
         [self.messageDetailView layoutIfNeeded];
     }];
@@ -1128,11 +1182,12 @@ typedef struct {
 }
 
 -(void)scrollTableViewToLastCell{
-     NSInteger lastSpot = _flags.isLoading ? self.messagesDisplayedCount : (self.messagesDisplayedCount-1);
-    
+    NSInteger lastSpot = _flags.isLoading ? self.messagesDisplayedCount : (self.messagesDisplayedCount-1);
+
     if(lastSpot<0) return;
-    
+
     NSIndexPath *indexPath=[NSIndexPath indexPathForRow:lastSpot inSection:0];
+    
     @try {
         [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:NO];
     }
@@ -1149,6 +1204,7 @@ typedef struct {
 -(void)scrollTableViewToCell:(int)lastSpot{
     if(lastSpot<0) return;
     NSIndexPath *indexPath=[NSIndexPath indexPathForRow:(self.messagesDisplayedCount-lastSpot) inSection:0];
+
     @try {
         [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:NO];
     }
@@ -1170,13 +1226,13 @@ typedef struct {
 }
 
 - (void) didFinishDownloadingMessages{
-    NSInteger count = [self fetchMessages].count;
-    if( _flags.isLoading || (count > self.messageCountPrevious) ){
-        _flags.isLoading = NO;
-        [self refreshView];
-        [self.messagesPoller reset];
-    }
+    [self refreshView:nil forFirstTime:false fromDownload:true];
+    [self.messagesPoller reset];
     [self processPendingCSAT];
+}
+
+- (BOOL) isCalendarMsg : (FCMessageData *)msg {
+    return ([msg.messageType isEqualToNumber:FC_CALENDAR_INVITE_MSG] && msg.hasActiveCalInvite);
 }
 
 - (void) didNotifyServerError {
@@ -1217,115 +1273,218 @@ typedef struct {
 }
 
 -(void) didEncounterErrorWhileDownloadingConversations{
-    NSInteger count = [self fetchMessages].count;
-    if(( _flags.isLoading )||(count > self.messageCountPrevious)){
-        _flags.isLoading = NO;
-        [self refreshView];
-    }
+    [self fetchMessages:^(NSArray * messages) {
+        NSInteger count = messages.count;
+        if(( _flags.isLoading )||(count > self.messageCountPrevious)){
+            _flags.isLoading = NO;
+            [self refreshView];
+        }
+    }];
 }
 
 -(void)updateMessages{
-    self.messages = [self fetchMessages];
-    self.messageCount=(int)[self.messages count];
-    if((self.messagesDisplayedCount > self.messageCount)||
-       (self.messageCount<=KONOTOR_MESSAGESPERPAGE)||
-       ((self.messageCount - self.messagesDisplayedCount)<3)){
-        
-        self.messagesDisplayedCount = self.messageCount;
-    }
+    [self fetchMessages: ^(NSArray *messages) {
+        self.messages =  messages;
+        self.messageCount=(int)[self.messages count];
+        if((self.messagesDisplayedCount > self.messageCount)||
+           (self.messageCount<=KONOTOR_MESSAGESPERPAGE)||
+           ((self.messageCount - self.messagesDisplayedCount)<3)){
+            
+            self.messagesDisplayedCount = self.messageCount;
+        }
+    }];
+    
 }
 
 - (void) refreshView {
-    [self refreshView:nil];
+    [self refreshView:nil forFirstTime:false fromDownload:false];
 }
 
-- (void) refreshView:(id)obj{
-    self.messageCountPrevious=(int)self.messages.count;
-    self.messages = [self fetchMessages];
-    self.messageCount=(int)[self.messages count];
-    if((self.messagesDisplayedCount > self.messageCount)||
-       (self.messageCount<=KONOTOR_MESSAGESPERPAGE)||
-       ((self.messageCount - self.messagesDisplayedCount)<3)){
-        self.messagesDisplayedCount = self.messageCount;
+- (void) refreshView:(id)obj forFirstTime:(BOOL)firstTime fromDownload:(BOOL)isDownloaded {
+    if(obj != nil) {
+        if(self.scrollingTop){
+            return;
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.tableView reloadData];
+            [self scrollTableViewToCell:((NSNumber*)obj).intValue];
+            [self processPendingCSAT];
+            self.scrollingTop = false;
+        });
+        [FCMessages markAllMessagesAsReadForChannel:self.channel];
+        return;
     }
-    [self.tableView reloadData];
+    [self fetchMessages:^(NSArray * messages) {
+        if(isDownloaded && messages.count <= self.messageCountPrevious) {
+            return;
+        }
+        NSInteger messageCountPrevious=(int)self.messages.count;
+        self.messages = messages;
+        self.messageCount=(int)[self.messages count];
+        if((self.messagesDisplayedCount > self.messageCount)||
+           (self.messageCount<=KONOTOR_MESSAGESPERPAGE)||
+           ((self.messageCount - self.messagesDisplayedCount)<3)){
+            self.messagesDisplayedCount = self.messageCount;
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (messageCountPrevious < self.messageCount || firstTime) {
+                if(obj==nil) {
+                    [self.tableView reloadData];
+                    [self scrollTableViewToLastCell];
+                }
+            } else {
+                [self.tableView reloadData];
+            }
+            [self checkForReplyFragmentAfterCSATUpdate:false];
+            if(self.initalLoading) {
+                [self.loadingView stopAnimating];
+                [self.tableView setHidden:false];
+                self.initalLoading = false;
+            }
+            [self processPendingCSAT];
+        });
+        
+        [FCMessages markAllMessagesAsReadForChannel:self.channel];
+    }];
     
-    [self checkForReplyFragments];
-    
-    [FCMessages markAllMessagesAsReadForChannel:self.channel];
-    if(obj==nil)
-        [self scrollTableViewToLastCell];
-    else{
-        [self scrollTableViewToCell:((NSNumber*)obj).intValue];
-    }
-    if(self.initalLoading) {
-        [self.loadingView stopAnimating];
-        [self.tableView setHidden:false];
-        self.initalLoading = false;
-    }
-    [self processPendingCSAT];
 }
 
--(void) checkForReplyFragments {
-    [self.replyTexts removeAllObjects];
+-(void) checkForReplyFragmentAfterCSATUpdate:(BOOL) csatUpdated {
     FCCsat *csat = [self getCSATObject];
     BOOL showTextBox = NO;
+    BOOL hasReplyFragments = NO;
     //Check for CSAT Timeout state
-    if(!([FCCSATUtil isCSATExpiredForInitiatedTime:[csat.initiatedTime longValue]] && [self.conversation isCSATResponsePending])){
+    BOOL canShowFragment = (!csatUpdated && [self.conversation isCSATResponsePending]) ? [FCCSATUtil isCSATExpiredForInitiatedTime:[csat.initiatedTime longValue]] : true;
+    if(canShowFragment){
+        FCMessageData* messageData = ((FCMessageData *)[self.messages lastObject]);
         if(self.messages.count > 0) {
-            NSString *replyFragments = ((FCMessageData *)[self.messages lastObject]).replyFragments;
+            if([self.lastReplyMessageAlias isEqualToString:messageData.messageAlias]) {
+                return;
+            }
+            [self.replyTexts removeAllObjects];
+            [self.collectionView reloadData];
+            self.collectionViewDynamicConstraint.constant = 0;
+            NSString *replyFragments = messageData.replyFragments;
             if(replyFragments) {
-                NSData *jsonData = [replyFragments dataUsingEncoding:NSUTF8StringEncoding];
-                
-                NSArray *jsonArray = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:nil];
-                NSDictionary *jsonDict = jsonArray.firstObject;
-                if(jsonDict && ![jsonDict isKindOfClass:[NSNull class]] && jsonDict[@"fragmentType"] && [jsonDict[@"fragmentType"] integerValue] == FRESHCHAT_COLLECTION_FRAGMENT && jsonDict[@"fragments"]) {
-                    NSArray *fragmentArray = jsonDict[@"fragments"];
-                    for (NSDictionary *dictionary in fragmentArray) {
-                        if (dictionary[@"fragmentType"] && [dictionary[@"fragmentType"] integerValue] == FRESHCHAT_REPLY_FRAGMENT && dictionary[@"label"]) {
-                            NSString *label = trimString(dictionary[@"label"]);
-                            if (label.length > 0) {
-                                [self.replyTexts insertObject:label atIndex:[self.replyTexts count]];
+                hasReplyFragments = [FCMessageUtil hasReplyFragmentsIn:replyFragments];
+                if (!hasReplyFragments) {
+                    [self updateNonReplyFragments:messageData];
+                    return;
+                }
+                self.lastReplyMessageAlias = messageData.messageAlias;
+                NSDictionary *jsonDict = [FCMessageUtil getReplyFragmentsIn:replyFragments].firstObject;
+                if(jsonDict && ![jsonDict isKindOfClass:[NSNull class]] && jsonDict[@"fragmentType"]) {
+                    NSInteger fragmentType = [jsonDict[@"fragmentType"] integerValue];
+                    if(fragmentType == FRESHCHAT_COLLECTION_FRAGMENT && jsonDict[@"fragments"]) {
+                        NSArray *fragmentArray = jsonDict[@"fragments"];
+                        for (NSDictionary *dictionary in fragmentArray) {
+                            if (dictionary[@"fragmentType"] && [dictionary[@"fragmentType"] integerValue] == FRESHCHAT_QUICK_REPLY_FRAGMENT && dictionary[@"label"]) {
+                                NSString *label = trimString(dictionary[@"label"]);
+                                if (label.length > 0) {
+                                    [self.replyTexts insertObject:label atIndex:[self.replyTexts count]];
+                                }
+                            }
+                            if (dictionary[@"fragmentType"] && [dictionary[@"fragmentType"] integerValue] == 1) {
+                                showTextBox = YES;
+                            }
+                            if ([self.replyTexts count] > 0) {
+                                hasReplyFragments = YES;
+                                self.collectionViewDynamicConstraint.constant = 5;
+                                if(showTextBox){
+                                    [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+                                } else{
+                                    [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+                                    self.bottomViewHeightConstraint.constant = 0.0;
+                                }
+                                [self.collectionView reloadData];
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self.collectionView layoutIfNeeded];
+                                });
                             }
                         }
-                        if (dictionary[@"fragmentType"] && [dictionary[@"fragmentType"] integerValue] == 1) {
-                            showTextBox = YES;
+                    } else if(fragmentType == FRESHCHAT_TEMPLATE_FRAGMENT) {
+                        NSNumber *messageId = messageData.messageId;
+                        if (messageId) {
+                            UIView<FCOutboundDelegate> *templateView = [FCTemplateFactory getTemplateDataSourceFrom:jsonDict andReplyTo:messageData.messageId withDelegate:self];
+                            if (templateView) {
+                                hasReplyFragments = YES;
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self updateBottomViewWith:templateView andHeight:50];
+                                    [templateView postOutboundEvent];
+                                });
+                            }
+                        }
+                        if([jsonDict[@"templateType"]  isEqual:FRESHHCAT_TEMPLATE_CARUOSEL]) {
+                            FCOutboundEvent *event = [[FCOutboundEvent alloc] initOutboundEvent:FCEventCarouselShow withParams:@{@(FCPropertyOption): jsonDict}];
+                            [FCEventsHelper postNotificationForEvent:event];
+                            [self cleanupBottomView];
                         }
                     }
                 }
+            } else {
+                [self updateNonReplyFragments:messageData];
             }
         }
     }
-    
-    if([self.replyTexts count] == 0) {
-        self.collectionViewDynamicConstraint.constant = 0;
-    } else {
-        self.collectionViewDynamicConstraint.constant = 5;
-        if(showTextBox){
-            [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
-        } else{
-            [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-            self.bottomViewHeightConstraint.constant = 0.0;
-        }
-    }
-    
-    [self.collectionView reloadData];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.collectionView layoutIfNeeded];
-    });
 }
 
--(NSArray *)fetchMessages{
-    NSSortDescriptor* desc=[[NSSortDescriptor alloc] initWithKey:@"createdMillis" ascending:YES];
-    NSMutableArray *messages = [NSMutableArray arrayWithArray:[[FCMessages getAllMesssageForChannel:self.channel] sortedArrayUsingDescriptors:@[desc]]];
-    FCMessageData *firstMessage = messages.firstObject;
-    if (firstMessage.isWelcomeMessage && (firstMessage.fragments.count > 0) ) {
-        FCMessageFragments *lastfragment  = firstMessage.fragments.lastObject;
-        if(lastfragment && !lastfragment.content.length) {
-            [messages removeObject:firstMessage];
-        }
+-(void) updateNonReplyFragments:(FCMessageData *)messageData {
+    self.lastReplyMessageAlias = messageData.messageAlias;
+    if([self isCalendarMsg: messageData]) {
+        [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+        self.bottomViewHeightConstraint.constant = 0;
+    }else if (_bottomViewHeightConstraint.constant == 0 || !self.inputToolbar.superview) {
+        [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
     }
-    return messages;
+}
+
+-(void)fetchMessages: (void (^) (NSArray *))handler{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        NSManagedObjectContext *context = [FCDataManager sharedInstance].mainObjectContext ;
+        [context performBlock:^{
+        NSMutableArray *messages = [NSMutableArray arrayWithArray:[FCMessages getAllMesssageForChannel:self.channel withHandler:^(FCMessageData * messageData) {
+            NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
+            NSData *data = [((FragmentData*)messageData.fragments.firstObject).extraJSON dataUsingEncoding:NSUTF8StringEncoding];
+            NSDictionary *extraJSONdict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            if (extraJSONdict && extraJSONdict[@"extraJSON"]) {
+                data = [extraJSONdict[@"extraJSON"] dataUsingEncoding:NSUTF8StringEncoding];
+                extraJSONdict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            }
+            [dict addEntriesFromDictionary:extraJSONdict];
+            if(dict[@"startMillis"] && [dict[@"startMillis"] isKindOfClass:[NSNumber class]]){
+                NSTimeInterval startMillis = [dict[@"startMillis"] doubleValue];
+                data = [messageData.internalMeta dataUsingEncoding:NSUTF8StringEncoding];
+                NSDictionary *internalDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                [dict removeAllObjects];
+                [dict addEntriesFromDictionary:internalDict];
+                if(dict[@"calendarMessageMeta"] && dict[@"calendarMessageMeta"][@"calendarEventLink"]){
+                    NSURL *calendarLink = [NSURL URLWithString:dict[@"calendarMessageMeta"][@"calendarEventLink"]];
+                    if(calendarLink) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            if(self.calendarBanner != nil) {
+                                [self.calendarBanner updateViewWithTime:startMillis andURL:calendarLink];
+                            } else {
+                                self.calendarBanner = [[FCCalendarBannerView alloc] initWithURL:calendarLink andTime:startMillis];
+                                self.calendarBanner.delegate = self;
+                                [self updateTopViewWith:self.calendarBanner andHeight:40];
+                            }
+                        });
+                    }
+                }
+            }
+        }]];
+        FCMessageData *firstMessage = messages.firstObject;
+        if (firstMessage.isWelcomeMessage && (firstMessage.fragments.count > 0) ) {
+            FCMessageFragments *lastfragment  = firstMessage.fragments.lastObject;
+            if(lastfragment && !lastfragment.content.length) {
+                [messages removeObject:firstMessage];
+            }
+        }
+            if (handler) {
+                handler(messages);
+            }
+        }];
+    });
 }
 
 #pragma Scrollview delegates
@@ -1349,6 +1508,10 @@ typedef struct {
     [self showResponseExpectation];
     [self inputToolbar:self.inputToolbar textViewDidChange:self.inputToolbar.textView];
     [self scrollTableViewToLastCell];
+    FCMessageData *msgData = self.messages.lastObject;
+    if([self isCalendarMsg: msgData]) {
+        self.bottomViewHeightConstraint.constant = 0;
+    }
 }
 
 #pragma mark - Message cell delegates
@@ -1356,11 +1519,11 @@ typedef struct {
 -(void)performActionOn:(FragmentData *)fragment {
     NSNumber *fragmentType = @([fragment.type intValue]);
     if ([fragmentType isEqualToValue:@2]) {
-        FCImagePreviewController *imageController = [[FCImagePreviewController alloc]initWithImage:[UIImage imageWithData:fragment.binaryData1]];
+        FCImagePreviewController *imageController = [[FCImagePreviewController alloc]initWithImageData:fragment.binaryData1];
         [imageController presentOnController:self];
     } else if ([fragmentType isEqualToValue:@5]) {
         NSURL *url = [fragment getOpenURL];
-        BOOL linkHandled  = [FCUtilities handleLink:url faqOptions:nil navigationController:self handleFreshchatLinks:NO];
+        BOOL linkHandled  = [FCUtilities handleLink:url faqOptions:nil navigationController:self handleFreshchatLinks:NO postOutboundEvent:YES];
         if(!linkHandled) {
             if([[UIApplication sharedApplication] canOpenURL:url]){
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -1372,7 +1535,27 @@ typedef struct {
 }
 
 -(BOOL)handleLinkDelegate: (NSURL *)url {
-    return [FCUtilities handleLink:url faqOptions:nil navigationController:self handleFreshchatLinks:NO];
+    return [FCUtilities handleLink:url faqOptions:nil navigationController:self handleFreshchatLinks:NO postOutboundEvent:YES];
+}
+
+-(void) handleCalendarMsg :(FCMessageData*)message forAction :(enum FCCalendarOptionType) actionType{
+    [self.view endEditing:true];
+    if (actionType == BOOK_NOW){
+        //show calendar email view
+        UIViewController *topController = [FCUtilities topMostController];
+        if(topController) {
+            FCCalendarViewController *calendarEmailController = [[FCCalendarViewController alloc]init];
+            calendarEmailController.conversation = self.conversation;
+            calendarEmailController.message = message;
+            calendarEmailController.providesPresentationContextTransitionStyle = YES;
+            calendarEmailController.definesPresentationContext = YES;
+            calendarEmailController.modalPresentationStyle = UIModalPresentationOverFullScreen;
+            [topController presentViewController:calendarEmailController animated:true completion:nil];
+        }
+    }else if (actionType == CANCEL_NOW) {
+        [FCMessageUtil cancelCalendarInviteForMsg:message andConv:self.conversation];
+        [self updateAndScrollToBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+    }
 }
 
 //TODO: Needs refractor
@@ -1432,7 +1615,8 @@ typedef struct {
     }
     FCCsat *csat = [self getCSATObject];
     //Check for CSAT Timeout state
-    if([FCCSATUtil isCSATExpiredForInitiatedTime:[csat.initiatedTime longValue]] && [self.conversation isCSATResponsePending]){
+    if(([FCCSATUtil isCSATExpiredForInitiatedTime:[csat.initiatedTime longValue]] && [self.conversation isCSATResponsePending])||(![self.conversation.hasPendingCsat boolValue] && csat)){
+        self.lastReplyMessageAlias = @"";
         [FCCSATUtil deleteCSATAndUpdateConversation:csat];
         [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
         if(self.collectionViewDynamicConstraint.constant != 0) {
@@ -1442,6 +1626,7 @@ typedef struct {
     else{
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([self.conversation isCSATResponsePending] && !self.CSATView.isShowing && self.yesNoPrompt) { //Height check to avoid calling multiple times
+                self.lastReplyMessageAlias = @"";
                 if (self.bottomViewHeightConstraint.constant != YES_NO_PROMPT_HEIGHT){
                     NSMutableDictionary *eventsDict = [[NSMutableDictionary alloc] init];
                     if(self.channel.channelAlias){
@@ -1485,7 +1670,6 @@ typedef struct {
         self.CSATView = [[FCCSATView alloc]initWithController:self hideFeedbackView:NO isResolved:NO];
         self.CSATView.surveyTitle.text = HLLocalizedString(LOC_CUST_SAT_NOT_RESOLVED_PROMPT);
     }
-    
     self.CSATView.delegate = self;
     [self.CSATView show];
 }
@@ -1501,8 +1685,14 @@ typedef struct {
 }
 
 -(void)updateBottomViewAfterCSATSubmisssion{
-    if (!self.isOneWayChannel) {
-        [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+    if ((!self.isOneWayChannel) && self.inputToolbar != nil) {
+        FCMessageData *msgData = self.messages.lastObject;
+        if([self isCalendarMsg:msgData]) {
+            //Hide input toolbar
+            [self updateBottomViewWith:self.inputToolbar andHeight:0];
+        }else {
+            [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+        }
     }else{
         [self cleanupBottomView];
     }
@@ -1514,6 +1704,7 @@ typedef struct {
 }
 
 -(void)handleUserEvadedCSAT{
+    self.lastReplyMessageAlias = @"";
     HLCsatHolder *csatHolder = [[HLCsatHolder alloc]init];
     csatHolder.isIssueResolved = self.CSATView.isResolved;
     [self storeAndPostCSAT:csatHolder];
@@ -1529,7 +1720,7 @@ typedef struct {
                                                                withParams:eventsDict];
     [FCEventsHelper postNotificationForEvent:outEvent];
     [self.view endEditing:true];
-    [self checkForReplyFragments];
+    [self checkForReplyFragmentAfterCSATUpdate:true];
 }
 
 -(void)submittedCSAT:(HLCsatHolder *)csatHolder{
@@ -1552,7 +1743,7 @@ typedef struct {
     
     [self storeAndPostCSAT:csatHolder];
     [self.view endEditing:true];
-    [self checkForReplyFragments];
+    [self checkForReplyFragmentAfterCSATUpdate:true];
 }
 
 -(void)storeAndPostCSAT:(HLCsatHolder *)csatHolder{
@@ -1561,6 +1752,10 @@ typedef struct {
         UIBackgroundTaskIdentifier taskID = [[FCBackgroundTaskManager sharedInstance]beginTask];
 
         FCCsat *csat = [self getCSATObject];
+        
+        if(!csat) {
+            return;
+        }
         
         csat.isIssueResolved = csatHolder.isIssueResolved ? @"true" : @"false";
         
@@ -1678,7 +1873,7 @@ typedef struct {
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     [collectionView deselectItemAtIndexPath:indexPath animated:NO];
-    [FCMessageHelper uploadMessageWithImage:nil textFeed:self.replyTexts[indexPath.row] onConversation:self.conversation andChannel:self.channel];
+    [FCMessageHelper uploadMessageWithImageData:nil textFeed:self.replyTexts[indexPath.row] messageType:@1 onConversation:self.conversation andChannel:self.channel];
     [self checkPushNotificationState];
     [self refreshView];
     [self.messagesPoller reset];
@@ -1707,6 +1902,32 @@ typedef struct {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [self scrollTableViewToLastCell];
     });
+}
+
+- (void)dismissAndSendFragment:(NSArray *)fragments inReplyTo:(NSNumber *)messageID {
+    [self updateBottomViewWith:self.inputToolbar andHeight:INPUT_TOOLBAR_HEIGHT];
+    [FCMessageHelper uploadNewMessage:fragments onConversation:self.conversation withMessageType:@1 onChannel:self.channel inReplyTo:messageID];
+}
+
+- (void)updateHeightConstraint:(int)height andShouldScrollTolast:(BOOL) scrollToLast {
+    self.bottomViewHeightConstraint.constant = height;
+    if (scrollToLast) {
+        [self scrollTableViewToLastCell];
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSNumber *height = [self.heightAtIndexPath objectForKey:indexPath];
+    if(height) {
+        return height.floatValue;
+    } else {
+        return UITableViewAutomaticDimension;
+    }
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSNumber *height = @(cell.frame.size.height);
+    [self.heightAtIndexPath setObject:height forKey:indexPath];
 }
 
 @end

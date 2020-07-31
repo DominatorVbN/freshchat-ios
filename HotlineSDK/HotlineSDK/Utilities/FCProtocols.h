@@ -9,5 +9,6 @@
 @protocol HLMessageCellDelegate <NSObject>
     -(void)performActionOn:(FragmentData *)fragment;
     -(BOOL)handleLinkDelegate: (NSURL *)url;
+    -(void) handleCalendarMsg :(FCMessageData*)message forAction :(enum FCCalendarOptionType) actionType;
 @end
 

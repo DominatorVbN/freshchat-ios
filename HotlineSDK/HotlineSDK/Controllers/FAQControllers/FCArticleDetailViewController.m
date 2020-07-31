@@ -39,6 +39,7 @@
 @property (strong, nonatomic) NSString *appAudioCategory;
 @property (strong, nonatomic) NSLayoutConstraint *bottomViewHeightConstraint;
 @property (nonatomic, strong) FAQOptions *faqOptions;
+@property (nonatomic, strong) NSURL *bundleURL;
 
 @end
 
@@ -49,8 +50,9 @@
 - (instancetype)init{
     self = [super init];
     if (self) {
-         _secureStore = [FCSecureStore sharedInstance];
-         _votingManager = [FCVotingManager sharedInstance];
+        _secureStore = [FCSecureStore sharedInstance];
+        _votingManager = [FCVotingManager sharedInstance];
+        _bundleURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
     }
     return self;
 }
@@ -165,7 +167,7 @@
 }
 
 -(void)networkReachable{
-    [self.webView loadHTMLString:self.embedHTML baseURL:nil];
+    [self.webView loadHTMLString:self.embedHTML baseURL:_bundleURL];
 }
 
 -(void)handleArticleVoteAfterSometime{
@@ -244,7 +246,7 @@
     self.webView.translatesAutoresizingMaskIntoConstraints = NO;
     self.webView.scrollView.scrollEnabled = YES;
     self.webView.scrollView.delegate = self;
-    [self.webView loadHTMLString:self.embedHTML baseURL:nil];
+    [self.webView loadHTMLString:self.embedHTML baseURL:_bundleURL];
     [self.view addSubview:self.webView];
     [self.webView setBackgroundColor:[UIColor whiteColor]];
     self.bottomView = [[UIView alloc]init];
@@ -281,7 +283,7 @@
     
     if((navigationAction.navigationType == WKNavigationTypeLinkActivated) && (requestURL != nil)){
         if(navigationAction.targetFrame == nil){
-            if(![FCUtilities handleLink:requestURL faqOptions:self.faqOptions navigationController:self handleFreshchatLinks:NO]) {
+            if(![FCUtilities handleLink:requestURL faqOptions:self.faqOptions navigationController:self handleFreshchatLinks:NO postOutboundEvent:YES]) {
                 [app openURL:requestURL];
             }
             decisionHandler(WKNavigationActionPolicyCancel);
@@ -364,7 +366,7 @@
                 [self showArticleRatingPrompt];
             }
             else{
-                if([self.votingManager isArticleDownvoted:self.articleID]){
+                if([self.votingManager isArticleDownvoted:self.articleID] && self.faqOptions.showContactUsOnFaqNotHelpful){
                     [self showPromptWithContactUsHidden:NO];
                 }
                 else{
@@ -404,7 +406,6 @@
 }
 
 -(void)updateBottomViewWith:(FCPromptView *)view{
-    FDLog(@"Show View Called");
     [[self.bottomView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
     
     [self.bottomView addSubview:view];

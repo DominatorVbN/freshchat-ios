@@ -30,7 +30,7 @@
 
 +(void)uploadUnuploadedPropertiesWithForceUpdate:(BOOL) forceUpdate;
 
-+(NSURLSessionDataTask *)fetchRemoteConfig;
++(void)fetchRemoteConfig;
 
 +(NSURLSessionDataTask *)performHeartbeatCall;
 
@@ -49,5 +49,9 @@
 +(void) setAsUploadedTo:(NSArray *) properties withCompletion:(void (^)())completion;
 
 +(NSArray *) updatePropertiesTo: (NSMutableDictionary *) userInfo;
+
++ (NSURLSessionDataTask *) uploadInboundEvents:(NSDictionary *)events withCompletion:(void(^)(BOOL uploaded, NSDictionary *uploadedEvents, NSError *error))handler;
+
++(NSURLSessionDataTask *)fetchAvilCalendarSlotsForAgent : (NSString *)agentCalAlias :(void (^)(NSDictionary *slotsInfo, NSError *error))handler;
 
 @end

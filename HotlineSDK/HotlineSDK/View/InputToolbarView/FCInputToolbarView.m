@@ -52,6 +52,7 @@ micButton, attachButtonYConstraint, accessoryViewYConstraint, accessoryViewConta
         self.delegate = delegate;
         self.theme = [FCTheme sharedInstance];
         self.isFromAttachmentScreen = NO;
+        self.clipsToBounds = YES;
         self.backgroundColor = [self.theme inputToolbarBackgroundColor];
         dividerView = [[UIView alloc] init];
         dividerView.translatesAutoresizingMaskIntoConstraints = NO;

@@ -57,7 +57,12 @@
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[containerView]|" options:0 metrics:nil views:views]];
     if([FCUtilities isPoweredByFooterViewHidden] &&(![FCUtilities hasNotchDisplay] || isembedView)){
         [self.footerView removeFromSuperview];
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[containerView]|" options:0 metrics:nil views:views]];
+        if (@available(iOS 11.0, *)) {
+            UILayoutGuide *guide = self.view.safeAreaLayoutGuide;
+            [NSLayoutConstraint activateConstraints:@[[_containerView.topAnchor constraintEqualToAnchor:guide.topAnchor], [_containerView.bottomAnchor constraintEqualToAnchor:guide.bottomAnchor]]];
+        } else {
+            [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[containerView]|" options:0 metrics:nil views:views]];
+        }
     }
     else{
         [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[footerView]|" options:0 metrics:nil views:views]];
@@ -65,7 +70,13 @@
         if([FCUtilities hasNotchDisplay] && !isembedView) {
             footerViewHeight = 33;
         }
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:|[containerView][footerView(%d)]|", footerViewHeight] options:0 metrics:nil views:views]];
+        if (@available(iOS 11.0, *)) {
+            UILayoutGuide *guide = self.view.safeAreaLayoutGuide;
+            [NSLayoutConstraint activateConstraints:@[[_containerView.topAnchor constraintEqualToAnchor:guide.topAnchor]]];
+            [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:[containerView][footerView(%d)]|", footerViewHeight] options:0 metrics:nil views:views]];
+        } else {
+            [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:|[containerView][footerView(%d)]|", footerViewHeight] options:0 metrics:nil views:views]];
+        }
     }
     
     self.childController.view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -114,6 +125,10 @@
 }
 
 -(void)viewWillDisappear:(BOOL)animated{
+    if ([self isMovingFromParentViewController] && self.navBar)
+    {
+        [FCUtilities replaceNavigationPropertyForBar:self.navBar withCurrentBar:self.navigationController.navigationBar];
+    }
     [super viewWillDisappear:animated];
     [HotlineAppState sharedInstance].currentVisibleController = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:FRESHCHAT_ACCOUNT_DELETED_EVENT];

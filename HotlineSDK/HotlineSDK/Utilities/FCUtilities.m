@@ -32,6 +32,10 @@
 #import "FCFAQUtil.h"
 #import "FCChannelUtil.h"
 #import "FDThemeConstants.h"
+#import "FCEventsManager.h"
+#import "FCUserUtil.h"
+#import "FCAnimatedImage.h"
+#import "FCParticipants.h"
 
 #define EXTRA_SECURE_STRING @"73463f9d-70de-41f8-857a-58590bdd5903"
 #define ERROR_CODE_USER_DELETED 19
@@ -43,7 +47,6 @@
 
 #pragma mark - General Utitlites
 
-static bool IS_USER_REGISTRATION_IN_PROGRESS = NO;
 
 +(NSBundle *)frameworkBundle {
     static NSBundle* frameworkBundle = nil;
@@ -73,6 +76,14 @@ static bool IS_USER_REGISTRATION_IN_PROGRESS = NO;
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return image;
+}
+
++ (BOOL) isSDKInitialized {
+    FCSecureStore *store = [FCSecureStore sharedInstance];
+    if([store objectForKey:HOTLINE_DEFAULTS_APP_ID] && [store objectForKey:HOTLINE_DEFAULTS_APP_KEY] ){
+        return TRUE;
+    }
+    return FALSE;
 }
 
 +(NSString *) getTracker{
@@ -139,7 +150,11 @@ static bool IS_USER_REGISTRATION_IN_PROGRESS = NO;
 }
 
 +(UIViewController*) topMostController {
-    UIViewController *topController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIWindow *window = [FCUtilities getAppKeyWindow];
+    if(!window) {
+        return nil;
+    }
+    UIViewController *topController = [window rootViewController];
     while (topController.presentedViewController) {
         topController = topController.presentedViewController;
     }
@@ -347,14 +362,17 @@ static NSInteger networkIndicator = 0;
     return lastUpdateTime;
 }
 
-+(void) showAlertViewWithTitle : (NSString *)title message : (NSString *)message andCancelText : (NSString *) cancelText{
++(void) showAlertViewWithTitle : (NSString *)title message : (NSString *)message andCancelText : (NSString *) cancelText inController:(UIViewController *)viewController{
     
-    if(title.length == 0) {
+    if(title && title.length == 0) {
         return;
     }
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:cancelText otherButtonTitles:nil, nil];
-    [alertView show];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+       [alert addAction:[UIAlertAction actionWithTitle:cancelText style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+           [alert dismissViewControllerAnimated:true completion:nil];
+       }]];
+       [viewController presentViewController:alert animated:true completion:nil];
 }
 
 +(BOOL) isValidPropKey: (NSString *) str {
@@ -449,24 +467,58 @@ static NSInteger networkIndicator = 0;
     [FCUserDefaults removeObjectForKey:CONFIG_RC_LAST_RESPONSE_TIME_EXPECTATION_FETCH_INTERVAL];
 }
 
-+(BOOL) canMakeDAUCall {
++ (BOOL) isTodaySameAsDate : (NSDate *) date {
+    return [FCUtilities isSameDate:date excludeDay:false];
+}
+
++ (BOOL) isSameDate : (NSDate *) date excludeDay : (BOOL) excludeDay{
     NSDate *currentdate = [NSDate date];
-    NSDate *lastFetchDate = [[FCSecureStore sharedInstance] objectForKey:HOTLINE_DEFAULTS_DAU_LAST_UPDATED_TIME];
-    if(!lastFetchDate){
-        return true;
-    }
     NSCalendar* calendar = [NSCalendar currentCalendar];
     unsigned unitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay;
     NSDateComponents* currentComp = [calendar components:unitFlags fromDate:currentdate];
-    NSDateComponents* lastFetchComp = [calendar components:unitFlags fromDate:lastFetchDate];
+    NSDateComponents* lastFetchComp = [calendar components:unitFlags fromDate:date];
     NSComparisonResult result;
-    result = [currentdate compare:lastFetchDate];
+    result = [currentdate compare:date];
     if(result == NSOrderedDescending){//date comparision, current should be greater than
-        if (!([currentComp day] == [lastFetchComp day] && [currentComp month] == [lastFetchComp month] && [currentComp year]  == [lastFetchComp year])){
-            return true;
+        if (!(([currentComp day] == [lastFetchComp day] || excludeDay) && [currentComp month] == [lastFetchComp month] && [currentComp year]  == [lastFetchComp year])){
+            return false;
         }
     }
-    return false;
+    return true;
+}
+
++(BOOL) canMakeDAUCall {
+    FCSecureStore* store = [FCSecureStore sharedInstance];
+    if ([FCUserUtil isUserRegistered]) {
+        NSDate *lastFetchDate = [store objectForKey:HOTLINE_DEFAULTS_DAU_LAST_UPDATED_TIME];
+        if(lastFetchDate){
+            return ![self isTodaySameAsDate:lastFetchDate];
+        }
+    } else {
+        NSDate *lastFetchDateForNonRegisteredUser = [store objectForKey:HOTLINE_DEFAULTS_DAU_LAST_UPDATED_TIME_UNKNOWN_USER];
+        if(lastFetchDateForNonRegisteredUser){
+            return ![FCUtilities isSameDate:lastFetchDateForNonRegisteredUser excludeDay:true];
+        }
+    }
+    return true;
+}
+
++ (NSString *)contentTypeForImageData:(NSData *)data {
+    uint8_t c;
+    [data getBytes:&c length:1];
+
+    switch (c) {
+    case 0xFF:
+        return @"image/jpeg";
+    case 0x89:
+        return @"image/png";
+    case 0x47:
+        return @"image/gif";
+    case 0x49:
+    case 0x4D:
+        return @"image/tiff";
+    }
+    return nil;
 }
 
 +(BOOL) containsHTMLContent: (NSString *)content {
@@ -480,8 +532,6 @@ static NSInteger networkIndicator = 0;
         || ([FCUtilities containsString:content andTarget:@"&gt"])
         || ([FCUtilities containsString:content andTarget:@"&nbsp"])
         || ([FCUtilities containsString:content andTarget:@"<a href"])
-        || ([FCUtilities containsString:content andTarget:@"https://"])
-        || ([FCUtilities containsString:content andTarget:@"http://"])
         || ([FCUtilities containsString:content andTarget:@"<a>"])
         || ([FCUtilities containsString:content andTarget:@"<h1>"])
         || ([FCUtilities containsString:content andTarget:@"<h2>"])
@@ -514,18 +564,24 @@ static NSInteger networkIndicator = 0;
 + (void) loadImageAndPlaceholderBgWithUrl:(NSString *)url forView:(UIImageView *)imageView withColor: (UIColor*)color andName:(NSString *)channelName {
     imageView.image = [FCUtilities generateImageForLabel:channelName withColor:color];
     if (url.length){//check if its valid but empty stringas well as if it's nil, since calling length on nil will also return 0
-        [FCUtilities loadImageWithUrl:url forView:imageView];
+        [FCUtilities loadImageWithUrl:url forView:imageView andErrorImage:nil];
     }
 }
 
-+ (void) loadImageWithUrl : (NSString *) url forView : (UIImageView *) imgView{
++ (void) loadImageWithUrl : (NSString *) url forView : (UIImageView *) imgView andErrorImage:(UIImage *)errorImage{
     FDWebImageManager *manager = [FDWebImageManager sharedManager];
     [manager loadImageWithURL:[NSURL URLWithString:url] options:FDWebImageDelayPlaceholder progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
         
     } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, FDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if(imgView){
+            if ([imgView isKindOfClass:[FCAnimatedImageView class]] && data &&  [[FCUtilities contentTypeForImageData:data] isEqualToString:@"image/gif"]) {
+                FCAnimatedImageView *animatedImageView = (FCAnimatedImageView *)imgView;
+                animatedImageView.animatedImage = [FCAnimatedImage animatedImageWithGIFData: data];
+            }
+            else if(imgView){
                 imgView.image = image;
+            } else if(errorImage) {
+                imgView.image = errorImage;
             }
         });
     }];
@@ -537,6 +593,16 @@ static NSInteger networkIndicator = 0;
     } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, FDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
         FDLog(@"Image cached - %@", imageURL);
     }];
+}
+
++ (void) setAgentImage : (FCAnimatedImageView *)imageView forAlias : (NSString *)alias {
+    BOOL showteamMemberInfo = [[FCSecureStore sharedInstance] boolValueForKey:HOTLINE_DEFAULTS_AGENT_AVATAR_ENABLED];
+    if (showteamMemberInfo) {
+        FCParticipants *participant = [FCParticipants fetchParticipantForAlias:alias inContext:[FCDataManager sharedInstance].mainObjectContext];
+        if (participant.profilePicURL) {
+            [FCUtilities loadImageWithUrl:participant.profilePicURL forView:imageView andErrorImage:[[FCTheme sharedInstance] getImageWithKey:IMAGE_CAROUSEL_ERROR_IMAGE]];
+        }
+    }
 }
 
 +(UIImage *)generateImageForLabel:(NSString *)labelText withColor :(UIColor *)color{
@@ -620,10 +686,13 @@ static NSInteger networkIndicator = 0;
       @"iPhone10,5":   @"iPhone 8 Plus",
       @"iPhone10,3":   @"iPhone X",
       @"iPhone10,6":   @"iPhone X",
-      @"iPhone11,2":   @"iPhoneXs",
-      @"iPhone11,4":   @"iPhoneXsMax",
-      @"iPhone11,6":   @"iPhoneXsMax",
-      @"iPhone11,8":   @"iPhoneXr",
+      @"iPhone11,2":   @"iPhone XS",
+      @"iPhone11,4":   @"iPhone XS Max",
+      @"iPhone11,6":   @"iPhone XS Max",
+      @"iPhone11,8":   @"iPhone XR",
+      @"iPhone12,1":   @"iPhone 11",
+      @"iPhone12,3":   @"iPhone 11 Pro",
+      @"iPhone12,5":   @"iPhone 11 Pro Max",
       
       @"iPad1,1":  @"iPad",
       @"iPad2,1":  @"iPad 2(WiFi)",
@@ -656,10 +725,28 @@ static NSInteger networkIndicator = 0;
       @"iPad6,8":  @"iPad Pro (12.9 inch)",
       @"iPad6,3":  @"iPad Pro (9.7 inch)",
       @"iPad6,4":  @"iPad Pro (9.7 inch)",
+      @"iPad6,11": @"iPad (2017)",
+      @"iPad6,12": @"iPad (2017)",
       @"iPad7,1":  @"iPad Pro 12.9 Inch 2. Generation",
       @"iPad7,2":  @"iPad Pro 12.9 Inch 2. Generation",
       @"iPad7,3":  @"iPad Pro 10.5 Inch",
       @"iPad7,4":  @"iPad Pro 10.5 Inch",
+      @"iPad7,5":  @"iPad 6th Gen (WiFi)",
+      @"iPad7,6":  @"iPad 6th Gen (WiFi+Cellular)",
+      @"iPad7,11": @"iPad 7th Gen 10.2-inch (WiFi)",
+      @"iPad7,12": @"iPad 7th Gen 10.2-inch (WiFi+Cellular)",
+      @"iPad8,1":  @"iPad Pro 3rd Gen (11 inch, WiFi)",
+      @"iPad8,2":  @"iPad Pro 3rd Gen (11 inch, 1TB, WiFi)",
+      @"iPad8,3":  @"iPad Pro 3rd Gen (11 inch, WiFi+Cellular)",
+      @"iPad8,4":  @"iPad Pro 3rd Gen (11 inch, 1TB, WiFi+Cellular)",
+      @"iPad8,5":  @"iPad Pro 3rd Gen (12.9 inch, WiFi)",
+      @"iPad8,6":  @"iPad Pro 3rd Gen (12.9 inch, 1TB, WiFi)",
+      @"iPad8,7":  @"iPad Pro 3rd Gen (12.9 inch, WiFi+Cellular)",
+      @"iPad8,8":  @"iPad Pro 3rd Gen (12.9 inch, 1TB, WiFi+Cellular)",
+      @"iPad11,1": @"iPad mini 5th Gen (WiFi)",
+      @"iPad11,2": @"iPad mini 5th Gen",
+      @"iPad11,3": @"iPad Air 3rd Gen (WiFi)",
+      @"iPad11,4": @"iPad Air 3rd Gen",
       
       @"iPod1,1":  @"iPod 1st Gen",
       @"iPod2,1":  @"iPod 2nd Gen",
@@ -667,7 +754,7 @@ static NSInteger networkIndicator = 0;
       @"iPod4,1":  @"iPod 4th Gen",
       @"iPod5,1":  @"iPod 5th Gen",
       @"iPod7,1":  @"iPod 6th Gen",
-      
+      @"iPod9,1":  @"iPod 7th Gen",
       };
     NSString *deviceName = commonNamesDictionary[machineName];
     if (!deviceName) { deviceName = machineName; }
@@ -703,6 +790,7 @@ static NSInteger networkIndicator = 0;
 
 +(void) resetDataAndRestoreWithExternalID: (NSString *) externalID withRestoreID: (NSString *)restoreID withCompletion:(void (^)())completion {
     [FCCoreServices resetUserData:^{
+        [[FCEventsManager sharedInstance] reset];
         [[FCSecureStore sharedInstance] setBoolValue:NO forKey:HOTLINE_DEFAULTS_IS_USER_REGISTERED];
         [FCUserDefaults removeObjectForKey:HOTLINE_DEFAULTS_IS_MESSAGE_SENT];        
         FreshchatUser* oldUser = [FreshchatUser sharedInstance];
@@ -934,7 +1022,8 @@ static NSInteger networkIndicator = 0;
 
 +(BOOL) handleLink : (NSURL *)url faqOptions: (FAQOptions *)faqOptions
     navigationController:(UIViewController *) navController
-    handleFreshchatLinks:(BOOL) handleFreshchatLinks {
+    handleFreshchatLinks:(BOOL) handleFreshchatLinks
+    postOutboundEvent:(BOOL) postOutboundEvent {
     
     if(url == nil) {
         return NO;
@@ -997,16 +1086,17 @@ static NSInteger networkIndicator = 0;
             return YES;
         }
     } else if(!handleFreshchatLinks) {
-        
-        FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventLinkTap
-                                                                  withParams:@{
-                                                                               @(FCPropertyURL)  : url.absoluteString
-                                                                               }];
-        [FCEventsHelper postNotificationForEvent:outEvent];
-        
-        if ([Freshchat sharedInstance].customLinkHandler != nil) {
-            return [Freshchat sharedInstance].customLinkHandler(url);
+        if(postOutboundEvent) {
+            FCOutboundEvent *outEvent = [[FCOutboundEvent alloc] initOutboundEvent:FCEventLinkTap
+                                                                      withParams:@{
+                                                                                   @(FCPropertyURL)  : url.absoluteString
+                                                                                   }];
+            [FCEventsHelper postNotificationForEvent:outEvent];
         }
+        
+    }
+    if ([Freshchat sharedInstance].customLinkHandler != nil) {
+        return [Freshchat sharedInstance].customLinkHandler(url);
     }
     return NO;
 }
@@ -1020,4 +1110,156 @@ static NSInteger networkIndicator = 0;
     }
 }
 
++ (NSString *) intervalStrFromMillis : (long)fromMillis toMillis: (long) toMillis {
+    long interval = labs(toMillis - fromMillis);
+    return [self getDurationFromSecs:(int)(interval/1000.0)];
+}
+
++ (NSString *) getDurationFromSecs : (int) seconds {
+    int minutes = seconds / 60;
+    if(minutes > 59){
+        //display hour + min
+        NSString *hrsStr = (minutes / 60) >= 2 ? HLLocalizedString(LOC_CALENDAR_DURATION_HOURS) : HLLocalizedString(LOC_CALENDAR_DURATION_HOUR);
+        if(minutes % 60 == 0){
+            return ([NSString stringWithFormat:@"%d %@", (minutes / 60), hrsStr]);
+        }
+        else{
+            return ([NSString stringWithFormat:@"%d %@ %d %@", (minutes / 60), hrsStr, (minutes % 60), HLLocalizedString(LOC_CALENDAR_DURATION_MINS)]);
+        }
+    }
+    return ([NSString stringWithFormat:@"%d %@", minutes, HLLocalizedString(LOC_CALENDAR_DURATION_MINS)]);
+}
+
++ (float) calendarMsgWidthInBounds : (CGRect)bound {
+    float minWidth = MIN(bound.size.width, bound.size.height);
+    return (minWidth - ((minWidth/100)*20));
+}
+
++(void) loadImageFromURL:(NSString  * _Nonnull)imageURL withCache:(void (^ _Nullable)())cacheBlock withError:(void (^ _Nullable)())errorBlock withCompletion:(void (^_Nullable)(UIImage * _Nonnull))completionBlock {
+    [[FDWebImageManager sharedManager] diskImageExistsForURL:[NSURL URLWithString:imageURL] completion:^(BOOL isInCache) {
+        if(isInCache) {
+            if (cacheBlock) {
+                cacheBlock();
+            }
+        }
+        else {
+            FDWebImageManager *manager = [FDWebImageManager sharedManager];
+            [manager loadImageWithURL:[NSURL URLWithString:imageURL] options:FDWebImageDelayPlaceholder progress:nil completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, FDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
+                if (error) {
+                    if(errorBlock) {
+                        errorBlock();
+                    }
+                } else {
+                    if(image && finished){
+                        completionBlock(image);
+                    }
+                }
+            }];
+        }
+    }];
+}
+
++ (void) setNavigationPropertyForBar:(UINavigationBar *)navigationBar {
+    FCTheme *theme = [FCTheme sharedInstance];
+    if (@available(iOS 13.0, *)) {
+        UINavigationBarAppearance *appearance = [UINavigationBarAppearance new];
+        [appearance setTitleTextAttributes:@{
+            NSForegroundColorAttributeName: [theme navigationBarTitleColor],
+            NSFontAttributeName: [theme navigationBarTitleFont]
+        }];
+        navigationBar.prefersLargeTitles = false;
+        navigationBar.barTintColor = [theme navigationBarBackgroundColor];
+        appearance.backgroundColor = [theme navigationBarBackgroundColor];
+        navigationBar.standardAppearance = appearance;
+        navigationBar.compactAppearance = appearance;
+        navigationBar.scrollEdgeAppearance = appearance;
+    }
+    if (@available(iOS 11.0, *)) {
+        navigationBar.prefersLargeTitles = false;
+    }
+    [navigationBar setTitleTextAttributes:@{
+        NSForegroundColorAttributeName: [theme navigationBarTitleColor],
+        NSFontAttributeName: [theme navigationBarTitleFont]
+    }];
+    navigationBar.translucent = false;
+    navigationBar.barTintColor = [theme navigationBarBackgroundColor];
+    navigationBar.backgroundColor = [theme navigationBarBackgroundColor];
+}
+
++ (void) replaceNavigationPropertyForBar:(UINavigationBar *)bar withCurrentBar:(UINavigationBar *)originalbar {
+    if(bar == nil){
+        return;
+    }
+    if (@available(iOS 13.0, *)) {
+        if (bar.standardAppearance){
+            originalbar.standardAppearance = bar.standardAppearance;
+        }
+        if (bar.compactAppearance){
+            originalbar.compactAppearance = bar.compactAppearance;
+        }
+        if (bar.scrollEdgeAppearance) {
+            originalbar.scrollEdgeAppearance = bar.scrollEdgeAppearance;
+        }
+    }
+    if (@available(iOS 11.0, *)) {
+        originalbar.prefersLargeTitles = bar.prefersLargeTitles;
+        [originalbar setLargeTitleTextAttributes:bar.largeTitleTextAttributes];
+    }
+    originalbar.translucent = bar.translucent;
+    [originalbar setTitleTextAttributes:bar.titleTextAttributes];
+    originalbar.barTintColor = bar.barTintColor;
+    originalbar.tintColor = bar.tintColor;
+    originalbar.backgroundColor = bar.backgroundColor;
+}
+
++(UIWindow*)getAppKeyWindow
+{
+  UIWindow    *foundWindow = nil;
+  NSArray     *windows = [[UIApplication sharedApplication]windows];
+  for (UIWindow  *window in windows) {
+    if (window.isKeyWindow) {
+      foundWindow = window;
+      break;
+    }
+  }
+    if (!foundWindow) {
+        if (@available(iOS 13.0, *)) {
+            NSSet *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+            for (UIScene *scene in connectedScenes) {
+                if (scene.activationState == UISceneActivationStateForegroundActive && [scene isKindOfClass:[UIWindowScene class]]) {
+                    UIWindowScene *windowScene = (UIWindowScene *)scene;
+                    for (UIWindow *window in windowScene.windows) {
+                        if (window.isKeyWindow) {
+                          foundWindow = window;
+                          break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+  return foundWindow;
+}
+
+@end
+
+
+@implementation NSString(UtilMethods)
+
+-(BOOL) isTemplateFragment {
+    NSData *jsonData = [self dataUsingEncoding:NSUTF8StringEncoding];
+    NSArray *jsonArray = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:nil];
+    NSDictionary *jsonDict = jsonArray.firstObject;
+    if(jsonDict && ![jsonDict isKindOfClass:[NSNull class]] && jsonDict[@"fragmentType"]) {
+        if ([jsonDict[@"fragmentType"] integerValue] == FRESHCHAT_TEMPLATE_FRAGMENT) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+-(NSDictionary *)dictionaryValue {
+    NSData *fragmentData = [self dataUsingEncoding:NSUTF8StringEncoding];
+    return [NSJSONSerialization JSONObjectWithData:fragmentData options:0 error:nil];    
+}
 @end

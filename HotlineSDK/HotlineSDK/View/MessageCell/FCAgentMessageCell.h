@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "FCMessages.h"
 #import "FCProtocols.h"
+#import "FCTemplateFactory.h"
+#import "FCTemplateSection.h"
 
 @interface FCAgentMessageCell : UITableViewCell
 
@@ -24,6 +26,7 @@
 @property (nonatomic) NSInteger maxcontentWidth;
 @property (nonatomic, strong) FCMessageData *messageData;
 @property (nonatomic, weak) id<HLMessageCellDelegate> delegate;
+@property (nonatomic, weak) id<FCTemplateDelegate> templateDelegate;
 
 @property (nonatomic) UIEdgeInsets agentChatBubbleInsets;
 @property (strong, nonatomic) UIImage *agentChatBubble;
@@ -37,5 +40,6 @@
 @property (strong, nonatomic) UIImageView* uploadStatusImageView;
 @property (strong, nonatomic) UIImageView* chatBubbleImageView;
 @property (assign, nonatomic) NSInteger tagVal;
+@property (nonatomic) BOOL isLastMessage;
 
 @end

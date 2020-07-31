@@ -11,7 +11,6 @@
 #import "FCTheme.h"
 #import "FCLocalization.h"
 #import "FCSecureStore.h"
-
 #import "FCDeeplinkFragment.h"
 #import "FCHtmlFragment.h"
 #import "FCImageFragment.h"
@@ -25,6 +24,12 @@
 #import "FCRemoteConfig.h"
 #import "FCSecureStore.h"
 #import "FCDateUtil.h"
+#import "FCCarouselCardsList.h"
+#import "FCConstants.h"
+#import "FCCalendarOptionsView.h"
+#import "FCTemplateFactory.h"
+#import "FCTemplateSection.h"
+
 
 @interface FCAgentMessageCell ()
 
@@ -32,6 +37,7 @@
 @property (nonatomic, strong) NSString *agentName;
 @property (nonatomic, assign) BOOL showteamMemberInfo; //display team member info
 @property (nonatomic, assign) BOOL showAvatarView; //plist flag TeamMemberAvatarStyle.visible
+@property (nonatomic, assign) BOOL hasAgentCalenderInvite;
 
 @end
 
@@ -55,8 +61,8 @@
 -(BOOL) showAgentAvatarLabelWithAlias : (NSString *)alias {
     if(self.showteamMemberInfo){
         FCParticipants *participant = [FCParticipants fetchParticipantForAlias:alias inContext:[FCDataManager sharedInstance].mainObjectContext];
-        if(participant.firstName || participant.lastName){
-            self.agentName = [FCUtilities appendFirstName:participant.firstName withLastName:participant.lastName];
+        if(participant.firstName && trimString(participant.firstName).length > 0){
+            self.agentName = participant.firstName;
         }
         else{
             self.agentName = [self getLocalizedAgentName];
@@ -133,6 +139,8 @@
 - (void) drawMessageViewForMessage:(FCMessageData*)currentMessage parentView:(UIView*)parentView withTag:(NSInteger )tag {
     
     [self clearAllSubviews];
+    self.hasAgentCalenderInvite = ([currentMessage.messageType isEqualToNumber: FC_CALENDAR_INVITE_MSG]
+                                   && currentMessage.hasActiveCalInvite);
     contentEncloser = [[UIView alloc] init];
     contentEncloser.translatesAutoresizingMaskIntoConstraints = NO;
     [contentEncloser setLayoutMargins:UIEdgeInsetsMake(0,0,0,0)];
@@ -143,7 +151,6 @@
     NSString *rightPadding = [theme agentMessageRightPadding] ? [theme agentMessageRightPadding] : @"10";
     NSString *internalPadding = @"5";
     showsSenderName = [self showAgentAvatarLabelWithAlias:currentMessage.messageUserAlias];
-    
     NSMutableArray *fragmensViewArr = [[NSMutableArray alloc]init];
     NSMutableDictionary *views = [[NSMutableDictionary alloc]init];
     [views setObject:self.contentEncloser forKey:@"contentEncloser"];
@@ -153,33 +160,22 @@
     [contentEncloser addSubview:chatBubbleImageView];
     [views setObject:self.senderNameLabel forKey:@"senderLabel"];
     [self.contentView addSubview:senderNameLabel];
-    profileImageView.image = nil;
+    profileImageView.image = [[FCTheme sharedInstance] getCustomAgentIconComponent];
     profileImageView.frame = CGRectMake(0, 0, FC_PROFILEIMAGE_DIMENSION, FC_PROFILEIMAGE_DIMENSION);
     [self.contentView addSubview:profileImageView];
     [views setObject:profileImageView forKey:@"profileImageView"];
     if(self.showAvatarView){
         if(participant.profilePicURL && self.showteamMemberInfo){
-            [[FDWebImageManager sharedManager] diskImageExistsForURL:[NSURL URLWithString:participant.profilePicURL] completion:^(BOOL isInCache) {
-                if(isInCache) {//If image is available then get it from cache itself
+            [FCUtilities loadImageFromURL:participant.profilePicURL withCache:^{
+                if(self.tagVal && (tag == self.tagVal)){
+                    [profileImageView setImage: [[FDImageCache sharedImageCache] imageFromDiskCacheForKey:participant.profilePicURL]];
+                }
+            } withError:nil withCompletion:^(UIImage * _Nonnull image) {
+                [[FDImageCache sharedImageCache] storeImage:image forKey:participant.profilePicURL completion:^{
                     if(self.tagVal && (tag == self.tagVal)){
-                        [profileImageView setImage: [[FDImageCache sharedImageCache] imageFromDiskCacheForKey:participant.profilePicURL]];
+                        profileImageView.image = image;
                     }
-                }
-                else{//This will get called only first time
-                    profileImageView.image = [[FCTheme sharedInstance] getCustomAgentIconComponent];
-                    FDWebImageManager *manager = [FDWebImageManager sharedManager];
-                    [manager loadImageWithURL:[NSURL URLWithString:participant.profilePicURL] options:FDWebImageDelayPlaceholder progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
-                        
-                    } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, FDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
-                        if(image && finished){
-                            [[FDImageCache sharedImageCache] storeImage:image forKey:participant.profilePicURL completion:^{
-                                if(self.tagVal && (tag == self.tagVal)){
-                                    profileImageView.image = image;
-                                }
-                            }];
-                        }
-                    }];
-                }
+                }];
             }];
         }
         else if([[FCTheme sharedInstance] getCustomAgentIconComponent]){ // added just to avoid no icon condition
@@ -196,9 +192,22 @@
     
     [self.contentView addSubview:contentEncloser];
     
+    NSString *replyFragments = currentMessage.replyFragments;
+    FCCarouselCardsList *list;
+    if([replyFragments isTemplateFragment] && [self isLastMessage]) {
+        NSDictionary *jsonDict = [FCMessageUtil getReplyFragmentsIn:replyFragments].firstObject;
+        TemplateFragmentData *templateFragment = [FCTemplateFactory getFragmentFrom:jsonDict];
+        if ([templateFragment.templateType isEqualToString:FRESHHCAT_TEMPLATE_CARUOSEL]) {
+            list = [[FCCarouselCardsList alloc] initWithTemplateFragment:templateFragment inReplyTo:currentMessage.messageId withDelegate:self.templateDelegate];
+            [self.contentView addSubview:list];
+            [views setObject:list forKey:@"carouselList"];
+            [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-5@999-[carouselList]-5@999-|" options:0 metrics:nil views:views]];
+        }
+   }
+
     for(int i=0; i<currentMessage.fragments.count; i++) {
         FragmentData *fragment = currentMessage.fragments[i];
-        if ([fragment.type isEqualToString:@"1"]) {
+        if ([fragment.type isEqualToString:@"1"] || [fragment.type isEqualToString: [@(FRESHCHAT_QUICK_REPLY_FRAGMENT) stringValue]]) {
             //HTML
             FCHtmlFragment *htmlFragment = [[FCHtmlFragment alloc]initFragment:fragment withFont:[[FCTheme sharedInstance] agentMessageFont] andType:1];
             htmlFragment.mcDelegate = self.delegate;
@@ -221,7 +230,7 @@
             fileFragment.delegate = self.delegate;
             [fragmensViewArr addObject:[@"button_" stringByAppendingFormat:@"%d",i]];
             //NSLog(@"BUTTON");
-        } else if(![fragment isQuickReplyFragment]) {
+        } else {
             //For Unknown fragment
             FCUnsupportedFragment *unknownFragment = [[FCUnsupportedFragment alloc] initWithFragment:fragment];
             [views setObject:unknownFragment forKey:[@"button_" stringByAppendingFormat:@"%d",i]];
@@ -230,16 +239,39 @@
         }
     }
     
+    if (self.hasAgentCalenderInvite){
+        FCCalendarOptionsView *calendarOptions = [[FCCalendarOptionsView alloc] initCalendarOptionsViewForMessage:currentMessage];
+        [views setObject:calendarOptions forKey:@"calendarOptions"];
+        calendarOptions.delegate = self.delegate;
+        [contentEncloser addSubview:calendarOptions];
+        [fragmensViewArr addObject:@"calendarOptions"];
+    }
+    
     //All details are in contentview but no constrains set
     int agentImagedim = self.showAvatarView ? FC_PROFILEIMAGE_DIMENSION : 0;
     [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"H:|-5-[profileImageView(%d)]-5-[contentEncloser(<=%ld)]",agentImagedim ,(long)self.maxcontentWidth] options:0 metrics:nil views:views]];
+    NSString *contentViewHorzVertSuffix = @"-2-|";
     if(showsSenderName) {
         [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"H:|-5-[profileImageView(%d)]-5-[senderLabel(<=%ld)]",agentImagedim ,(long)self.maxcontentWidth] options:0 metrics:nil views:views]]; //Correct
         [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:|-2-[senderLabel]-2-[profileImageView(%d)]",agentImagedim] options:0 metrics:nil views:views]];
-        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-2-[senderLabel]-2-[contentEncloser(>=50)]-5-|" options:0 metrics:nil views:views]];
+        NSString *contentViewHorzPrefix = @"V:|-2-[senderLabel]-2-[contentEncloser(>=50)]";
+        if(list) {
+            NSDictionary *metric = @{@"temp": [NSNumber numberWithFloat:[list getCarousalListMaxHeight]]};
+            [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"%@-15-[carouselList(==temp@999)]%@",contentViewHorzPrefix,contentViewHorzVertSuffix] options:0 metrics:metric views:views]];
+        }
+        else {
+            [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"%@%@",contentViewHorzPrefix,contentViewHorzVertSuffix]  options:0 metrics:nil views:views]];
+        }
+        
     } else {
         [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:|-2-[profileImageView(%d)]",agentImagedim] options:0 metrics:nil views:views]];
-        [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-2-[contentEncloser(>=50)]-2-|" options:0 metrics:nil views:views]];
+        NSString *contentViewVertPrefix = @"V:|-2-[contentEncloser(>=50)]";
+        if(list) {
+            NSDictionary *metric = @{@"temp":  [NSNumber numberWithFloat:[list getCarousalListMaxHeight]]};
+            [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"%@-15-[carouselList(==temp@999)]%@",contentViewVertPrefix,contentViewHorzVertSuffix]  options:0 metrics:metric views:views]];
+        } else {
+            [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"%@%@",contentViewVertPrefix,contentViewHorzVertSuffix] options:0 metrics:nil views:views]];
+        }
     }
     
     //Constraints for profileview and contentEncloser are done.
@@ -267,7 +299,7 @@
             [contentEncloser addConstraint:centerConstraint];
             [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
             
-            [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[%@(<=%@)]",[self isTopFragment:fragmensViewArr currentIndex:i]? topPadding : internalPadding,str,imageHeight]];
+            [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[%@(%@@999)]",[self isTopFragment:fragmensViewArr currentIndex:i]? topPadding : internalPadding,str,imageHeight]];
         } else if([str containsString:@"text_"]) {
             if(welcomeTextMsg) { //If it has only text message in welcome message
                 FCHtmlFragment *textFragment = views[str];
@@ -291,6 +323,10 @@
             NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(>=75)]-(>=%@)-|",leftPadding,str,rightPadding];
             [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
             [veriticalConstraint appendString:[NSString stringWithFormat:@"-%@-[%@]",[self isTopFragment:fragmensViewArr currentIndex:i]? topPadding : internalPadding, str]];
+        } else if([str containsString:@"calendarOptions"]) {
+            NSString *horizontalConstraint = [NSString stringWithFormat:@"H:|-%@-[%@(>=75)]-%@-|",leftPadding,str, rightPadding];
+            [contentEncloser addConstraints:[NSLayoutConstraint constraintsWithVisualFormat : horizontalConstraint options:0 metrics:nil views:views]];
+            [veriticalConstraint appendString:[NSString stringWithFormat:@"-[%@(>=0)]",str]];
         }
     }
     if(!currentMessage.isWelcomeMessage) { //Show time for non welcome messages.
