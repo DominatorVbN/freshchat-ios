@@ -153,6 +153,7 @@
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
     [self localNotificationSubscription];
+    [FCFAQUtil fetchUpdates];
 }
 
 -(void)viewWillDisappear:(BOOL)animated{
