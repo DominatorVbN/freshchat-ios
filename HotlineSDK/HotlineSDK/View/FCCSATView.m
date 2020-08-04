@@ -154,7 +154,7 @@
 
         [FCAutolayoutHelper setHeight:promptHeight forView:self.CSATPrompt inView:self.transparentView];
         
-        [self.CSATPrompt addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[survey_title(50)][star_rating_view(<=ratingbar_height)]-[feedback_view(==feedbackview_height)]-padding-[horizontal_line(1)][submit_button(submit_height)]|" options:NSLayoutFormatAlignAllCenterX metrics:metrics views:views]];
+        [self.CSATPrompt addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[survey_title(50)][star_rating_view(<=ratingbar_height)]-[feedback_view(<=feedbackview_height)]-padding-[horizontal_line(1)][submit_button(submit_height)]|" options:NSLayoutFormatAlignAllCenterX metrics:metrics views:views]];
         
         [self.CSATPrompt addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[submit_button]|" options:NSLayoutFormatAlignAllCenterX metrics:metrics views:views]];
         

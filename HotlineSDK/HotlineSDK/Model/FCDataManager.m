@@ -284,26 +284,30 @@
         
         logInfo(info);
         [self.logger upload];
-        
+
     }
     
     if (![self.mainObjectContext hasChanges])
         return YES;
     
     NSError *error = nil;
-    if (![self.mainObjectContext save:&error]) {
-        if (error) {
-            NSDictionary *errorInfo = @{@"Main context save failed" : @{
-                                                @"Error" : error,
-                                                @"call stack" : [NSThread callStackSymbols]
-                                                }};
-            
-            logInfo(errorInfo);
-            [self.logger upload];
+    @try {
+        if (![self.mainObjectContext save:&error]) {
+            if (error) {
+                NSDictionary *errorInfo = @{@"Main context save failed" : @{
+                                                    @"Error" : error,
+                                                    @"call stack" : [NSThread callStackSymbols]
+                }};
+                logInfo(errorInfo);
+                [self.logger upload];
+            }
+            return NO;
         }
-        return NO;
+    } @catch (NSException *exception){// Added as there is crash reported #111 Public repo.
+        [self.logger addMessage:exception.debugDescription withMethodName:NSStringFromSelector(_cmd)];
+        [self.logger addErrorInfo:@{}];
+        [self.logger upload];
     }
-    
     return YES;
 }
 
