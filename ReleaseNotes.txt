@@ -1,3 +1,7 @@
+Freshchat iOS SDK - Powered by Freshdesk
+Documentation   : https://support.freshchat.com
+Support Email   : support@freshchat.com
+Version         : 3.7.4
 
 Ver 3.7.4 
 __________________________
@@ -6,10 +10,6 @@ Enhancements :
 - FAQ refresh optimisation.
 Bug Fixes :
 - Minor bug fixes.
-Freshchat iOS SDK - Powered by Freshdesk
-Documentation   : https://support.freshchat.com
-Support Email   : support@freshchat.com
-Version         : 3.7.3
 
 Ver 3.7.3 
 __________________________
