@@ -625,7 +625,6 @@
 
 - (void) testFreshchatMessage {
     FreshchatMessage *fcMsg = [[FreshchatMessage alloc] initWithMessage:@"Hello there" andTag:@"wow"];
-    //XCTAssertEqual([fcMsg.tag is]);
     XCTAssertEqual(fcMsg.message, @"Hello there");
     XCTAssertTrue([fcMsg.tag isEqualToString:@"wow"]);
 }
@@ -830,7 +829,6 @@
         message.replyFragments = calendarDict[@"replyFragments"];
         message.internalMeta = calendarDict[@"internalMeta"];
         message.hasActiveCalInvite = calendarDict[@"hasActiveCalInvite"];
-        //message.fragments = [FCMessageFragments getAllFragments:self];
         message.messageId = calendarDict[@"messageId"];
         
         XCTAssertEqualObjects(@9001, message.messageType);
@@ -1095,6 +1093,174 @@
     
     XCTAssertTrue([[theme agentNameFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
     XCTAssertEqualObjects([theme agentNameFont], [UIFont systemFontOfSize:13]);
+    
+    XCTAssertEqualObjects([theme channelTitleFont], [UIFont systemFontOfSize:15]);
+    XCTAssertTrue([[theme channelTitleFontColor] isEqual:[FCTheme colorWithHex:@"222222"]]);
+    
+    XCTAssertEqualObjects([theme channelDescriptionFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme channelDescriptionFontColor] isEqual:[FCTheme colorWithHex:@"ABABAB"]]);
+    XCTAssertEqual([theme numberOfChannelListDescriptionLines], 1);
+    
+    XCTAssertEqualObjects([theme channelLastUpdatedFont], [UIFont systemFontOfSize:12]);
+    XCTAssertTrue([[theme channelLastUpdatedFontColor] isEqual:[FCTheme colorWithHex:@"ABABAB"]]);
+    
+    XCTAssertEqualObjects([theme badgeButtonFont], [UIFont systemFontOfSize:13]);
+    XCTAssertTrue([[theme badgeButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"3399FF"]]);
+    XCTAssertTrue([[theme badgeButtonTitleColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    
+    XCTAssertTrue([[theme channelIconPlaceholderImageBackgroundColor] isEqual:[FCTheme colorWithHex:@"3F51B5"]]);
+    XCTAssertEqualObjects([theme channelIconPlaceholderImageCharFont], [UIFont systemFontOfSize:22]);
+    
+    XCTAssertTrue([[theme channelListCellSeparatorColor] isEqual:[FCTheme colorWithHex:@"DE4147"]]);
+    XCTAssertTrue([[theme channelListBackgroundColor] isEqual:[FCTheme colorWithHex:@"F8FAFA"]]);
+    
+    XCTAssertTrue([[theme channelCellSelectedColor] isEqual:[FCTheme colorWithHex:@"DCDCDC"]]);
+    XCTAssertTrue([[theme channelListCellBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    
+    XCTAssertTrue([[theme channelEmptyResultMessageFontColor] isEqual:[FCTheme colorWithHex:@"525454"]]);
+    XCTAssertEqualObjects([theme channelEmptyResultMessageFont], [UIFont systemFontOfSize:15]);
+    
+    XCTAssertTrue([[theme getCalendarPopupNavBarTitleTextColor] isEqual:[FCTheme colorWithHex:@"283A59"]]);
+    XCTAssertEqualObjects([theme getCalendarPopupNavBarTitleTextFont], [UIFont boldSystemFontOfSize:15]);
+    
+    XCTAssertTrue([[theme getCalendarPopupNavBarDurationTextColor] isEqual:[FCTheme colorWithHex:@"465571"]]);
+    XCTAssertEqualObjects([theme getCalendarPopupNavBarDurationTextFont], [UIFont systemFontOfSize:13]);
+    
+    XCTAssertTrue([[theme getCalendarPopupNavBarBackgroundColor] isEqual:[FCTheme colorWithHex:@"F5F5F5"]]);
+    XCTAssertTrue([[theme getCalendarPopupNavBarDividerColor] isEqual:[FCTheme colorWithHex:@"B3B3B3"]]);
+    
+    XCTAssertTrue([[theme getCalendarEmailViewDescTextColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertEqualObjects([theme getCalendarEmailViewDescTextFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme getCalendarEmailViewTextFieldTextColor] isEqual:[FCTheme colorWithHex:@"495973"]]);
+    XCTAssertEqualObjects([theme getCalendarEmailViewTextFieldTextFont], [UIFont systemFontOfSize:14]);
+    
+    XCTAssertTrue([[theme getCalendarEmailViewNextBtnTitleColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertEqualObjects([theme getCalendarEmailViewNextBtnTitleFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme getCalendarEmailViewNextBtnBackgroundColor] isEqual:[FCTheme colorWithHex:@"0249A6"]]);
+    
+    XCTAssertTrue([[theme getCalendarSlotsSessionNameTextColor] isEqual:[FCTheme colorWithHex:@"808080"]]);
+    XCTAssertEqualObjects([theme getCalendarSlotsSessionNameTextFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme getCalendarSlotsDateTextColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getCalendarSlotsDateTextFont], [UIFont boldSystemFontOfSize:14]);
+    
+    XCTAssertTrue([[theme getCalendarSlotsStateDescTextColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getCalendarSlotsStateDescTextFont], [UIFont systemFontOfSize:16]);
+    XCTAssertTrue([[theme getCalendarSlotsButtonTitleColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getCalendarSlotsButtonTitleFont], [UIFont systemFontOfSize:13]);
+    
+    XCTAssertTrue([[theme getCalendarSlotsButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme getCalendarSlotsButtonSelectedBackgroundColor] isEqual:[FCTheme colorWithHex:@"091E42"]]);
+    XCTAssertTrue([[theme getCalendarSlotsButtonBorderColor] isEqual:[FCTheme colorWithHex:@"595959"]]);
+    XCTAssertTrue([[theme getCalendarSlotsShowMoreButtonTitleColor] isEqual:[FCTheme colorWithHex:@"707C92"]]);
+    
+    XCTAssertEqualObjects([theme getCalendarSlotsShowMoreButtonTitleFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme getCalendarSlotsShowMoreButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    
+    XCTAssertTrue([[theme getCalendarSlotsShowMoreButtonBorderColor] isEqual:[FCTheme colorWithHex:@"707C92"]]);
+    XCTAssertTrue([[theme getCalendarSlotsDividerColor] isEqual:[FCTheme colorWithHex:@"E1E4E8"]]);
+    
+    XCTAssertTrue([[theme getCalendarConfirmDescriptionTextColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getCalendarConfirmDescriptionTextFont], [UIFont systemFontOfSize:16]);
+    
+    XCTAssertTrue([[theme getCalendarConfirmTimeTextColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getCalendarConfirmTimeTextFont], [UIFont boldSystemFontOfSize:21]);
+    
+    XCTAssertTrue([[theme getCalendarConfirmDateTextColor] isEqual:[FCTheme colorWithHex:@"293B5B"]]);
+    XCTAssertEqualObjects([theme getCalendarConfirmDateTextFont], [UIFont systemFontOfSize:16]);
+    
+    XCTAssertTrue([[theme getCalendarConfirmAvatarsBorderColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme getCalendarConfirmButtonTitleColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertEqualObjects([theme getCalendarConfirmButtonTitleFont], [UIFont systemFontOfSize:15]);
+    
+    XCTAssertTrue([[theme getCalendarConfirmButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"0249A6"]]);
+    XCTAssertTrue([[theme getCalendarConfirmChangeSlotButtonTitleColor] isEqual:[FCTheme colorWithHex:@"707C92"]]);
+    XCTAssertEqualObjects([theme getCalendarConfirmChangeSlotButtonTitleFont], [UIFont systemFontOfSize:15]);
+    XCTAssertTrue([[theme getCalendarConfirmChangeSlotButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme getCalendarConfirmChangeSlotButtonBorderColor] isEqual:[FCTheme colorWithHex:@"707C92"]]);
+    
+    XCTAssertEqualObjects([theme voiceRecordingTimeLabelFont], [UIFont systemFontOfSize:13]);
+    XCTAssertTrue([[theme faqListViewCellBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertEqual([theme numberOfCategoryListDescriptionLines], 1);
+    XCTAssertEqualObjects([theme faqCategoryTitleFont], [UIFont systemFontOfSize:15]);
+    
+    XCTAssertTrue([[theme faqCategoryTitleFontColor] isEqual:[FCTheme colorWithHex:@"222222"]]);
+    XCTAssertTrue([[theme faqCategoryBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme gridViewCardBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme gridViewCardShadowColor] isEqual:[FCTheme colorWithHex:@"9A9B9E"]]);
+    XCTAssertTrue([[theme faqPlaceholderIconBackgroundColor] isEqual:[FCTheme colorWithHex:@"535353"]]);
+    XCTAssertTrue([[theme faqListCellSeparatorColor] isEqual:[FCTheme colorWithHex:@"C9C9CA"]]);
+    XCTAssertTrue([[theme faqListCellSelectedColor] isEqual:[FCTheme colorWithHex:@"DCDCDC"]]);
+    
+    XCTAssertEqualObjects([theme faqCategoryDetailFont], [UIFont systemFontOfSize:14]);
+    
+    XCTAssertTrue([[theme faqCategoryDetailFontColor] isEqual:[FCTheme colorWithHex:@"808285"]]);
+    
+    XCTAssertTrue([[theme faqEmptyResultMessageFontColor] isEqual:[FCTheme colorWithHex:@"525454"]]);
+    XCTAssertEqualObjects([theme faqEmptyResultMessageFont], [UIFont systemFontOfSize:15]);
+    XCTAssertTrue([[theme articleListFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertEqualObjects([theme articleListFont], [UIFont systemFontOfSize:14]);
+    
+    XCTAssertTrue([[theme articleListBackgroundColor] isEqual:[FCTheme colorWithHex:@"F8FAFA"]]);
+    XCTAssertTrue([[theme articleListCellSeperatorColor] isEqual:[FCTheme colorWithHex:@"C9C9CA"]]);
+    XCTAssertTrue([[theme articleListCellBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertEqualObjects([theme searchBarFont], [UIFont systemFontOfSize:13]);
+    
+    XCTAssertTrue([[theme searchBarFontColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertTrue([[theme searchBarTextViewBorderColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme searchBarInnerBackgroundColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme searchBarOuterBackgroundColor] isEqual:[FCTheme colorWithHex:@"F8F8F8"]]);
+    
+    XCTAssertTrue([[theme searchBarCancelButtonColor] isEqual:[FCTheme colorWithHex:@"0079FF"]]);
+    
+    XCTAssertEqualObjects([theme searchBarCancelButtonFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme searchBarCursorColor] isEqual:[FCTheme colorWithHex:@"0079FF"]]);
+    XCTAssertTrue([[theme SearchBarTextPlaceholderColor] isEqual:[FCTheme colorWithHex:@"808285"]]);
+    
+    XCTAssertTrue([[theme progressBarColor] isEqual:[FCTheme colorWithHex:@"6D6D6D"]]);
+    XCTAssertTrue([[theme dialogueButtonColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme talkToUsButtonTextColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme talkToUsButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"4D90E9"]]);
+    XCTAssertEqualObjects([theme talkToUsButtonFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme noItemsFoundMessageColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    
+    XCTAssertTrue([[theme getArticleDetailCSSFileName] isEqualToString :@"normalize"]);
+    
+    XCTAssertTrue([[theme imagePreviewScreenBackgroundColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    
+    XCTAssertTrue([theme sdkFont].pointSize == 17.0);
+    
+    XCTAssertTrue([[theme notificationBackgroundColor] isEqual:[FCTheme colorWithHex:@"6D6D6D"]]);
+    XCTAssertTrue([[theme notificationTitleTextColor] isEqual:[FCTheme colorWithHex:@"EFEFEF"]]);
+    XCTAssertTrue([[theme notificationMessageTextColor] isEqual:[FCTheme colorWithHex:@"EFEFEF"]]);
+    
+    XCTAssertEqualObjects([theme notificationTitleFont], [UIFont systemFontOfSize:14]);
+    XCTAssertEqualObjects([theme notificationMessageFont], [UIFont systemFontOfSize:14]);
+    
+    XCTAssertTrue([[theme notificationChannelIconBorderColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme notificationChannelIconBackgroundColor] isEqual:[FCTheme colorWithHex:@"3F51B5"]]);
+    XCTAssertTrue([theme shouldShowPushPrompt] == YES);
+    
+    XCTAssertTrue([[theme dialogueTitleTextColor] isEqual:[FCTheme colorWithHex:@"535353"]]);
+    
+    XCTAssertEqualObjects([theme dialogueTitleFont], [UIFont systemFontOfSize:15]);
+    XCTAssertEqualObjects([theme dialogueYesButtonFont], [UIFont systemFontOfSize:14]);
+    
+    XCTAssertTrue([[theme dialogueYesButtonTextColor] isEqual:[FCTheme colorWithHex:@"FFFFFF"]]);
+    XCTAssertTrue([[theme dialogueYesButtonBorderColor] isEqual:[FCTheme colorWithHex:@"D8D8D8"]]);
+    XCTAssertTrue([[theme dialogueYesButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"007AFF"]]);
+    
+    XCTAssertTrue([[theme dialogueNoButtonBackgroundColor] isEqual:[FCTheme colorWithHex:@"F6F6F5"]]);
+    XCTAssertTrue([[theme dialogueNoButtonTextColor] isEqual:[FCTheme colorWithHex:@"535353"]]);
+    XCTAssertTrue([[theme dialogueNoButtonBorderColor] isEqual:[FCTheme colorWithHex:@"C1C1BF"]]);
+    
+    XCTAssertEqualObjects([theme dialogueNoButtonFont], [UIFont systemFontOfSize:14]);
+    XCTAssertTrue([[theme dialogueBackgroundColor] isEqual:[FCTheme colorWithHex:@"F6F6F5"]]);
+    
+    XCTAssertTrue([[theme navigationBarBackgroundColor] isEqual:[FCTheme colorWithHex:@"F8F8F8"]]);
+    XCTAssertEqualObjects([theme navigationBarTitleFont], [UIFont systemFontOfSize:17]);
+    XCTAssertTrue([[theme navigationBarTitleColor] isEqual:[FCTheme colorWithHex:@"000000"]]);
+    XCTAssertTrue([[theme navigationBarButtonColor] isEqual:[FCTheme colorWithHex:@"0079FF"]]);
+    XCTAssertEqualObjects([theme navigationBarButtonFont], [UIFont systemFontOfSize:16]);
 }
 
 @end
