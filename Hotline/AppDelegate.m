@@ -8,8 +8,6 @@
 
 #import "AppDelegate.h"
 #import "ViewController.h"
-#import <Fabric/Fabric.h>
-#import <Crashlytics/Crashlytics.h>
 #import "InAppBrowser.h"
 #import "Hotline_Demo-Swift.h"
 #import <UserNotifications/UserNotifications.h>
@@ -44,7 +42,6 @@
     */if ([[Freshchat sharedInstance]isFreshchatNotification:launchOptions]) {
         [[Freshchat sharedInstance]handleRemoteNotification:launchOptions andAppstate:application.applicationState];
     }
-    [Fabric with:@[[Crashlytics class]]];
     return YES;
     
 }

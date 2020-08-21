@@ -34,8 +34,6 @@
 		024F42AD23B3795200A265F2 /* JWTTestViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 024F42AC23B3795200A265F2 /* JWTTestViewController.storyboard */; };
 		024F42B023B3801000A265F2 /* private.txt in Resources */ = {isa = PBXBuildFile; fileRef = 024F42AE23B3801000A265F2 /* private.txt */; };
 		024F42B123B3801000A265F2 /* public.txt in Resources */ = {isa = PBXBuildFile; fileRef = 024F42AF23B3801000A265F2 /* public.txt */; };
-		350D9E211CFDBD48004091C8 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350D9E1F1CFDBD48004091C8 /* Crashlytics.framework */; };
-		350D9E221CFDBD48004091C8 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350D9E201CFDBD48004091C8 /* Fabric.framework */; };
 		3513FF801CDCC3A3009A7034 /* FCLocalization.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 3513FF7F1CDCC3A3009A7034 /* FCLocalization.bundle */; };
 		3518351B1D273997000EB496 /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = 3518351A1D273997000EB496 /* background.png */; };
 		354D0D271C48D143004D2AA1 /* libFreshchatSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 354D0D1E1C48D10F004D2AA1 /* libFreshchatSDK.a */; };
@@ -223,11 +221,9 @@
 				356F1C121B9DD223002F1E2A /* AudioToolbox.framework in Frameworks */,
 				356F1A1F1B9DC4BB002F1E2A /* Foundation.framework in Frameworks */,
 				356F1A1D1B9DC4B6002F1E2A /* AVFoundation.framework in Frameworks */,
-				350D9E211CFDBD48004091C8 /* Crashlytics.framework in Frameworks */,
 				356F1A171B9DC49C002F1E2A /* SystemConfiguration.framework in Frameworks */,
 				356F1A151B9DC497002F1E2A /* ImageIO.framework in Frameworks */,
 				356F1A111B9DC48B002F1E2A /* CoreData.framework in Frameworks */,
-				350D9E221CFDBD48004091C8 /* Fabric.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -866,7 +862,7 @@
 				INFOPLIST_FILE = "Hotline/Supporting Files/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.freshdesk.example.hotlineios;
 				PRODUCT_NAME = "Hotline Demo";
@@ -899,7 +895,7 @@
 				INFOPLIST_FILE = "Hotline/Supporting Files/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.freshdesk.example.hotlineios;
 				PRODUCT_NAME = "Hotline Demo";
