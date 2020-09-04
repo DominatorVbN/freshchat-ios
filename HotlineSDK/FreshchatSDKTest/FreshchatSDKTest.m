@@ -236,11 +236,15 @@
 }
 
 - (void) testLocale{
-    
+
+    NSString *selectedPreferredLanguage = [[NSLocale preferredLanguages] objectAtIndex:0];
+    NSMutableString *localeStr = [[NSMutableString alloc]initWithString:@"locale="];
+    [localeStr appendString: selectedPreferredLanguage];
     NSArray *array = [FCLocaleUtil userLocaleParams:NO];
-    XCTAssertTrue([array isEqualToArray:@[@"locale=en"]]);
+    NSArray *languages = [[NSArray alloc] initWithObjects:localeStr, nil];
+    XCTAssertTrue([array isEqualToArray: languages]);
     NSArray *arrLocale = [FCLocaleUtil channelLocaleParams];
-    NSArray *compArray = [NSArray arrayWithObjects:@"locale=en", @"lastLocaleId=0", nil];
+    NSArray *compArray = [NSArray arrayWithObjects: localeStr, @"lastLocaleId=0", nil];
     XCTAssertTrue([arrLocale isEqualToArray:compArray]);
     XCTAssertTrue([FCLocaleUtil hadLocaleChange]);
 }
@@ -544,6 +548,19 @@
     XCTAssertEqual(user.email, @"support@freshchat.com");
     XCTAssertEqual(user.phoneNumber, nil); //No value set to check empty
     XCTAssertEqual(user.phoneCountryCode, nil);//No value set to check empty
+}
+
+-(void) testGetLocalLocale {
+    [FCLocaleUtil updateLocaleWith:@"fr"];
+    NSString *locale = [FCLocaleUtil getUserLocale];
+    XCTAssertEqualObjects(locale, @"fr");
+}
+
+-(void) testSetLocale {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    dict[@"name"] = @"xyz";
+    [FCUtilities setLocale: dict];
+    XCTAssertTrue([dict[@"locale"] isEqualToString: @"fr"]);
 }
 
 - (void) testFreshchatSDKMisc {

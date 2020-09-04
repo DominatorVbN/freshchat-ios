@@ -51,7 +51,7 @@
 +(NSDictionary *)deviceInfoProperties;
 +(void)setActivityIndicator:(BOOL)isVisible;
 +(UIViewController*) topMostController;
-
++(void)setLocale:(NSMutableDictionary *)userInfo;
 +(void) AlertView:(NSString *)alertviewstring FromModule:(NSString *)pModule;
 + (BOOL) isPoweredByFooterViewHidden;
 +(NSNumber *)getLastUpdatedTimeForKey:(NSString *)key;

@@ -36,6 +36,7 @@
 #import "FCUserUtil.h"
 #import "FCAnimatedImage.h"
 #import "FCParticipants.h"
+#import "FCLocaleUtil.h"
 
 #define EXTRA_SECURE_STRING @"73463f9d-70de-41f8-857a-58590bdd5903"
 #define ERROR_CODE_USER_DELETED 19
@@ -220,6 +221,13 @@
 +(NSString *)generateOfflineMessageAlias{
     NSString *randomString = [FCStringUtil generateUUID];
     return [NSString stringWithFormat:@"temp-%@", randomString];
+}
+
++(void)setLocale:(NSMutableDictionary *)userInfo {
+    NSString *locale = [FCLocaleUtil getUserLocale];
+    if (![locale  isEqualToString: @""]) {
+        userInfo[@"locale"] = locale;
+    }
 }
 
 
@@ -531,7 +539,8 @@ static NSInteger networkIndicator = 0;
         || ([FCUtilities containsString:content andTarget:@"<h3>"])
         || ([FCUtilities containsString:content andTarget:@"<h4>"])
         || ([FCUtilities containsString:content andTarget:@"<h5>"])
-        || ([FCUtilities containsString:content andTarget:@"<h6>"])) {
+        || ([FCUtilities containsString:content andTarget:@"<h6>"])
+        || ([FCUtilities containsString:content andTarget:@"&amp"])) {
         return true;
     }
     return false;

@@ -77,7 +77,7 @@
     
     if (userAlias) {
         userInfo[@"alias"] = userAlias;
-    }else{
+    } else {
         if([[FCSecureStore sharedInstance] checkItemWithKey:HOTLINE_DEFAULTS_APP_ID]){
             // If appID is present then something is terribly wrong. Call the doctor
             FCMemLogger *memLogger = [[FCMemLogger alloc]init];
@@ -98,6 +98,7 @@
         userInfo[@"adId"] = adId;
     }
     
+    [FCUtilities setLocale:userInfo];
     return userInfo;
 }
 
@@ -289,6 +290,7 @@
             if([FreshchatUser sharedInstance].externalID != nil) {
                 userInfo[@"identifier"] = [FreshchatUser sharedInstance].externalID;
             }
+            [FCUtilities setLocale:userInfo];
             info[@"user"] = userInfo;
         }else{
             IN_PROGRESS = NO;
@@ -632,7 +634,8 @@ static Boolean FC_REMOTE_CONFIG_IN_PROGRESS = NO;
     NSError *error = nil;
     NSMutableDictionary *userInfo = [NSMutableDictionary new];
     userInfo[@"deviceIosMeta"] = [FCUtilities deviceInfoProperties];
-    
+    [FCUtilities setLocale:userInfo];
+
     NSData *userData = [NSJSONSerialization dataWithJSONObject:@{@"user":userInfo ,@"jwtAuthToken" : jwtIdToken } options:NSJSONWritingPrettyPrinted error:&error];
     
     FCServiceRequest *request = [[FCServiceRequest alloc]initWithMethod:HTTP_METHOD_POST];
