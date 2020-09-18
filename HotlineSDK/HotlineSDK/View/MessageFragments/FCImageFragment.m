@@ -51,22 +51,27 @@
             
             if(isThumbnail) {
                 NSDictionary *thumbnailDict = extraJSONDict[@"thumbnail"];
-                
-                if(thumbnailDict[@"height"] && thumbnailDict[@"width"]) {
-                    if ([thumbnailDict[@"height"] intValue] <= DEFAULT_THUMBNAIL_HEIGHT) {
-                        thumbnailHeight = [thumbnailDict[@"height"] intValue];
-                    }
-                    if([thumbnailDict[@"height"] intValue] <= MIN_THUMBNAIL_HEIGHT) {
-                        thumbnailHeight = MIN_THUMBNAIL_HEIGHT;
-                    }
+                float imgWidth = [thumbnailDict[@"width"] floatValue];
+                float imgHeight = [thumbnailDict[@"height"] floatValue];
+                if(imgWidth && imgHeight) {
+                    float ratio = imgWidth/imgHeight;
                     
-                    if ([thumbnailDict[@"width"] intValue] <= DEFAULT_THUMBNAIL_WIDTH) {
-                        thumbnailWidth = [thumbnailDict[@"width"] intValue];
+                    if(imgHeight > imgWidth){ // for potrait image
+                        if(imgHeight > DEFAULT_THUMBNAIL_HEIGHT){
+                            imgHeight = DEFAULT_THUMBNAIL_HEIGHT;
+                        }else if (imgHeight < MIN_THUMBNAIL_HEIGHT){
+                            imgHeight = MIN_THUMBNAIL_HEIGHT;
+                        }
+                        imgWidth = ratio * imgHeight;
+                    }else { // for landscape image
+                        if(imgWidth > DEFAULT_THUMBNAIL_WIDTH){
+                            imgWidth = DEFAULT_THUMBNAIL_WIDTH;
+                        }else if (imgWidth < MIN_THUMBNAIL_WIDTH){
+                            imgWidth = MIN_THUMBNAIL_WIDTH;
+                        }
+                        imgHeight = imgWidth/ratio;
                     }
-                    if([thumbnailDict[@"width"] intValue] <= MIN_THUMBNAIL_WIDTH) {
-                        thumbnailWidth = MIN_THUMBNAIL_WIDTH;
-                    }
-                    self.imgFrame = CGRectMake(0, 0, thumbnailWidth, thumbnailHeight);
+                    self.imgFrame = CGRectMake(0, 0, imgWidth, imgHeight);
                 }
             }
             [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self  action:@selector(showImagePreview:)]];
